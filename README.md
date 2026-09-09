@@ -5,7 +5,7 @@ SEN381 Software Engineering 381 (NQF 8), Belgium Campus ITversity, 2026.
 
 | | |
 |---|---|
-| **Current baseline** | PED v1.0 — Engineering Foundation & Requirements Baseline |
+| **Current baseline** | PED v1.0 - Engineering Foundation & Requirements Baseline |
 | **Milestone** | M1 complete · M2 (Architecture, Design & Engineering Decisions) next |
 | **Team** | Masego (Workstream A) · Don (Workstream B) · Emile (Workstream C) |
 | **Governing document** | SEN381 CivicConnect Master Project Brief v1.1 |
