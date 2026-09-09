@@ -27,8 +27,10 @@ Recorded deliberately — honesty about limitations is valued above unsupported 
 
 We confirm this document reflects the actual engineering work of the registered team; that AI assistance is recorded with the verification applied; that each of us reviewed the whole document, not only our own workstream; and that each of us can independently locate, explain and defend any artefact in this baseline.
 
+# M1 Baseline Sign-off
+
 | Member | Workstream | Signature | Date |
 |---|---|---|---|
-| Masego | A | | 8 September 2026 |
-| Don | B | | 8 September 2026 |
-| Emile | C | | 8 September 2026 |
+| Masego | A | [ ✓ ] | 8 September 2026 |
+| Don | B | [ ✓ ] | 8 September 2026 |
+| Emile | C | [ ✓ ] | 8 September 2026 |
