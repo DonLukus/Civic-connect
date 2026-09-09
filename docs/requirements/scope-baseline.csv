@@ -1,0 +1,28 @@
+ID,Classification,Scope item,Requirements,Rationale / evidence required
+SCOPE-I-01,In scope,"Authentication and role-based access control for four roles: Requester, Staff, Manager, Administrator","FR-001..FR-004, NFR-003, NFR-004",
+SCOPE-I-02,In scope,Service request submission with a mandatory controlled category,"FR-005, FR-006",
+SCOPE-I-03,In scope,Requester visibility: current status and full history of own requests,"FR-007, FR-008",
+SCOPE-I-04,In scope,"In-app and email notification on accept, reject, update and completion",FR-009,
+SCOPE-I-05,In scope,"Staff work queue with search, filter and sort","FR-011, FR-012, FR-013",
+SCOPE-I-06,In scope,"Assignment, self-assignment and reassignment of requests",FR-014,
+SCOPE-I-07,In scope,Controlled status lifecycle enforced as a state machine,"FR-015, FR-017, FR-018",
+SCOPE-I-08,In scope,"Action, comment and resolution recording on a request","FR-010, FR-016",
+SCOPE-I-09,In scope,"Management dashboard covering open, in progress, overdue, resolved and closed work","FR-019, FR-021",
+SCOPE-I-10,In scope,"Breakdown of activity by category, status, assignee and period, with CSV export","FR-020, FR-022",
+SCOPE-I-11,In scope,Administration of the controlled category list and of users and roles,"FR-023, FR-024",
+SCOPE-I-12,In scope,Immutable audit trail of status and assignment changes,"FR-025, NFR-006",
+SCOPE-O-01,Out of scope,Native mobile applications (iOS / Android),,"Responsive web delivery satisfies SH-01 access needs at a fraction of the build, test and release cost. Two additional deployment targets cannot be verified within the schedule."
+SCOPE-O-02,Out of scope,"WhatsApp, SMS or telephone channel integration",,"The fragmented-channel problem is solved by consolidating onto one controlled record, not by adding further channels. Paid gateways also breach CN-03."
+SCOPE-O-03,Out of scope,"Integration with existing finance, ERP, HR or asset-management systems",,"No interface contract, test environment or owning stakeholder is available. Integration risk is unbounded and unverifiable."
+SCOPE-O-04,Out of scope,"Payment, billing or procurement handling",,No stakeholder need identified in the CivicConnect scenario.
+SCOPE-O-05,Out of scope,Multi-language and localisation support,,No stakeholder has stated a language need. Adds string management to every subsequent change.
+SCOPE-O-06,Out of scope,Offline / disconnected operation with local synchronisation,,Conflict resolution and sync integrity are disproportionate to the value at this scale.
+SCOPE-O-07,Out of scope,"AI-based automatic triage, classification or prioritisation of requests",,"Rejected as scope creep. No training data, no accuracy acceptance criterion, and it would place an unverifiable component on the critical accountability path."
+SCOPE-O-08,Out of scope,External contractor / third-party supplier portal,,Introduces an additional trust boundary and authorisation model that the security work in scope cannot cover.
+SCOPE-O-09,Out of scope,IoT or sensor-originated automatic request creation,,No such source exists in the described environment.
+SCOPE-D-01,Deferred to M2 (pending DEC-007),File and photograph attachments on a request,,"Requires object storage beyond the free tier, file-type and size validation, malware handling, and a retention/privacy obligation for images that may contain personal data. Deferred until the platform decision (DEC-008) establishes actual free-tier storage limits and until evidence exists of how often a photograph is genuinely required."
+SCOPE-D-02,Deferred to M2,Automated SLA timers and escalation rules,,FR-021 currently identifies overdue work against a target resolution time per category. The target values have not been agreed with a stakeholder (RSK-05). Automating escalation on unvalidated thresholds would generate false escalations and erode trust in the system.
+SCOPE-D-03,Deferred to M4 or post-project,SMS / push notification channel,,Breaches CN-03 while a paid gateway is required. Retained on the register so the unmet SH-04 expectation stays visible (CF-03).
+SCOPE-D-04,Deferred to M2,Anonymous or confidential reporting channel,,Resolves CF-01 but requires a separate authorisation and audit model. Deferred pending a decision on whether accountability can be preserved without identity.
+SCOPE-D-05,Deferred to M3,Bulk import of historical spreadsheet and paper records,,Data quality of the legacy records is unknown. Migration cannot be specified until the persistence design exists (M2) and a sample extract has been inspected.
+SCOPE-D-06,Deferred to M4 / future,"Advanced analytics, trend reporting and scheduled report distribution",,FR-019 to FR-022 satisfy the stated oversight need. Further analytics adds query and performance load against NFR-001 for value not yet evidenced.

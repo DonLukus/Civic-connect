@@ -1,0 +1,78 @@
+name: Traceability check
+
+# Verifies that the RTM and the requirement registers agree.
+# A dangling identifier in the RTM is the fastest way to lose traceability marks — this catches it
+# before a reviewer has to.
+
+on:
+  pull_request:
+    paths: ['docs/**']
+  push:
+    branches: [main]
+    paths: ['docs/**']
+
+jobs:
+  traceability:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: RTM reconciles with the requirement registers
+        run: |
+          python3 - <<'PY'
+          import csv, sys, pathlib
+
+          def ids(path, col=0):
+              p = pathlib.Path(path)
+              if not p.exists():
+                  print(f"::error::missing {path}")
+                  sys.exit(1)
+              with p.open(encoding='utf-8') as f:
+                  return {r[col].strip() for r in list(csv.reader(f))[1:] if r and r[col].strip()}
+
+          fr  = ids('docs/requirements/functional-requirements.csv')
+          nfr = ids('docs/requirements/non-functional-requirements.csv')
+          reqs = fr | nfr
+
+          with open('docs/requirements/RTM.csv', encoding='utf-8') as f:
+              rows = list(csv.reader(f))[1:]
+          traced = {r[3].strip() for r in rows if len(r) > 3 and r[3].strip()}
+
+          fail = False
+          orphans = sorted(traced - reqs)
+          if orphans:
+              print(f"::error::RTM references requirements that do not exist: {', '.join(orphans)}")
+              fail = True
+
+          untraced = sorted(reqs - traced)
+          if untraced:
+              print(f"::error::Requirements missing from the RTM: {', '.join(untraced)}")
+              fail = True
+
+          for r in rows:
+              if len(r) > 5 and r[3].strip() and not r[5].strip():
+                  print(f"::error::{r[0]} ({r[3]}) has no acceptance criteria reference")
+                  fail = True
+
+          if fail:
+              sys.exit(1)
+          print(f"OK: {len(reqs)} requirements, {len(traced)} traced, 0 orphans.")
+          PY
+
+      - name: Every risk has an owner and a contingency
+        run: |
+          python3 - <<'PY'
+          import csv, sys
+          fail = False
+          with open('docs/risk/risk-register.csv', encoding='utf-8') as f:
+              for r in list(csv.reader(f))[1:]:
+                  if not r or not r[0].strip():
+                      continue
+                  if not r[9].strip():
+                      print(f"::error::{r[0]} has no owner"); fail = True
+                  if not r[8].strip():
+                      print(f"::error::{r[0]} has no contingency"); fail = True
+                  if r[7].strip() and r[7].strip() == r[8].strip():
+                      print(f"::error::{r[0]} contingency is identical to its mitigation"); fail = True
+          sys.exit(1 if fail else 0)
+          PY

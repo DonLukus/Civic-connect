@@ -1,0 +1,6 @@
+ID,Assumption,Confidence,Consequence if false,Linked risk,Validation route
+AS-01,The team acts as proxy for all CivicConnect stakeholders; no live client is available for validation.,High,Requirements may not reflect real operational practice,RSK-10,Validate with lecturer as proxy client at the M2 gate
+AS-02,"Provisional target resolution times per category may be set by the team and corrected later without breaching the baseline, because FR-021 is specified against a configurable value.",Medium,FR-021 acceptance testing is possible now; only the values are provisional,RSK-05,Confirm values at the M2 gate
+AS-03,Email delivery is available at no cost within the free-tier limits of the platform selected in M2.,Medium,FR-009 becomes unimplementable as specified if untrue,RSK-02,Verify during the M2 platform spike
+AS-04,Request volume during the academic project remains within the capacity stated in NFR-013.,Low,Performance and cost evidence would need re-basing,RSK-02,Re-check at M3 load testing
+AS-05,All three registered members remain on the team for the full delivery period.,Medium,Two-approval governance and workstream split both assume three members,"RSK-04, RSK-09",Escalate to lecturer if it fails

@@ -1,0 +1,39 @@
+# Environment and secrets — present before any code exists, deliberately (NFR-005)
+.env
+.env.*
+!.env.example
+*.pem
+*.pfx
+*.p12
+*.key
+appsettings.Development.json
+appsettings.Production.json
+secrets.json
+
+# Dependencies
+node_modules/
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Build output
+bin/
+obj/
+dist/
+build/
+out/
+
+# Editor and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Office lock and temp files
+~$*
+*.tmp
+
+# Compiled PED exports are committed deliberately (docs/PED/exports) —
+# they are outputs, never the source of truth (DEC-002)

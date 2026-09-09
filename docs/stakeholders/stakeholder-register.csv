@@ -1,0 +1,10 @@
+ID,Stakeholder,Type,Primary needs,Influence,Interest,Engagement strategy,Conflicts
+SH-01,Requester (community member / staff submitting),Primary user,Submit a request quickly; know it was received; see progress without phoning; be told when it is done,Low,High,Keep informed - status visibility is the main value driver,"CF-01, CF-04"
+SH-02,Service Staff / Technician,Primary user,One prioritised queue; unambiguous ownership; full request detail; no duplicated or lost work,Medium,High,Manage closely - daily operational user,"CF-02, CF-04"
+SH-03,Service Coordinator / Supervisor,Primary user,Assign and rebalance work; see ageing requests; prevent unassigned backlog,High,High,Manage closely - served by the Manager role in v1 (DEC-011),-
+SH-04,Operations Manager / Management oversight,Decision maker,"Reliable and auditable information on outstanding, overdue, resolved and closed work; accountability for status changes; reporting that is not manual",High,High,Manage closely - owns the business case,"CF-01, CF-02, CF-03"
+SH-05,System Administrator,Support,Manage users and roles; maintain the controlled category list; control security configuration,Medium,Medium,Keep satisfied,-
+SH-06,Organisation / Project Sponsor,Sponsor,"Improved visibility and accountability without unsustainable technical, operational or financial burden",High,Medium,Keep satisfied - cost constraint owner,CF-05
+SH-07,Development Team (SEN381 registered team),Supplier,Deliverable scope within schedule and actual team capability; defensible engineering evidence,High,High,Internal - working agreement governs,CF-05
+SH-08,Lecturer / Assessor,Governance,"Controlled, traceable and authentic engineering evidence produced progressively",High,High,Manage closely - milestone gate authority,-
+SH-09,Data subject (requester whose sensitive information is held),Affected party,"Confidentiality of security-related, personal or HR-sensitive request content",Low,High,Represented through NFR-012 and security requirements,"CF-01, CF-04"
