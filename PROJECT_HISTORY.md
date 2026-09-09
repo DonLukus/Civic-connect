@@ -22,6 +22,18 @@ AI assistant reads to get up to speed without asking anyone.
 
 ---
 
+### 2026-09-09 — Workstream A verification pass: problem, stakeholders, scope, constraints, decisions
+**Who:** Masego · **Type:** artefact
+**What:** Verified PED §2, §3, §4, §5 and §10 against the Master Project Brief and reconciled
+the registers with the PED narrative. Corrections: PED §2 symptom 2 reworded to "limited
+visibility of status"; SH-05 interest re-rated Medium→High with strategy and §3 narrative
+updated; SCOPE-D-03 rationale rewritten to name the evidence that unblocks it; CN-03's register
+implication expanded to carry the full cost→quality→architecture→verification→evaluation chain;
+DEC-007 risk link corrected to RSK-08, RSK-02. Every stakeholder confirmed to trace to ≥1
+requirement; both deferred decisions confirmed to name specific evidence required.
+**Affects:** SH-05, SCOPE-D-03, CN-03, DEC-007; PED §2, §3, §4, §5.1, §10.1.
+**Evidence:** Issues #11–#15; branch `docs/scope-and-stakeholders`.
+
 ### 2026-09-08 — PED v1.0 baselined at the M1 engineering gate
 **Who:** Team · **Type:** milestone
 **What:** Scope, requirements and acceptance criteria placed under change control. Team sign-off

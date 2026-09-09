@@ -10,13 +10,13 @@
 | SH-02 | Service Staff / Technician | One prioritised queue; unambiguous ownership; full request detail; no duplicated or lost work | Medium | High |
 | SH-03 | Service Coordinator / Supervisor | Assign and rebalance work; see ageing requests; prevent unassigned backlog | High | High |
 | SH-04 | Operations Manager / Management oversight | Reliable and auditable information on outstanding, overdue, resolved and closed work; accountability for status changes; reporting that is not manual | High | High |
-| SH-05 | System Administrator | Manage users and roles; maintain the controlled category list; control security configuration | Medium | Medium |
+| SH-05 | System Administrator | Manage users and roles; maintain the controlled category list; control security configuration | Medium | High |
 | SH-06 | Organisation / Project Sponsor | Improved visibility and accountability without unsustainable technical, operational or financial burden | High | Medium |
 | SH-07 | Development Team (SEN381 registered team) | Deliverable scope within schedule and actual team capability; defensible engineering evidence | High | High |
 | SH-08 | Lecturer / Assessor | Controlled, traceable and authentic engineering evidence produced progressively | High | High |
 | SH-09 | Data subject (requester whose sensitive information is held) | Confidentiality of security-related, personal or HR-sensitive request content | Low | High |
 
-Effort follows influence and interest. SH-03, SH-04, SH-07 and SH-08 are high on both and managed closely. SH-01 is low influence but high interest, and is the stakeholder most likely to abandon the system if visibility is poor — which is why status transparency is core scope rather than a convenience.
+Effort follows influence and interest. SH-03, SH-04, SH-07 and SH-08 are high on both and managed closely. SH-05 carries medium overall influence but high interest in its administrative domain — the controlled category list and role model that reporting (FR-020) and access control (NFR-004) depend on — and is managed closely there. SH-01 is low influence but high interest, and is the stakeholder most likely to abandon the system if visibility is poor — which is why status transparency is core scope rather than a convenience.
 
 ## 3.1 Competing expectations
 

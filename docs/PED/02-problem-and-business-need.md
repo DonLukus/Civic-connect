@@ -9,7 +9,7 @@ The organisation does not have a service request problem; it has an information 
 | Symptom [1, §2] | Engineering cause | Addressed by |
 |---|---|---|
 | Requests duplicated, overlooked, misassigned or lost | No authoritative record; no controlled intake point | FR-005, FR-026 |
-| Requesters cannot see status | Status held in people, not in a queryable system | FR-007, FR-008, FR-009 |
+| Requesters have limited visibility of status | Status held in people, not in a queryable system | FR-007, FR-008, FR-009 |
 | Staff cannot prioritise or identify ownership | No assignment model; no shared prioritised view | FR-011, FR-012, FR-014 |
 | Weak accountability for status changes | No audit of who changed what and when | FR-025, NFR-006 |
 | Management lacks outstanding/overdue information | No consistent state model, so aggregation is impossible | FR-019, FR-020, FR-021 |

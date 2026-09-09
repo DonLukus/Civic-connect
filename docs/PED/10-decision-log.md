@@ -33,7 +33,7 @@ Deferring is acceptable and often correct where the team can state the evidence 
 | Consequence accepted | Fault reports remain text-only in the interim, which SH-02 may find limiting. |
 | Evidence required | Free-tier object-storage limits of candidate platforms; frequency with which a photograph is genuinely needed; malware-scanning options at zero cost; retention rules for images containing personal data. |
 | What it determines | Affects persistence design, upload validation, security testing and operational cost from M2 onwards. |
-| Risk | RSK-02 |
+| Risk | RSK-08, RSK-02 |
 
 ### DEC-008 — Technology stack, architecture and deployment platform
 
