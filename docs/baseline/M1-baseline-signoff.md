@@ -27,6 +27,6 @@ Recorded deliberately. Honesty about limitations is worth more than an unsupport
 
 | Member | Workstream | Signature | Date |
 |---|---|---|---|
-| Masego | A | [X ] | 2026-09-08 |
-| Don | B | [X ] | 2026-09-08 |
-| Emile | C | [X ] | 2026-09-08 |
+| Masego | A | [ ✓ ] | 2026-09-08 |
+| Don | B | [ ✓ ] | 2026-09-08 |
+| Emile | C | [ ✓ ] | 2026-09-08 |
