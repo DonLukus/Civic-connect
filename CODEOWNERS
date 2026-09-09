@@ -9,5 +9,5 @@
 /docs/decisions/            @MasegoMots
 /docs/forward-engineering/  @DonLukus
 /docs/governance/           @emilepieterse
-/docs/baseline/             @MasegoMots @don-DonLukus @emile-emilepieterse
+/docs/baseline/             @MasegoMots @DonLukus @emilepieterse
 /.github/                   @DonLukus
