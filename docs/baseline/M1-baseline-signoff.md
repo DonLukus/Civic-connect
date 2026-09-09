@@ -3,7 +3,7 @@
 Per Master Project Brief Appendix D.
 
 | Field | Record |
-|---|---|
+| --- | --- |
 | Project | CivicConnect — Community Service Request Management Platform |
 | Baseline type | Engineering foundation and requirements baseline |
 | Version | PED v1.0 |
@@ -26,7 +26,7 @@ Recorded deliberately. Honesty about limitations is worth more than an unsupport
 ## Signatures
 
 | Member | Workstream | Signature | Date |
-|---|---|---|---|
-| Masego | A | | 2026-09-08 |
-| Don | B | | 2026-09-08 |
-| Emile | C | | 2026-09-08 |
+| --- | --- | --- | --- |
+| Masego | A | ✓ | 2026-09-08 |
+| Don | B | ✓ | 2026-09-08 |
+| Emile | C | ✓ | 2026-09-08 |
