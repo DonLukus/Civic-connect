@@ -1,13 +1,13 @@
 # Review routing. Replace the placeholders with real GitHub usernames.
 # Two approvals from members other than the author are required regardless of this file.
 
-*                           @masego-MasegoMots @don-DonLukus @emile-emilepieterse
+*                           @MasegoMots @DonLukus @emilepieterse
 
-/docs/stakeholders/         @masego-MasegoMots
-/docs/requirements/         @don-DonLukus
-/docs/risk/                 @emile-emilepieterse
-/docs/decisions/            @masego-MasegoMots
-/docs/forward-engineering/  @don-DonLukus
-/docs/governance/           @emile-emilepieterse
-/docs/baseline/             @masego-MasegoMots @don-DonLukus @emile-emilepieterse
-/.github/                   @don-DonLukus
+/docs/stakeholders/         @MasegoMots
+/docs/requirements/         @DonLukus
+/docs/risk/                 @emilepieterse
+/docs/decisions/            @MasegoMots
+/docs/forward-engineering/  @DonLukus
+/docs/governance/           @emilepieterse
+/docs/baseline/             @MasegoMots @don-DonLukus @emile-emilepieterse
+/.github/                   @DonLukus
