@@ -22,6 +22,52 @@ AI assistant reads to get up to speed without asking anyone.
 
 ---
 
+### 2026-09-30 — Traced slice built: citizen submits a service request (FR-005, FR-006)
+**Who:** Masego · **Type:** artefact
+**What:** Built the M2 traced slice end to end per ADR-001: `RequestService.create_request`
+(mandatory-field and active-category validation, request + audit rows in one transaction, no
+outbox row since FR-009 doesn't trigger on submission), a server-rendered Flask form
+(`src/web/`), and 6 passing tests covering the service and the full web route. Added a
+`test.yml` GitHub Actions workflow so the suite runs on every PR. Filled the RTM M2 columns for
+TR-001/TR-013 with real implementation and verification evidence. Rewrote the README for the
+actual M2 state and verified its setup steps by running them, not just writing them.
+**Found and fixed while building this:** `with sqlite3.connect(...) as conn:` commits/rolls back
+on exit but does not close the connection (stdlib behaviour) - left open, this held a Windows
+file lock that made the *existing* acceptance-path test (`test_request_acceptance.py`, believed
+passing) fail on Windows. Fixed with explicit `try/finally: conn.close()` throughout
+`src/persistence/` and both test files - concrete evidence for RSK-03/RSK-15, not hypothetical.
+**Affects:** FR-005, FR-006, TR-001, TR-013, ADR-001; `src/web/`, `src/persistence/request_service.py`, `tests/`, `.github/workflows/test.yml`, `README.md`.
+**Evidence:** Issue #34; branch `feature/FR-005-submit-request`; 7/7 tests passing (`python -m pytest tests/ -v`).
+
+### 2026-09-30 — M2 bootstrap: PR template, branch rule, env template, versions, deployment direction
+**Who:** Masego · **Type:** governance, artefact
+**What:** Closed the Days 1-5 M2 checklist gaps found on audit. Added a "How this was tested"
+field to the PR template; documented the `m2/<topic>` and `feature/<FR-nnn>-<desc>` branch
+conventions in `PROJECT_RULES.md` §9; added `.env.example` (names only); pinned and verified
+Flask 3.1.3 (BSD-3-Clause) and pytest 9.1.1 (MIT) against PyPI's published metadata, recorded in
+`docs/decisions/technology-versions.md`; drafted `docs/deployment/deployment-direction.md`
+(Proposed, same gate as ADR-001); added RSK-15 for dependency-version drift on the untested lab
+platform. Also fixed an unrelated CI failure surfaced while merging: `secret-scan.yml` had CRLF
+line endings and a fragile embedded-quote regex that broke bash parsing on the Actions runner
+specifically - normalized to LF, simplified the pattern, added `.gitattributes` so it can't
+recur.
+**Affects:** `.github/pull_request_template.md`, `PROJECT_RULES.md` §9, `.env.example`,
+`requirements.txt`, RSK-15, `.github/workflows/secret-scan.yml`, `.gitattributes`.
+**Evidence:** Issue #32; branch `m2/bootstrap-governance`.
+
+### 2026-09-30 — ADR-001 proposed: architecture style, traced feature slice, stack options
+**Who:** Masego · **Type:** decision
+**What:** Reviewed the M1 baseline and the M2 work merged so far (ADR-002 persistence, ADR-003
+lifecycle validator, ADR-004 notification fan-out, the accept-path PoC) and drafted ADR-001,
+status Proposed. Recommends "Citizen submits a service request" (FR-005, FR-006) as the one
+feature slice traced end to end for M2, and lists frontend/backend/database/testing/CI stack
+options evaluated against the architecture already accepted, with a recommended direction per
+layer. Not Accepted — still gated on the DEC-008 proof-of-concept on the real platform, and on
+Don and Emile's review.
+**Affects:** ADR-001; references ADR-002, ADR-003, ADR-004, DEC-008, FR-005, FR-006, FR-009,
+FR-025, CN-01..CN-08.
+**Evidence:** Issue #30; branch `m2/architecture-stack-options`; AI-017.
+
 ### 2026-09-09 — Workstream A verification pass: problem, stakeholders, scope, constraints, decisions
 **Who:** Masego · **Type:** artefact
 **What:** Verified PED §2, §3, §4, §5 and §10 against the Master Project Brief and reconciled

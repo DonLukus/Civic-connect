@@ -1,0 +1,18 @@
+# Force LF for everything text-based, regardless of which OS commits it. Found the hard way:
+# a CRLF line ending inside a YAML `run:` block's single-quoted bash string breaks quote-parsing
+# on the ubuntu-latest Actions runner ("unexpected EOF while looking for matching `''"), even
+# though the same content runs fine locally. CN-07 already flags cross-platform risk generally;
+# this is the CI/tooling half of that, not the application-runtime half.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.docx binary
+*.xlsx binary
+*.sqlite binary
+*.sqlite3 binary
+*.db binary
