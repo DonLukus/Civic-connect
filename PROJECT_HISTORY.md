@@ -22,6 +22,117 @@ AI assistant reads to get up to speed without asking anyone.
 
 ---
 
+### 2026-09-30 — M2 deployment PoC: wsgi.py and gunicorn added, Render deployment left explicit
+**Who:** Masego · **Type:** artefact, decision
+**What:** Built the production entrypoint (`wsgi.py`) for DEC-008's proof-of-concept requirement.
+Checked first that neither `RequestService` nor `RequestRepository` initialises the database
+schema (they don't), so `wsgi.py` does it once, idempotently — verified by importing it twice
+against the same file in separate processes and confirming no error and no duplicate rows.
+Added and verified `gunicorn==26.2.0` (MIT, PyPI-checked). Confirmed by actually installing it in
+an isolated venv that gunicorn cannot run on Windows (`fcntl` is Unix-only) — expected, since it
+only needs to run on Render, but confirmed rather than assumed. Full existing test suite still
+10/10 passing. **Did not** perform the actual Render deployment, the idle-timeout persistence
+observation, or the Belgium Campus lab-machine check — none possible from this session (no Render
+account/API access; no access to confirm this dev machine matches the institutional platform).
+`docs/decisions/poc-log.md` states each gap explicitly with exact next steps for whoever has that
+access, rather than guessing at a result. Does not move ADR-001 or DEC-008's status — that is a
+team decision once the real evidence exists.
+**Affects:** `wsgi.py` (new), `requirements.txt`, `docs/decisions/technology-versions.md`,
+`docs/decisions/poc-log.md` (new). DEC-008 and ADR-001 status unchanged, deliberately.
+**Evidence:** Issue #52; branch `m2/poc-deployment`; 10/10 tests passing; AI-023.
+
+### 2026-09-30 — README rewritten in plain, grade-8-level English
+**Who:** Masego · **Type:** artefact
+**What:** Rewrote `README.md` for accessibility — shorter sentences, plain words, jargon
+explained on first use. Also refreshed facts that had gone stale: test count (7 → 10), ADR count
+and status (6 files, 4 Accepted / 2 Proposed), risk count (16), and the "where the design patterns
+appear" section, which still described ADR-003's transition-table validator as un-extracted after
+it had already been moved into `src/persistence/lifecycle.py`.
+**Affects:** `README.md`.
+**Evidence:** Issue #50; branch `docs/readme-plain-language`; AI-022.
+
+### 2026-09-30 — ADR-007 proposed: authentication/authorization placement (resolves RSK-16's design gap)
+**Who:** Masego · **Type:** decision
+**What:** Drafted ADR-007 following Emile's RSK-16 finding on ADR-001 review. Decision: identity
+via Flask's built-in session at the route layer; authorization checked inside the domain service,
+per-record, before any write — the same placement ADR-002's transaction and ADR-003's transition
+guard already use, not a route decorator (which cannot express NFR-012's per-record "assigned
+staff member only" rule). Placement only — FR-001..FR-004 (the login feature itself) is not built
+here. Updated RTM `TR-015` (NFR-012) and `TR-017` (NFR-004) to "Design decided, implementation
+pending" rather than leaving them at Pending M2 with no design behind that status. Also advanced
+`TR-007` (FR-025), `TR-008` (NFR-006) and `TR-011` (FR-014) to reflect the audit-trail and
+lifecycle-validator evidence that already exists in `src/persistence/`.
+**Affects:** ADR-007 (new); RSK-16 (moves from "undecided" to "placement decided, not
+implemented"); TR-007, TR-008, TR-011, TR-015, TR-017.
+**Evidence:** Issue #46; branch `m2/auth-placement-adr`; 10/10 tests still passing (no code
+behaviour changed, RTM and ADR only).
+
+### 2026-09-30 — M2 brief compliance pass: diagram, baseline sign-off, PED fix, ADR-003 evidence
+**Who:** Masego · **Type:** artefact, decision, governance
+**What:** Checked the repo against the actual M2 brief text for the first time (previously
+working from context alone) and closed four gaps. Added the M2 brief's required architecture
+diagram (mermaid, logical layers vs. physical deployment) to ADR-001. Wrote the missing
+Architecture/Technology/Initial Design Baseline sign-off - status Proposed, honestly listing what
+remains open. Fixed a real defect: `docs/PED/17-data-persistence.md`, `19-design-decisions.md`
+and `20-integration-deployment.md` each held a different section's content than their filename
+claimed, and one of them was actually `ADR-006: Integration Decision` mis-filed as a PED section
+- rotated to the correct files and extracted ADR-006 properly. Extracted ADR-003's New->Accepted
+guard out of `RequestService.accept_request` into `LifecycleValidator`, tested directly - closing
+the "documented decision, no extracted implementation" gap, deliberately without inventing the
+rest of FR-015's transition table, which has no approved specification yet. Also resolved merge
+conflicts (additive, not substantive) between four separately-authored open PRs and `main` -
+`ai-usage-register.csv`, `RTM.csv`, `risk-register.csv`, `PROJECT_HISTORY.md` - each time because
+two branches appended non-overlapping rows/entries at the same point.
+**Affects:** ADR-001, ADR-003, ADR-006 (new), TR-012, `docs/baseline/M2-baseline-signoff.md`
+(new), `docs/PED/17`/`19`/`20`, `src/persistence/lifecycle.py` (new).
+**Evidence:** Issue #44; branch `m2/architecture-diagram-and-baseline`; 10/10 tests passing.
+
+### 2026-09-30 — Traced slice built: citizen submits a service request (FR-005, FR-006)
+**Who:** Masego · **Type:** artefact
+**What:** Built the M2 traced slice end to end per ADR-001: `RequestService.create_request`
+(mandatory-field and active-category validation, request + audit rows in one transaction, no
+outbox row since FR-009 doesn't trigger on submission), a server-rendered Flask form
+(`src/web/`), and 6 passing tests covering the service and the full web route. Added a
+`test.yml` GitHub Actions workflow so the suite runs on every PR. Filled the RTM M2 columns for
+TR-001/TR-013 with real implementation and verification evidence. Rewrote the README for the
+actual M2 state and verified its setup steps by running them, not just writing them.
+**Found and fixed while building this:** `with sqlite3.connect(...) as conn:` commits/rolls back
+on exit but does not close the connection (stdlib behaviour) - left open, this held a Windows
+file lock that made the *existing* acceptance-path test (`test_request_acceptance.py`, believed
+passing) fail on Windows. Fixed with explicit `try/finally: conn.close()` throughout
+`src/persistence/` and both test files - concrete evidence for RSK-03/RSK-15, not hypothetical.
+**Affects:** FR-005, FR-006, TR-001, TR-013, ADR-001; `src/web/`, `src/persistence/request_service.py`, `tests/`, `.github/workflows/test.yml`, `README.md`.
+**Evidence:** Issue #34; branch `feature/FR-005-submit-request`; 7/7 tests passing (`python -m pytest tests/ -v`).
+
+### 2026-09-30 — M2 bootstrap: PR template, branch rule, env template, versions, deployment direction
+**Who:** Masego · **Type:** governance, artefact
+**What:** Closed the Days 1-5 M2 checklist gaps found on audit. Added a "How this was tested"
+field to the PR template; documented the `m2/<topic>` and `feature/<FR-nnn>-<desc>` branch
+conventions in `PROJECT_RULES.md` §9; added `.env.example` (names only); pinned and verified
+Flask 3.1.3 (BSD-3-Clause) and pytest 9.1.1 (MIT) against PyPI's published metadata, recorded in
+`docs/decisions/technology-versions.md`; drafted `docs/deployment/deployment-direction.md`
+(Proposed, same gate as ADR-001); added RSK-15 for dependency-version drift on the untested lab
+platform. Also fixed an unrelated CI failure surfaced while merging: `secret-scan.yml` had CRLF
+line endings and a fragile embedded-quote regex that broke bash parsing on the Actions runner
+specifically - normalized to LF, simplified the pattern, added `.gitattributes` so it can't
+recur.
+**Affects:** `.github/pull_request_template.md`, `PROJECT_RULES.md` §9, `.env.example`,
+`requirements.txt`, RSK-15, `.github/workflows/secret-scan.yml`, `.gitattributes`.
+**Evidence:** Issue #32; branch `m2/bootstrap-governance`.
+
+### 2026-09-30 — ADR-001 proposed: architecture style, traced feature slice, stack options
+**Who:** Masego · **Type:** decision
+**What:** Reviewed the M1 baseline and the M2 work merged so far (ADR-002 persistence, ADR-003
+lifecycle validator, ADR-004 notification fan-out, the accept-path PoC) and drafted ADR-001,
+status Proposed. Recommends "Citizen submits a service request" (FR-005, FR-006) as the one
+feature slice traced end to end for M2, and lists frontend/backend/database/testing/CI stack
+options evaluated against the architecture already accepted, with a recommended direction per
+layer. Not Accepted — still gated on the DEC-008 proof-of-concept on the real platform, and on
+Don and Emile's review.
+**Affects:** ADR-001; references ADR-002, ADR-003, ADR-004, DEC-008, FR-005, FR-006, FR-009,
+FR-025, CN-01..CN-08.
+**Evidence:** Issue #30; branch `m2/architecture-stack-options`; AI-017.
+
 ### 2026-09-09 — Workstream A verification pass: problem, stakeholders, scope, constraints, decisions
 **Who:** Masego · **Type:** artefact
 **What:** Verified PED §2, §3, §4, §5 and §10 against the Master Project Brief and reconciled

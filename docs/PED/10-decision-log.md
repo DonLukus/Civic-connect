@@ -46,3 +46,22 @@ Deferring is acceptable and often correct where the team can state the evidence 
 | Evidence required | Verified availability and compatibility on the Belgium Campus desktop platform; free-tier limits and cold-start behaviour of candidate hosts; an honest team capability audit; a small proof of concept exercising authentication, persistence and deployment. |
 | What it determines | Determines architecture, persistence, CI, deployment, operational cost and the achievability of NFR-001, NFR-002, NFR-010 and NFR-013. |
 | Risk | RSK-02, RSK-03, RSK-12 |
+
+## 10.2 M2 progress on DEC-008
+
+The DEFERRED status above is untouched — this records where the evidence-gathering actually
+stands, not a decision yet. ADR-001 (`docs/decisions/adr/ADR-001-architecture-and-stack-options.md`)
+proposes single deployable unit / Flask / SQLite-dev-Postgres-production / pytest / GitHub
+Actions, building on the already-accepted ADR-002 (persistence), ADR-003 and ADR-004 (design
+patterns). ADR-001's own status is **Proposed, not Accepted** — it states explicitly that the
+proof-of-concept evidence DEC-008 requires (verified on the actual Belgium Campus platform, not
+assumed) hasn't been gathered yet. DEC-008 stays deferred until that evidence exists and ADR-001
+moves to Accepted.
+
+## 10.3 Change requests since baseline
+
+Formal changes to baselined requirements go through `docs/change/`, using the CHG- identifier series DEC-003 already reserves for exactly this. Listed here for discoverability; the change request itself is the authoritative record.
+
+| ID | Date | Requirements affected | Summary |
+|---|---|---|---|
+| CHG-001 | 2026-09-30 | FR-009 (AC-009), FR-014 (AC-014) | Closes two acceptance-criteria gaps the team had already agreed on informally in Assignment 2 (§5.1) but never written back into the baseline: FR-009's AC now covers the comment-added notification trigger the requirement text already names; FR-014's AC now states explicitly that both a Staff self-accept and a Manager's initial assignment move a request from New to Accepted, while a Manager reassigning an already-assigned request only changes the assignee. See `docs/change/CHG-001-fr009-fr014-notification-and-acceptance-trigger.md`. |
