@@ -22,6 +22,26 @@ AI assistant reads to get up to speed without asking anyone.
 
 ---
 
+### 2026-09-30 — M2 brief compliance pass: diagram, baseline sign-off, PED fix, ADR-003 evidence
+**Who:** Masego · **Type:** artefact, decision, governance
+**What:** Checked the repo against the actual M2 brief text for the first time (previously
+working from context alone) and closed four gaps. Added the M2 brief's required architecture
+diagram (mermaid, logical layers vs. physical deployment) to ADR-001. Wrote the missing
+Architecture/Technology/Initial Design Baseline sign-off - status Proposed, honestly listing what
+remains open. Fixed a real defect: `docs/PED/17-data-persistence.md`, `19-design-decisions.md`
+and `20-integration-deployment.md` each held a different section's content than their filename
+claimed, and one of them was actually `ADR-006: Integration Decision` mis-filed as a PED section
+- rotated to the correct files and extracted ADR-006 properly. Extracted ADR-003's New->Accepted
+guard out of `RequestService.accept_request` into `LifecycleValidator`, tested directly - closing
+the "documented decision, no extracted implementation" gap, deliberately without inventing the
+rest of FR-015's transition table, which has no approved specification yet. Also resolved merge
+conflicts (additive, not substantive) between four separately-authored open PRs and `main` -
+`ai-usage-register.csv`, `RTM.csv`, `risk-register.csv`, `PROJECT_HISTORY.md` - each time because
+two branches appended non-overlapping rows/entries at the same point.
+**Affects:** ADR-001, ADR-003, ADR-006 (new), TR-012, `docs/baseline/M2-baseline-signoff.md`
+(new), `docs/PED/17`/`19`/`20`, `src/persistence/lifecycle.py` (new).
+**Evidence:** Issue #44; branch `m2/architecture-diagram-and-baseline`; 10/10 tests passing.
+
 ### 2026-09-30 — Traced slice built: citizen submits a service request (FR-005, FR-006)
 **Who:** Masego · **Type:** artefact
 **What:** Built the M2 traced slice end to end per ADR-001: `RequestService.create_request`
