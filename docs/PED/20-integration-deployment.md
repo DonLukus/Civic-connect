@@ -27,5 +27,6 @@ evidence still required are listed there rather than assumed here.
 - No scheduler for the outbox worker (§20.1) — invoked manually today.
 - No verified hosting provider (§20.2) — SQLite vs. PostgreSQL for production is an open
   question, not a decision (see `docs/decisions/technology-versions.md` and RSK-15).
-- No authentication/authorization boundary sits in front of any endpoint yet (RSK-16) — this is a
-  forward engineering consideration for the next slice, not silently assumed solved.
+- PR #62 adds a session-gated login/save PoC, but this is a candidate branch rather than an
+  accepted authentication/authorization design. ADR-007 and RSK-16 remain open for review; the
+  branch has not been verified on the hosted service.
