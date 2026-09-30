@@ -15,8 +15,6 @@ Render's free tier actually gives us.
 import os
 import sqlite3
 
-from werkzeug.security import generate_password_hash
-
 from src.web.app import create_app
 
 DB_PATH = os.environ.get("DATABASE_URL", "civicconnect.sqlite")
@@ -36,21 +34,14 @@ def bootstrap(db_path: str) -> None:
                 conn.executescript(f.read())
             conn.commit()
 
-        # PoC account credentials come only from deployment secrets. No fixed password is
-        # committed, and an existing user's password is never reset on restart.
-        demo_email = os.environ.get("BOOTSTRAP_REQUESTER_EMAIL")
-        demo_password = os.environ.get("BOOTSTRAP_REQUESTER_PASSWORD")
-        if bool(demo_email) != bool(demo_password):
-            raise RuntimeError("Both bootstrap requester settings must be supplied together")
-        if demo_email and demo_password:
-            exists = conn.execute(
-                "SELECT 1 FROM users WHERE lower(email) = ?", (demo_email.lower(),)
-            ).fetchone()
-            if exists is None:
-                conn.execute(
-                    "INSERT INTO users (email, password_hash, role, is_active) VALUES (?, ?, 'Requester', 1)",
-                    (demo_email.strip().lower(), generate_password_hash(demo_password)),
-                )
+        # Minimal demo data so the live form is usable: one user matching app.py's
+        # REQUESTER_ID stand-in, one active category (FR-006 requires at least one to submit).
+        # INSERT OR IGNORE makes this safe to repeat on every restart - both columns are UNIQUE
+        # or PRIMARY KEY, so a second attempt is a no-op rather than an IntegrityError.
+        conn.execute(
+            "INSERT OR IGNORE INTO users (id, email, password_hash, role, is_active) "
+            "VALUES (1, 'demo@example.com', 'x', 'Requester', 1)"
+        )
         conn.execute(
             "INSERT OR IGNORE INTO categories (name, target_resolution_hours, is_active) "
             "VALUES ('Utilities', 48, 1)"

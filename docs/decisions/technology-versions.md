@@ -8,7 +8,7 @@ official source, not asserted by an AI model from memory. This file is that veri
 |---|---|---|---|---|
 | Flask | 3.1.3 | BSD-3-Clause | `https://pypi.org/pypi/Flask/json` (published package metadata) | 2026-09-30 |
 | pytest | 9.1.1 | MIT | `https://pypi.org/pypi/pytest/json` (published package metadata) | 2026-09-30 |
-| Python | 3.11 (proposed) | PSF License | Not verified on the Belgium Campus desktop; its available Python 3.14 ran the test suite — see below | 2026-09-30 |
+| Python | 3.11 (proposed) | PSF License | Not yet verified against the Belgium Campus desktop platform — see below | — |
 | sqlite3 | stdlib (ships with Python) | PSF License | Part of the CPython standard library; no separate install or licence | — |
 | gunicorn | 26.2.0 | MIT | `https://pypi.org/pypi/gunicorn/json` (published package metadata) | 2026-09-30 |
 
@@ -20,12 +20,11 @@ only needed for the Render (Linux) production deployment; local development keep
 
 ## What this does not yet verify
 
-CN-07: On 2026-09-30, Flask 3.1.3 and pytest 9.1.1 were installed into a fresh PyCharm virtual
-environment on the Belgium Campus remote desktop, using its available Python 3.14. PyCharm's
-pytest runner reported 10 of 10 tests passing. The proposed Python 3.11, a full
-`requirements.txt` install, login and deployment were not verified there. See
-`docs/decisions/poc-log.md` for the observed result and limits. This partial platform check does
-not by itself move ADR-001 from Proposed to Accepted.
+CN-07: Belgium Campus gives no guarantee that any of the above runs on the institutional desktop
+platform. This table verifies the packages exist, at these versions, under these licences, on the
+public internet — it does not verify they install and run in the actual environment students
+build in. That verification is the DEC-008 proof-of-concept action (ADR-001, "What this does not
+decide yet") and must happen before ADR-001 moves from Proposed to Accepted.
 
 ## Re-verification
 

@@ -6,10 +6,9 @@ Campus platform. This log records what was actually done and observed. It does *
 ADR-001 or DEC-008 to Accepted/Decided — that stays a team decision made once this evidence
 exists, not something written in here unilaterally.
 
-**Scope, stated up front**: the original PoC tested persistence/bootstrap. A subsequent local
-login slice now exercises email/password sign-in, session-gated request submission and a saved
-request. This is not the full FR-001–FR-004 authentication/authorisation feature set, and it has
-not been deployed or rerun on the BC desktop. RSK-16/ADR-007 remain open for team review.
+**Scope, stated up front**: this PoC tests **persistence and deployment**. It does **not** test
+**authentication** — FR-001..FR-004 don't exist yet (RSK-16/ADR-007 cover that gap separately).
+Nothing below should be read as evidence that the auth half of DEC-008's bar is covered.
 
 ## What was built and verified locally
 
@@ -19,25 +18,23 @@ not been deployed or rerun on the BC desktop. RSK-16/ADR-007 remain open for tea
 | `wsgi.py` production entrypoint | Done | Repo root; checked first that `RequestService`/`RequestRepository` do **not** initialise the schema themselves (no `CREATE TABLE`/`executescript` in either file) — confirmed by reading both, not assumed |
 | Schema bootstrap on first run | Done, tested | `wsgi.py`'s `bootstrap()` checks for the `requests` table before running `schema.sql`, and uses `INSERT OR IGNORE` for the demo user/category — verified idempotent by importing `wsgi.py` twice against the same file in separate processes and confirming no error and no duplicate rows on the second run |
 | Full request flow via `wsgi.app` | Done, tested | `wsgi.app.test_client()`: `GET /requests/new` → 200, `POST /requests` with valid data → 302 to the confirmation page, one row present after |
-| Existing test suite before login work | Unaffected | `python -m pytest tests/ -v` → 10/10 passing at the original PoC checkpoint |
-| Local login/save extension | Done locally, not on BC or Render | `wsgi.py` provisions a password-hashed PoC Requester only when email/password secrets are supplied; Flask session gates the form, POST uses CSRF token, service checks actor role. `python -m pytest tests -q` → 15/15 passing on local Windows Python 3.12, including WSGI login → save and repeat bootstrap. |
+| Existing test suite | Unaffected | `python -m pytest tests/ -v` → 10/10 passing, unchanged |
 | `gunicorn wsgi:app` run locally | **Not possible from this environment** | Installed cleanly via pip, but fails at import: `ModuleNotFoundError: No module named 'fcntl'` — gunicorn needs a Unix-only module. Confirmed by actually installing and importing it in an isolated venv, not assumed. This is expected: gunicorn only needs to run on Render (Linux); it was never going to run natively on this Windows dev machine, and that is not itself evidence about Render |
 
 ## What is NOT done — and why, honestly
 
 ### 1. The actual Render deployment
 
-**Not done.** No Render service, live URL or persistence-after-restart result has been observed.
-The local WSGI/login test is not evidence of a hosted deployment.
+**Not done.** This session has no Render account, no Render API key, and no browser access — there
+is nothing in this environment that can create a Render Web Service. This is the same category of
+gap as the Belgium Campus lab-machine check below: real infrastructure a human has to touch.
 
 **What Masego (or whoever has the Render account) needs to do, exactly:**
 
 1. On [render.com](https://render.com), **New → Web Service**, connect the `DonLukus/Civic-connect`
    repository, branch `main` (or this PR's branch, for a preview first).
 2. Runtime: Python 3. Build command: `pip install -r requirements.txt`. Start command:
-   `gunicorn wsgi:app`. Instance type: **Free**. Set `SECRET_KEY`,
-   `BOOTSTRAP_REQUESTER_EMAIL`, `BOOTSTRAP_REQUESTER_PASSWORD` and
-   `SESSION_COOKIE_SECURE=true` in the host's secret/config store, using fresh PoC values.
+   `gunicorn wsgi:app`. Instance type: **Free**.
 3. **Do not add a Postgres resource for this pass** — the point is specifically to find out
    whether SQLite survives on Render's free tier, not to skip past that question.
 4. Deploy, then follow the persistence test in the next section and fill in the result table
@@ -47,8 +44,7 @@ The local WSGI/login test is not evidence of a hosted deployment.
 
 **Not done — depends on #1.** Once deployed:
 
-1. Open the live URL's `/login`, sign in with the throwaway PoC account, submit a request
-   containing no real personal information, and note the reference number shown.
+1. Open the live URL's `/requests/new`, submit a real request, note the reference number shown.
 2. Wait past Render free-tier's idle timeout (Render spins the instance down after ~15 minutes of
    no traffic), or trigger a manual redeploy from the Render dashboard to force a restart.
 3. Reload the app and check whether that request is still there.
@@ -68,19 +64,21 @@ this PoC. Report it as found.
 
 ### 3. Belgium Campus platform check
 
-**Partly checked on 2026-09-30.** On the Belgium Campus remote desktop, the public repository was
-cloned into `C:\Users\BC-STUDENT\PycharmProjects\civic-connect` and opened in PyCharm. The desktop
-provided Python 3.14, not the proposed Python 3.11. A fresh project virtual environment was
-created. PyCharm installed Flask 3.1.3 and pytest 9.1.1 into that environment, then ran the
-repository's `tests/` folder with pytest. Its test runner reported **10 tests passed, 10 total,
-600 ms**. This is real evidence that the current test suite runs on that BC desktop.
+**Not checked, explicitly.** This session ran on a Windows machine (`C:\Users\mmots\...`) that has
+not been confirmed to be one of the actual Belgium Campus institutional lab computers — CN-07 and
+brief §25 specifically withdraw any guarantee about *that* environment, not about any Windows
+machine generally. What can honestly be said from here:
 
-The clone's commit SHA was not captured, so this result must not be attributed to a later main
-commit without a repeat run. `gunicorn` was intentionally not installed or run in this Windows
-environment; PyCharm installed the two packages required for the test run, not the entire
-`requirements.txt`. Python 3.11, the full dependency install, an interactive login, a live
-request submission and a hosted deployment remain **unverified on the BC platform**. The earlier
-Windows Python 3.13 result above is a separate data point, not campus evidence.
+- `pip install -r requirements.txt` succeeds on this Windows Python 3.13 install, including
+  `gunicorn`. That is one data point, on one machine that is not confirmed to be the campus
+  platform.
+- `gunicorn` itself cannot run on Windows (see above) — if the campus lab machines are Windows,
+  this is irrelevant to them anyway, since they would only ever run the Flask dev server locally
+  (`python -m src.web.app`), never `gunicorn`, which is Render/Linux-only.
+- Whether Python 3.11 specifically, and this exact dependency set, install and run on the actual
+  campus lab image is **not verified** and should not be assumed either way. Someone with access
+  to those machines needs to run `pip install -r requirements.txt` and `python -m pytest tests/ -v`
+  there and report the result.
 
 ## What this does and does not close
 
@@ -90,6 +88,5 @@ Windows Python 3.13 result above is a separate data point, not campus evidence.
 - Does provide new, real evidence toward that decision: the schema-bootstrap approach works and is
   idempotent, `gunicorn` is confirmed installable and licensed appropriately, and the Windows/Unix
   boundary around `gunicorn` is now known rather than assumed.
-- Leaves the hosted deployment, persistence-after-restart observation and BC rerun of the new
-  login slice open. The campus 10-test result narrows platform risk but predates the 15-test
-  local login extension and does not close DEC-008.
+- Leaves three concrete, named actions for whoever can actually touch the missing infrastructure:
+  deploy to Render, observe the persistence result, and check the Belgium Campus lab machines.
