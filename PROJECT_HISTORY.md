@@ -22,6 +22,22 @@ AI assistant reads to get up to speed without asking anyone.
 
 ---
 
+### 2026-09-30 — ADR-007 proposed: authentication/authorization placement (resolves RSK-16's design gap)
+**Who:** Masego · **Type:** decision
+**What:** Drafted ADR-007 following Emile's RSK-16 finding on ADR-001 review. Decision: identity
+via Flask's built-in session at the route layer; authorization checked inside the domain service,
+per-record, before any write — the same placement ADR-002's transaction and ADR-003's transition
+guard already use, not a route decorator (which cannot express NFR-012's per-record "assigned
+staff member only" rule). Placement only — FR-001..FR-004 (the login feature itself) is not built
+here. Updated RTM `TR-015` (NFR-012) and `TR-017` (NFR-004) to "Design decided, implementation
+pending" rather than leaving them at Pending M2 with no design behind that status. Also advanced
+`TR-007` (FR-025), `TR-008` (NFR-006) and `TR-011` (FR-014) to reflect the audit-trail and
+lifecycle-validator evidence that already exists in `src/persistence/`.
+**Affects:** ADR-007 (new); RSK-16 (moves from "undecided" to "placement decided, not
+implemented"); TR-007, TR-008, TR-011, TR-015, TR-017.
+**Evidence:** Issue #46; branch `m2/auth-placement-adr`; 10/10 tests still passing (no code
+behaviour changed, RTM and ADR only).
+
 ### 2026-09-30 — M2 brief compliance pass: diagram, baseline sign-off, PED fix, ADR-003 evidence
 **Who:** Masego · **Type:** artefact, decision, governance
 **What:** Checked the repo against the actual M2 brief text for the first time (previously
