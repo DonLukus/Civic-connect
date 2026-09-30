@@ -83,5 +83,5 @@ RSK-16 is unresolved. Re-run this sign-off once the DEC-008 PoC evidence lands.
 | Member | M2 role (proposed, PR #22 pending confirmation) | Signature | Date |
 |---|---|---|---|
 | Masego | Technology and delivery | [ ✓ ] | 2026-09-30 |
-| Don | Data and design patterns | [ ] pending | |
+| Don | Data and design patterns | [ ✓ ] | 2026-09-30 |
 | Emile | Architecture and requirements | [ ✓ ] | 2026-09-30 |
