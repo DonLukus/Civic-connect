@@ -22,6 +22,23 @@ AI assistant reads to get up to speed without asking anyone.
 
 ---
 
+### 2026-09-30 — Traced slice built: citizen submits a service request (FR-005, FR-006)
+**Who:** Masego · **Type:** artefact
+**What:** Built the M2 traced slice end to end per ADR-001: `RequestService.create_request`
+(mandatory-field and active-category validation, request + audit rows in one transaction, no
+outbox row since FR-009 doesn't trigger on submission), a server-rendered Flask form
+(`src/web/`), and 6 passing tests covering the service and the full web route. Added a
+`test.yml` GitHub Actions workflow so the suite runs on every PR. Filled the RTM M2 columns for
+TR-001/TR-013 with real implementation and verification evidence. Rewrote the README for the
+actual M2 state and verified its setup steps by running them, not just writing them.
+**Found and fixed while building this:** `with sqlite3.connect(...) as conn:` commits/rolls back
+on exit but does not close the connection (stdlib behaviour) - left open, this held a Windows
+file lock that made the *existing* acceptance-path test (`test_request_acceptance.py`, believed
+passing) fail on Windows. Fixed with explicit `try/finally: conn.close()` throughout
+`src/persistence/` and both test files - concrete evidence for RSK-03/RSK-15, not hypothetical.
+**Affects:** FR-005, FR-006, TR-001, TR-013, ADR-001; `src/web/`, `src/persistence/request_service.py`, `tests/`, `.github/workflows/test.yml`, `README.md`.
+**Evidence:** Issue #34; branch `feature/FR-005-submit-request`; 7/7 tests passing (`python -m pytest tests/ -v`).
+
 ### 2026-09-30 — ADR-001 proposed: architecture style, traced feature slice, stack options
 **Who:** Masego · **Type:** decision
 **What:** Reviewed the M1 baseline and the M2 work merged so far (ADR-002 persistence, ADR-003
