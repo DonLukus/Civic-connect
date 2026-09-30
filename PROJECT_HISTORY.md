@@ -22,6 +22,19 @@ AI assistant reads to get up to speed without asking anyone.
 
 ---
 
+### 2026-09-30 — ADR-001 proposed: architecture style, traced feature slice, stack options
+**Who:** Masego · **Type:** decision
+**What:** Reviewed the M1 baseline and the M2 work merged so far (ADR-002 persistence, ADR-003
+lifecycle validator, ADR-004 notification fan-out, the accept-path PoC) and drafted ADR-001,
+status Proposed. Recommends "Citizen submits a service request" (FR-005, FR-006) as the one
+feature slice traced end to end for M2, and lists frontend/backend/database/testing/CI stack
+options evaluated against the architecture already accepted, with a recommended direction per
+layer. Not Accepted — still gated on the DEC-008 proof-of-concept on the real platform, and on
+Don and Emile's review.
+**Affects:** ADR-001; references ADR-002, ADR-003, ADR-004, DEC-008, FR-005, FR-006, FR-009,
+FR-025, CN-01..CN-08.
+**Evidence:** Issue #30; branch `m2/architecture-stack-options`; AI-017.
+
 ### 2026-09-09 — Workstream A verification pass: problem, stakeholders, scope, constraints, decisions
 **Who:** Masego · **Type:** artefact
 **What:** Verified PED §2, §3, §4, §5 and §10 against the Master Project Brief and reconciled
