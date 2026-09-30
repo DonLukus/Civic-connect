@@ -52,6 +52,13 @@ class RequestService:
         try:
             conn.execute("BEGIN IMMEDIATE")
 
+            actor = conn.execute(
+                "SELECT role FROM users WHERE id = ? AND is_active = 1", (requester_id,)
+            ).fetchone()
+            if actor is None or actor[0] != "Requester":
+                conn.rollback()
+                raise PermissionError("Only an active Requester may submit a request")
+
             category = conn.execute(
                 "SELECT id FROM categories WHERE id = ? AND is_active = 1",
                 (category_id,),
@@ -99,6 +106,13 @@ class RequestService:
         conn = sqlite3.connect(self.db_path)
         try:
             conn.execute("BEGIN IMMEDIATE")
+
+            actor = conn.execute(
+                "SELECT role FROM users WHERE id = ? AND is_active = 1", (staff_id,)
+            ).fetchone()
+            if actor is None or actor[0] not in ("Staff", "Manager"):
+                conn.rollback()
+                raise PermissionError("Only active staff may accept a request")
 
             current = conn.execute(
                 "SELECT status, assignee_id, version FROM requests WHERE id = ?",
