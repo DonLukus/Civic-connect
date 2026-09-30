@@ -84,4 +84,4 @@ RSK-16 is unresolved. Re-run this sign-off once the DEC-008 PoC evidence lands.
 |---|---|---|---|
 | Masego | Technology and delivery | [ ✓ ] | 2026-09-30 |
 | Don | Data and design patterns | [ ] pending | |
-| Emile | Architecture and requirements | [ ] pending | |
+| Emile | Architecture and requirements | [ ✓ ] | 2026-09-30 |
