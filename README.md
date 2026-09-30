@@ -1,47 +1,51 @@
 # CivicConnect
 
-Community Service Request Management Platform.
+A community service request platform.
 SEN381 Software Engineering 381 (NQF 8), Belgium Campus ITversity, 2026.
 
 | | |
 |---|---|
-| **Current baseline** | PED v1.0 (M1) + ADR-001..ADR-004 (M2, in progress) |
-| **Milestone** | M1 complete · M2 (Architecture, Design & Engineering Decisions) underway |
+| **Current baseline** | PED v1.0 (Milestone 1) + 6 ADRs (Milestone 2, still in progress) |
+| **Milestone** | M1 is done. M2 (Architecture, Design & Engineering Decisions) is underway |
 | **Team** | Masego (Workstream A) · Don (Workstream B) · Emile (Workstream C) |
 | **Governing document** | SEN381 CivicConnect Master Project Brief v1.1 |
 
 ## What this project is
 
-An organisation currently manages service requests across email, telephone, WhatsApp, spreadsheets
-and paper. No channel holds the whole record and none enforces a lifecycle, so requests are
-duplicated or lost, requesters cannot see progress, ownership is unclear, status changes are not
-attributable and reporting is manual.
+Right now, the organisation tracks service requests using email, phone, WhatsApp, spreadsheets
+and paper. No single place holds the full record. Nothing forces requests to move through their
+steps in the right order. Because of this: requests get lost or copied twice, people who make a
+request can't see its progress, nobody is clearly in charge of a request, nobody can prove who
+changed a request's status, and reports have to be built by hand.
 
-CivicConnect replaces that with one controlled record with an enforced lifecycle and an immutable
-audit trail — without creating an unsustainable technical, operational or financial burden.
+CivicConnect fixes this. It gives everyone one shared, controlled record. It keeps a permanent
+history of every change. It does this without costing too much money or effort to run.
 
 ## Status: what actually exists right now
 
-This is a PoC-level M2 slice, not a finished product. Concretely:
+This is an early, proof-of-concept slice for Milestone 2. It is not a finished product.
 
-- **Traced end to end:** "Citizen submits a service request" (FR-005, FR-006) — a working web form
-  through a validating domain service to a database, with a passing automated test.
-- **Also implemented (not yet wired to a UI):** staff accepting a request under optimistic
-  concurrency control (FR-014), with an immutable audit trail (FR-025).
-- **Not built yet:** authentication (FR-001–004 — the app currently stands in a fixed demo user,
-  see Known limitations), the staff queue, notifications, reporting, and everything else in the
-  M1 scope baseline. `ADR-001` (stack/architecture) is **Proposed, not Accepted** — see below.
+- **Built and tested, start to finish:** "A citizen submits a service request" (FR-005, FR-006).
+  This means a real web form, a service that checks the data, and a database that stores it —
+  with a test that proves it works.
+- **Also built (but with no screen yet):** a staff member accepting a request. This is protected
+  against two staff members accepting the same request at once (FR-014), and every change is
+  written to a permanent history (FR-025).
+- **Not built yet:** logging in (FR-001–004 — the app currently pretends one fixed person is
+  logged in; see Known limitations below), the staff work queue, notifications, reports, and
+  everything else in the Milestone 1 plan. The choice of technology stack (`ADR-001`) is
+  **Proposed, not yet final** — see below.
 
-## Prerequisites and versions
+## What you need, and which exact versions
 
-Exact versions, verified against PyPI's published metadata (not asserted from memory) on
-2026-09-30 — see `docs/decisions/technology-versions.md`:
+These exact versions were checked against PyPI (the official Python package site) on
+2026-09-30, not just assumed. See `docs/decisions/technology-versions.md` for the full check.
 
-- Python 3.11 (proposed — not yet confirmed on the Belgium Campus desktop platform, CN-07)
-- Flask 3.1.3 (BSD-3-Clause)
-- pytest 9.1.1 (MIT)
+- Python 3.11 (proposed — not yet confirmed to work on the Belgium Campus lab computers)
+- Flask 3.1.3 (the web framework — free and open-source, BSD-3-Clause licence)
+- pytest 9.1.1 (the testing tool — free and open-source, MIT licence)
 
-## Setup and run
+## How to set it up and run it
 
 ```bash
 pip install -r requirements.txt
@@ -56,104 +60,110 @@ conn.commit()
 python -m src.web.app
 ```
 
-Then open `http://127.0.0.1:5000/requests/new`.
+Then open `http://127.0.0.1:5000/requests/new` in your browser.
 
-## Running the tests
+## How to run the tests
 
 ```bash
 python -m pytest tests/ -v
 ```
 
-7 tests, all passing as of 2026-09-30: request submission (FR-005/006, including the mandatory-field
-and controlled-category negative cases, and the full web route), and staff acceptance under
-concurrent-write protection (FR-014). Also runs automatically on every PR touching `src/` or
+There are 10 tests, and all 10 pass (checked 2026-09-30). They check: submitting a request works
+correctly (FR-005/FR-006), a request can't be submitted with a missing field or a bad category,
+the full web form works end to end, the rule that decides when a request may move from "New" to
+"Accepted" works on its own (FR-015), and two staff members can't accept the same request at the
+same time (FR-014). The tests also run by themselves on every pull request that changes `src/` or
 `tests/` — see `.github/workflows/test.yml`.
 
-## Environment variables
+## Environment variables (settings kept out of the code)
 
-Names only — see `.env.example`. Never a real value in this file or in git.
+Only the *names* of these settings are listed here — see `.env.example`. A real value must never
+be written in this file or committed to git.
 
 `FLASK_ENV`, `SECRET_KEY`, `DATABASE_URL`, `SESSION_COOKIE_SECURE`, `PASSWORD_HASH_ROUNDS`,
 `EMAIL_SMTP_HOST`, `EMAIL_SMTP_PORT`, `EMAIL_FROM_ADDRESS`, `OUTBOX_WORKER_POLL_SECONDS`.
 
-## Repository structure
+## How the project is organised
 
 ```
-docs/                       All PED sections, registers and ADRs (source of truth, DEC-002/005)
-  PED/                       PED sections, Markdown, compiled to docs/PED/exports/
-  decisions/adr/             Architecture Decision Records (ADR-001..)
-  requirements/              FR/NFR/constraints/scope/RTM as CSV
-  risk/, stakeholders/, governance/, deployment/   Registers and process docs
+docs/                       Every planning document, register and decision record (the source of truth)
+  PED/                       The main project document, split into sections
+  decisions/adr/             Architecture Decision Records — one file per big decision (ADR-001..)
+  requirements/              What the system must do, as spreadsheet-style CSV files
+  risk/, stakeholders/, governance/, deployment/   Other planning registers
 src/
-  persistence/               Data layer: schema.sql, RequestRepository, RequestService, OutboxProcessor
-  web/                       Frontend: Flask app + server-rendered templates (ADR-001)
-tests/                       pytest suite
-requirements.txt             Pinned, verified dependency versions
-.env.example                 Environment variable names (no values)
+  persistence/               Talks to the database: schema.sql, and the code that reads/writes data
+  web/                       The website: the Flask app and its page templates
+tests/                       The automated tests
+requirements.txt             The exact, checked versions of everything this project depends on
+.env.example                 The names of the settings the app needs (no real values)
 ```
 
-## Where the two accepted design patterns appear in the code
+## Where the two chosen design patterns show up in the code
 
-- **ADR-003, transition-table validator** (status lifecycle, FR-015–018): not yet extracted into
-  its own module — currently the New→Accepted guard lives inline in
-  `RequestService.accept_request` (the `WHERE status = 'New' AND assignee_id IS NULL AND version =
-  ?` conditional update). Extracting it into an explicit transition table is open work, not done.
-- **ADR-004, observer-style outbox fan-out** (notifications, FR-009): `RequestService.accept_request`
-  writes a `request_audit` row and an `outbox_events` row in the same transaction as the status
-  change; `src/persistence/outbox.py`'s `OutboxProcessor.process_pending` is the (currently
-  placeholder) consumer that would dispatch email/in-app notifications without ever undoing the
-  business fact if delivery fails.
+- **The status-change rule (ADR-003).** Lives in its own file, `src/persistence/lifecycle.py`, in
+  a class called `LifecycleValidator`. It is tested on its own in
+  `tests/test_lifecycle_validator.py`. Right now it only knows one rule: a request may move from
+  "New" to "Accepted". The other rules in the full status list are not written yet, because
+  nobody has approved exactly what they should be.
+- **The notification pattern (ADR-004).** When a staff member accepts a request,
+  `RequestService.accept_request` writes both a history record and a "to-do" event in the same
+  database transaction. `src/persistence/outbox.py` is the piece that would later send the actual
+  email or in-app message — right now it exists but has to be started by hand, not automatically.
 
-## Known limitations and TODOs
+## What's known to be missing or unfinished
 
-- **No authentication.** `src/web/app.py` uses a fixed `REQUESTER_ID` stand-in, stated in the code
-  and here rather than hidden. DEC-006 requires authenticated submission only in the real system.
-- **SQLite in production is unverified and likely wrong.** `ADR-001` recommends SQLite for
-  dev/test only and PostgreSQL as the production candidate — this has not been tested under an
-  actual deployment yet (`docs/deployment/deployment-direction.md`).
-- **A real, Windows-specific bug was found and fixed while building this**: `with
-  sqlite3.connect(...) as conn:` commits/rolls back on exit but does not close the connection
-  (stdlib behaviour) — left open, this held a file lock that made `os.remove()` on the database
-  file fail on Windows, silently passing on more permissive filesystems. Fixed with explicit
-  `try/finally: conn.close()` throughout `src/persistence/` and `tests/`. Concrete evidence for
-  RSK-03/RSK-15 (unverified platform behaviour) rather than a hypothetical risk.
-- **The outbox worker has no scheduling.** `OutboxProcessor.process_pending` must currently be
-  invoked manually; a real trigger (loop, cron, or scheduled ping) is undecided.
-- Staff queue, reporting, category/user administration, notifications delivery: not started.
+- **No login yet.** `src/web/app.py` just pretends one fixed person is submitting every request.
+  This is written plainly in the code and here, not hidden. The plan for *where* login checks
+  should live is decided (`ADR-007`), but the login feature itself is not built.
+- **The database choice for a real, live version is not tested yet.** `ADR-001` suggests SQLite
+  (a simple file-based database) for testing, and PostgreSQL (a proper server database) for the
+  real version — but nobody has actually tried running it on a real host yet.
+  See `docs/deployment/deployment-direction.md`.
+- **A real bug was found and fixed while building this.** In Python, writing
+  `with sqlite3.connect(...) as conn:` saves your changes when it finishes, but it does **not**
+  close the connection. Left open like that, it can lock the database file — which broke a test
+  on Windows that everyone thought was passing. It is now fixed everywhere in this project by
+  closing the connection properly.
+- **The "to-do" event sender has no automatic schedule.** Someone has to run it by hand for now.
+- The staff work queue, reports, and managing users/categories are not started yet.
 
-## Read these first
+## Start here if you want to know more
 
 | If you want to know | Read |
 |---|---|
-| The rules of this project | [`PROJECT_RULES.md`](PROJECT_RULES.md) |
-| What has happened so far | [`PROJECT_HISTORY.md`](PROJECT_HISTORY.md) |
-| What we are building and why | [`docs/PED/`](docs/PED/) |
-| What we committed to build | [`docs/requirements/`](docs/requirements/) |
-| Full requirement traceability | [`docs/requirements/RTM.csv`](docs/requirements/RTM.csv) |
-| Architecture and technology decisions | [`docs/decisions/adr/`](docs/decisions/adr/) |
+| The rules everyone on this project follows | [`PROJECT_RULES.md`](PROJECT_RULES.md) |
+| What has happened on this project so far | [`PROJECT_HISTORY.md`](PROJECT_HISTORY.md) |
+| What we are building, and why | [`docs/PED/`](docs/PED/) |
+| Exactly what we promised to build | [`docs/requirements/`](docs/requirements/) |
+| How every requirement links to evidence it was built | [`docs/requirements/RTM.csv`](docs/requirements/RTM.csv) |
+| The big technical decisions, and why we made them | [`docs/decisions/adr/`](docs/decisions/adr/) |
 | What could go wrong | [`docs/risk/risk-register.csv`](docs/risk/risk-register.csv) |
-| Why we chose what we chose | [`docs/decisions/decision-log.csv`](docs/decisions/decision-log.csv) |
+| Why we picked what we picked | [`docs/decisions/decision-log.csv`](docs/decisions/decision-log.csv) |
 
-## Baseline at a glance (M1)
+## The plan so far, in numbers (Milestone 1)
 
-- 26 functional and 14 non-functional requirements, all with sources, priorities and acceptance criteria
-- 40 of 40 requirements traced in the RTM, now with M2 detail columns for the traced slice
-- 12 in-scope areas, 9 explicit exclusions, 6 deferred items
-- 15 managed risks, 5 assumptions, 7 forward engineering considerations
-- 12 engineering decisions: 10 taken, 2 deliberately deferred; 4 ADRs since M2 (2 Accepted, 1 Proposed, 1 covering both lifecycle and notification patterns)
+- 26 things the system must do, and 14 quality rules it must meet — each one has a reason, a
+  priority, and a way to check it's done
+- All 40 of those are linked to real evidence, and some now show Milestone-2 detail too
+- 12 things we are building, 9 things we decided not to build, 6 things we're leaving for later
+- 16 known risks being tracked, 5 assumptions, 7 things to think about ahead of time
+- 12 project decisions made, 2 decisions deliberately left for later; plus 6 more technical
+  decision records since Milestone 2 started (4 finalised, 2 still proposed)
 
-## Deliberately not decided yet
+## What we have deliberately not decided yet
 
-`ADR-001` (stack, architecture style, deployment platform) is **Proposed**, gated on a DEC-008
-proof-of-concept on the actual Belgium Campus platform — see
-`docs/deployment/deployment-direction.md` for what evidence is still needed. Database schema
-beyond the M2 persistence spike, full UI design, API contracts and the CI/CD pipeline remain
-open for the rest of M2/M3.
+`ADR-001` (which technology stack and hosting to use) is still **Proposed**, waiting on a real
+test — logging in, saving data, and deploying it — on the actual Belgium Campus computers. See
+`docs/deployment/deployment-direction.md` for exactly what evidence is still needed. The full
+database design, the full look of the app, how different parts of the app talk to each other, and
+an automatic build-and-test pipeline are all still open questions for later in M2 and M3.
 
-## Governance
+## How the team works together (GitHub rules)
 
-`main` is protected. Substantive changes require a pull request with **two approvals from members
-other than the author**. Self-approval is not accepted. See [`PROJECT_RULES.md`](PROJECT_RULES.md) §10.
-Branch naming: `docs/<area>`, `feat/FR-nnn-<desc>`, `fix/<issue>-<desc>`, `chore/<desc>` for
-single-requirement work; `m2/<topic>` for cross-cutting M2 work; `feature/<FR-nnn>-<desc>` for a
-traced slice (see `PROJECT_RULES.md` §9).
+The `main` branch is protected. Any real change needs a pull request approved by **two other team
+members** — nobody can approve their own work. See [`PROJECT_RULES.md`](PROJECT_RULES.md) section
+10. Branch names follow a pattern: `docs/<topic>`, `feat/FR-nnn-<short description>`,
+`fix/<issue>-<short description>`, or `chore/<short description>` for small, single-purpose work;
+`m2/<topic>` for bigger Milestone-2 work; `feature/<FR-nnn>-<short description>` when a branch
+builds one requirement all the way through (see `PROJECT_RULES.md` section 9).

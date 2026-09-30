@@ -22,6 +22,16 @@ AI assistant reads to get up to speed without asking anyone.
 
 ---
 
+### 2026-09-30 — README rewritten in plain, grade-8-level English
+**Who:** Masego · **Type:** artefact
+**What:** Rewrote `README.md` for accessibility — shorter sentences, plain words, jargon
+explained on first use. Also refreshed facts that had gone stale: test count (7 → 10), ADR count
+and status (6 files, 4 Accepted / 2 Proposed), risk count (16), and the "where the design patterns
+appear" section, which still described ADR-003's transition-table validator as un-extracted after
+it had already been moved into `src/persistence/lifecycle.py`.
+**Affects:** `README.md`.
+**Evidence:** Issue #50; branch `docs/readme-plain-language`; AI-022.
+
 ### 2026-09-30 — ADR-007 proposed: authentication/authorization placement (resolves RSK-16's design gap)
 **Who:** Masego · **Type:** decision
 **What:** Drafted ADR-007 following Emile's RSK-16 finding on ADR-001 review. Decision: identity
