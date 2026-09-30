@@ -47,7 +47,7 @@ audit row on every *status change and assignment change*. Creation sets the init
 not a change from a prior one. Whether a request's creation gets its own audit row (for a
 complete history from the very first moment) or whether the audit trail begins at the first
 transition is a real design choice, not a detail — recommend: yes, write one, of `action_type =
-'CREATED'`, so `RequestAudit` — already shaped for this in `docs/PED/19-design-decisions.md`
+'CREATED'`, so `RequestAudit` — already shaped for this in `docs/PED/17-data-persistence.md`
 §17.2 — never has a gap between "this record exists" and "this record's first tracked event."
 No outbox row is needed on creation itself: FR-009 triggers notification on accepted, rejected,
 commented or completed, not on submission, so the requester's confirmation is the synchronous
@@ -66,6 +66,37 @@ response, not an async notification.
   §25). Nothing here is Accepted until verified there.
 - **CN-08** — whatever is chosen goes through the same branch/PR/two-approval workflow already in
   force.
+
+## Architecture diagram
+
+Logical layers (left) inside the single physical deployment unit Option A commits to (right) —
+the brief requires these kept visibly distinct rather than conflated:
+
+```mermaid
+graph TB
+    subgraph logical["Logical layers"]
+        UI["Web UI<br/>src/web/templates/<br/>(server-rendered forms)"]
+        APP["Application layer<br/>src/web/app.py<br/>(Flask routes)"]
+        SVC["Domain service<br/>RequestService<br/>- create_request (FR-005/006)<br/>- accept_request (FR-014)<br/>- transition guard (ADR-003)<br/>- outbox write (ADR-004)"]
+        REPO["Repository<br/>RequestRepository"]
+        DB[("Relational store<br/>SQLite (dev/test)<br/>PostgreSQL (production candidate)")]
+        WORKER["Outbox worker<br/>OutboxProcessor<br/>(manually invoked - no scheduler yet)"]
+        UI --> APP --> SVC --> REPO --> DB
+        SVC -.->|"writes pending event,<br/>same transaction"| DB
+        WORKER -->|"polls pending events"| DB
+    end
+
+    subgraph physical["Physical deployment (M2 direction - ADR-001 Proposed)"]
+        HOST["One free-tier host process<br/>(single deployable unit, PED §5.1)<br/>runs UI + app + service + repo + worker"]
+        HOSTDB[("Database instance<br/>separate service or same host,<br/>not yet verified - see deployment-direction.md")]
+        HOST --> HOSTDB
+    end
+```
+
+**What this is not yet:** authentication/authorization has no box above — RSK-16 tracks that gap
+explicitly; the diagram would grow an `Auth` layer between UI and Application once that ADR
+exists. The outbox worker is drawn logically inside the same process because nothing has
+justified splitting it out yet (PED §5.1's cost-chain reasoning), not because it was assumed.
 
 ## Alternatives considered — the architecture style
 
