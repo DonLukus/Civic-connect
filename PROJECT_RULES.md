@@ -96,7 +96,12 @@ If they cannot, the documentation has failed regardless of how complete it looks
 
 ## 9. Git conventions
 
-**Branches** — `docs/<area>`, `feat/FR-nnn-<desc>`, `fix/<issue>-<desc>`, `chore/<desc>`
+**Branches** — `docs/<area>`, `feat/FR-nnn-<desc>`, `fix/<issue>-<desc>`, `chore/<desc>` for
+single-requirement or single-fix work. From M2, cross-cutting architecture/technology work that
+does not trace to one requirement uses `m2/<topic>` (e.g. `m2/data-persistence`); work that
+implements one traced requirement end to end uses `feature/<FR-nnn>-<desc>` (e.g.
+`feature/FR-005-submit-request`) so the identifier is visible in the branch list without opening
+the PR.
 
 **Commits** — `type(scope): summary (refs #issue)` where type is `docs`, `feat`, `fix`, `chore`,
 `test` or `refactor`. Reference the artefact identifier where one applies.
