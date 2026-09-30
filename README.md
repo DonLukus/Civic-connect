@@ -31,9 +31,8 @@ This is an early, proof-of-concept slice for Milestone 2. It is not a finished p
 - **Also built (but with no screen yet):** a staff member accepting a request. This is protected
   against two staff members accepting the same request at once (FR-014), and every change is
   written to a permanent history (FR-025).
-- **Login PoC:** the request form now requires a real email/password sign-in and a Requester
-  session. Account administration, password reset and the full role/operation matrix remain open.
-- **Not built yet:** the staff work queue, notifications, reports, and
+- **Not built yet:** logging in (FR-001–004 — the app currently pretends one fixed person is
+  logged in; see Known limitations below), the staff work queue, notifications, reports, and
   everything else in the Milestone 1 plan. The choice of technology stack (`ADR-001`) is
   **Proposed, not yet final** — see below.
 
@@ -42,27 +41,26 @@ This is an early, proof-of-concept slice for Milestone 2. It is not a finished p
 These exact versions were checked against PyPI (the official Python package site) on
 2026-09-30, not just assumed. See `docs/decisions/technology-versions.md` for the full check.
 
-- Python 3.11 (proposed); Python 3.14 on the Belgium Campus remote desktop ran the original
-  10-test suite, but the login PoC has not yet been rerun there
+- Python 3.11 (proposed — not yet confirmed to work on the Belgium Campus lab computers)
 - Flask 3.1.3 (the web framework — free and open-source, BSD-3-Clause licence)
 - pytest 9.1.1 (the testing tool — free and open-source, MIT licence)
 
 ## How to set it up and run it
 
-Install the pinned packages from `requirements.txt`. Set `SECRET_KEY` to a fresh random value,
-and set `BOOTSTRAP_REQUESTER_EMAIL` and `BOOTSTRAP_REQUESTER_PASSWORD` to credentials for a
-throwaway PoC account in your local environment or host's secret store. Do not commit those
-values. Optionally set `DATABASE_URL` to a local SQLite file path; this PoC does not yet accept
-a PostgreSQL URL. On a Windows desktop, use Flask's development server:
-
 ```bash
-flask --app wsgi:app run
+pip install -r requirements.txt
+python -c "
+import sqlite3
+conn = sqlite3.connect('civicconnect.sqlite')
+conn.executescript(open('src/persistence/schema.sql').read())
+conn.execute(\"INSERT INTO users (email, password_hash, role, is_active) VALUES ('demo@example.com', 'x', 'Requester', 1)\")
+conn.execute(\"INSERT INTO categories (name, target_resolution_hours, is_active) VALUES ('Utilities', 48, 1)\")
+conn.commit()
+"
+python -m src.web.app
 ```
 
-Open `http://127.0.0.1:5000/login`, sign in, then submit a request. `wsgi.py` creates the
-schema, one active category and the PoC account on first run. It does not reset an existing
-account's password on restart. Use `SESSION_COOKIE_SECURE=true` only behind HTTPS; the cookie is
-HTTP-only and SameSite=Lax. Gunicorn remains the Linux-host candidate, not a Windows command.
+Then open `http://127.0.0.1:5000/requests/new` in your browser.
 
 ## How to run the tests
 
@@ -70,12 +68,11 @@ HTTP-only and SameSite=Lax. Gunicorn remains the Linux-host candidate, not a Win
 python -m pytest tests/ -v
 ```
 
-There are 15 tests, and all 15 pass locally (checked 2026-09-30). They check: submitting a request works
+There are 10 tests, and all 10 pass (checked 2026-09-30). They check: submitting a request works
 correctly (FR-005/FR-006), a request can't be submitted with a missing field or a bad category,
 the full web form works end to end, the rule that decides when a request may move from "New" to
 "Accepted" works on its own (FR-015), and two staff members can't accept the same request at the
-same time (FR-014), unauthenticated access, invalid passwords, CSRF rejection and service-level
-role enforcement, and the WSGI bootstrap/login/save path. The tests also run by themselves on every pull request that changes `src/` or
+same time (FR-014). The tests also run by themselves on every pull request that changes `src/` or
 `tests/` — see `.github/workflows/test.yml`.
 
 ## Environment variables (settings kept out of the code)
@@ -85,7 +82,6 @@ be written in this file or committed to git.
 
 `FLASK_ENV`, `SECRET_KEY`, `DATABASE_URL`, `SESSION_COOKIE_SECURE`, `PASSWORD_HASH_ROUNDS`,
 `EMAIL_SMTP_HOST`, `EMAIL_SMTP_PORT`, `EMAIL_FROM_ADDRESS`, `OUTBOX_WORKER_POLL_SECONDS`.
-The login PoC also uses `BOOTSTRAP_REQUESTER_EMAIL` and `BOOTSTRAP_REQUESTER_PASSWORD`.
 
 ## How the project is organised
 
@@ -117,10 +113,9 @@ requirements.txt             The exact, checked versions of everything this proj
 
 ## What's known to be missing or unfinished
 
-- **Login is only a PoC.** It uses a single environment-provisioned Requester account with a
-  hashed password. Administrator account provisioning (FR-001), the full four-role permission
-  matrix (FR-003) and password reset (FR-004) are not built. ADR-007 remains Proposed pending
-  team review, and the login code has not yet been exercised on the BC desktop or a host.
+- **No login yet.** `src/web/app.py` just pretends one fixed person is submitting every request.
+  This is written plainly in the code and here, not hidden. The plan for *where* login checks
+  should live is decided (`ADR-007`), but the login feature itself is not built.
 - **The database choice for a real, live version is not tested yet.** `ADR-001` suggests SQLite
   (a simple file-based database) for testing, and PostgreSQL (a proper server database) for the
   real version — but nobody has actually tried running it on a real host yet.
