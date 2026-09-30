@@ -28,11 +28,11 @@ Deferring is acceptable and often correct where the team can state the evidence 
 | | |
 |---|---|
 | Context | Attachments would materially improve fault reporting, but introduce storage cost, malware exposure and a retention obligation. |
-| Status | DEFERRED - decision to be taken at M2 once the platform decision establishes actual free-tier storage limits. |
+| Status | DEFERRED - no attachment upload or storage built in M2. Revisit at the start of M3, or sooner if the DEC-008 proof-of-concept completes first (reviewed 2026-09-30). |
 | Why deferring is correct | Committing now would bind the M2 platform choice to a storage requirement whose cost is unknown, which inverts the correct decision order. |
 | Consequence accepted | Fault reports remain text-only in the interim, which SH-02 may find limiting. |
-| Evidence required | Free-tier object-storage limits of candidate platforms; frequency with which a photograph is genuinely needed; malware-scanning options at zero cost; retention rules for images containing personal data. |
-| What it determines | Affects persistence design, upload validation, security testing and operational cost from M2 onwards. |
+| Evidence required | Free-tier object-storage limits of candidate platforms; frequency with which a photograph is genuinely needed; malware-scanning options at zero cost; retention rules for images containing personal data; and a confirmed requirement (FR ID and priority) for attachments, including size and type limits - none exists yet, since SCOPE-D-01 is deferred scope, not a baselined FR. |
+| What it determines | Affects persistence design, upload validation, security testing and operational cost from M2 onwards. No attachment-related FR exists yet in the RTM; any file-upload security controls wait for the decision. |
 | Risk | RSK-08, RSK-02 |
 
 ### DEC-008 — Technology stack, architecture and deployment platform

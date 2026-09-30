@@ -28,7 +28,7 @@ The decision must explicitly answer the rollback question: if a downstream notif
 
 ## Decision
 
-Use an outbox-based asynchronous integration model. The request service writes the business change and audit row in one transaction, then emits an outbox row with a shared correlation ID. A separate process publishes the event and moves the outbox row from pending to sent or failed with an attempt count.
+Use an outbox-based asynchronous integration model. The request service writes the business change and audit row in one transaction, then emits an outbox row with a shared correlation ID. A dedicated outbox worker, implemented as its own module with its own entry point, polls the outbox and moves rows from pending to sent or failed with an attempt count. For M2 it runs as a background loop inside the application process (see deployment-direction.md). It can be split into a separate process later without changing the schema or the transactional write path.
 
 ## Rationale
 
@@ -56,7 +56,8 @@ This is the best fit for a small team and low-cost project. It preserves core bu
 - Every business state change must have a correlation ID and an outbox row.
 - Notification failures are retried or marked as failed; they do not revert the request lifecycle state.
 - The deployment model must include monitoring of the outbox worker and backup/restore tests.
+- The in-process worker is monitored in-process for M2, for example by logging the age of the oldest pending row, since there is no separate process to monitor externally yet.
 
 ## Later consequence (updated when evidence emerges)
 
-Left blank at decision time.
+2026-09-30 (amendment, Don): ADR-006 originally said the publisher is a separate process. Reconciled with deployment-direction.md: in-process for M2, because a separate worker adds idle-out risk under CN-03 with no evidenced benefit. Conditions: (1) claim rows with a conditional update (pending to sending) so two app instances cannot double-send; (2) fall back to an external trigger or separate process if the DEC-008 PoC shows the loop does not survive host sleep. Revisit after DEC-008.

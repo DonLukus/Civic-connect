@@ -22,6 +22,27 @@ AI assistant reads to get up to speed without asking anyone.
 
 ---
 
+### 2026-09-30 — Reconciled ADR-006 vs deployment-direction.md on outbox placement; refined DEC-007
+**Who:** Masego (applying a review attributed to Don) · **Type:** decision
+**What:** ADR-006 said a separate process publishes outbox events; `deployment-direction.md` said
+the worker runs as a background loop inside the same process — a real contradiction, verified by
+reading both before changing anything. Resolved in favour of in-process for M2 (CN-03 idle-out
+risk, current code already implies a polling loop, no correctness cost since outbox rows persist
+in the database regardless). Added two guardrails to ADR-006's amendment: claim rows atomically
+(pending → sending) so two app instances can't double-send, and fall back to an external trigger
+or separate process if the DEC-008 PoC shows the loop doesn't survive host sleep. Cross-linked
+`deployment-direction.md`'s Networking section and deferred-decisions table to ADR-006 so the two
+documents point at each other instead of disagreeing. Also refined **DEC-007** (attachments): the
+Decision now names a concrete revisit point (M3 start, or sooner if DEC-008 completes first)
+instead of the vaguer M1-era wording, and the evidence-required list now names the missing FR
+(no attachment requirement is baselined yet — SCOPE-D-01 is deferred scope, not an FR) that a
+real decision would also need. Checked the Must-priority caveat against the actual FR list before
+accepting plain deferral — no such FR exists, so deferral (not a provisional decision) still
+holds.
+**Affects:** ADR-006, `docs/deployment/deployment-direction.md`, DEC-007 (`decision-log.csv` and
+`docs/PED/10-decision-log.md`).
+**Evidence:** Issue #57; branch `docs/reconcile-outbox-dec007`; AI-024; 10/10 tests unaffected.
+
 ### 2026-09-30 — M2 deployment PoC: wsgi.py and gunicorn added, Render deployment left explicit
 **Who:** Masego · **Type:** artefact, decision
 **What:** Built the production entrypoint (`wsgi.py`) for DEC-008's proof-of-concept requirement.
