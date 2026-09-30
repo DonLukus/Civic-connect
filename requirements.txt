@@ -1,7 +1,7 @@
 # Pinned versions, verified against PyPI's published metadata (not asserted from memory) on
-# 2026-09-30. See docs/decisions/technology-versions.md for the verification record and licences.
-# CN-07: none of this is confirmed to run on the Belgium Campus desktop platform yet - that is
-# the outstanding DEC-008 proof-of-concept action, not something this file can assert.
+# 2026-09-30. See docs/decisions/technology-versions.md (PR #33) for the verification record and
+# licences. CN-07: none of this is confirmed to run on the Belgium Campus desktop platform yet -
+# that is the outstanding DEC-008 proof-of-concept action, not something this file can assert.
 
 Flask==3.1.3
 pytest==9.1.1

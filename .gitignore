@@ -37,6 +37,9 @@ __pycache__/
 *.py[cod]
 venv/
 .venv/
+.pytest_cache/
+*.sqlite
+*.sqlite3
 
 # Build output
 bin/
