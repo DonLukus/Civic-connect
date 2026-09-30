@@ -8,6 +8,8 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/..'))
 from src.persistence.request_service import RequestService
 from src.web.app import create_app
 
+TEST_SESSION_KEY = 'test-secret'  # deliberately non-secret fixture
+
 
 def setup_db(db_path: str):
     if os.path.exists(db_path):
@@ -137,7 +139,7 @@ def test_web_submit_request_end_to_end():
     """The traced slice through the actual route: form -> service -> DB -> confirmation page."""
     db_path = 'test_submission_web.sqlite'
     setup_db(db_path)
-    app = create_app(db_path, secret_key='test-secret')
+    app = create_app(db_path, secret_key=TEST_SESSION_KEY)
     client = app.test_client()
 
     assert client.get('/requests/new').status_code == 302
@@ -175,7 +177,7 @@ def test_web_submit_request_rejects_invalid_category():
     """The route surfaces FR-006's validation, not a 500 error, on a bad category."""
     db_path = 'test_submission_web.sqlite'
     setup_db(db_path)
-    app = create_app(db_path, secret_key='test-secret')
+    app = create_app(db_path, secret_key=TEST_SESSION_KEY)
     client = app.test_client()
 
     csrf = login_client(client)
@@ -194,7 +196,7 @@ def test_web_submit_request_rejects_invalid_category():
 def test_unauthenticated_submission_does_not_write():
     db_path = 'test_submission_web.sqlite'
     setup_db(db_path)
-    client = create_app(db_path, secret_key='test-secret').test_client()
+    client = create_app(db_path, secret_key=TEST_SESSION_KEY).test_client()
     response = client.post('/requests', data={
         'title': 'x', 'description': 'x', 'category_id': '1', 'location': 'x',
     })
@@ -211,7 +213,7 @@ def test_unauthenticated_submission_does_not_write():
 def test_bad_password_does_not_authenticate():
     db_path = 'test_submission_web.sqlite'
     setup_db(db_path)
-    client = create_app(db_path, secret_key='test-secret').test_client()
+    client = create_app(db_path, secret_key=TEST_SESSION_KEY).test_client()
     client.get('/login')
     with client.session_transaction() as sess:
         csrf = sess['_csrf_token']
@@ -227,7 +229,7 @@ def test_bad_password_does_not_authenticate():
 def test_missing_csrf_does_not_write():
     db_path = 'test_submission_web.sqlite'
     setup_db(db_path)
-    client = create_app(db_path, secret_key='test-secret').test_client()
+    client = create_app(db_path, secret_key=TEST_SESSION_KEY).test_client()
     login_client(client)
     response = client.post('/requests', data={
         'title': 'x', 'description': 'x', 'category_id': '1', 'location': 'x',
