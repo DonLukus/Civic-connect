@@ -22,6 +22,19 @@ AI assistant reads to get up to speed without asking anyone.
 
 ---
 
+### 2026-09-30 — M2 bootstrap: PR template, branch rule, env template, versions, deployment direction
+**Who:** Masego · **Type:** governance, artefact
+**What:** Closed the Days 1-5 M2 checklist gaps found on audit. Added a "How this was tested"
+field to the PR template; documented the `m2/<topic>` and `feature/<FR-nnn>-<desc>` branch
+conventions in `PROJECT_RULES.md` §9; added `.env.example` (names only); pinned and verified
+Flask 3.1.3 (BSD-3-Clause) and pytest 9.1.1 (MIT) against PyPI's published metadata, recorded in
+`docs/decisions/technology-versions.md`; drafted `docs/deployment/deployment-direction.md`
+(Proposed, same gate as ADR-001); added RSK-15 for dependency-version drift on the untested lab
+platform.
+**Affects:** `.github/pull_request_template.md`, `PROJECT_RULES.md` §9, `.env.example`,
+`requirements.txt`, RSK-15.
+**Evidence:** Issue #32; branch `m2/bootstrap-governance`.
+
 ### 2026-09-30 — ADR-001 proposed: architecture style, traced feature slice, stack options
 **Who:** Masego · **Type:** decision
 **What:** Reviewed the M1 baseline and the M2 work merged so far (ADR-002 persistence, ADR-003
