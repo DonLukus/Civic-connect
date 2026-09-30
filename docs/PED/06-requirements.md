@@ -56,6 +56,20 @@ Requirements follow the quality characteristics in ISO/IEC/IEEE 29148 [3]: neces
 | NFR-013 | Capacity | The system shall hold at least 500 user accounts and 5 000 request records within the selected free-tier storage limits without breaching NFR-001. | Should | With 500 users and 5 000 requests seeded, storage consumption remains inside the documented free-tier limit and the NFR-001 load test still passes. | Capacity test, M3 |
 | NFR-014 | Input validation | 100% of user-supplied input shall be validated server-side; rejected input shall return a field-level message without discarding the data already entered. | Must | For each input field, a boundary and an invalid-type case are submitted with client-side validation bypassed; every case is rejected server-side with a field-level message and the retained form values are redisplayed. | Automated boundary and negative test, M3 |
 
+## 6.3 Architecturally Significant Requirements (M2)
+
+Nine requirements are tagged `ASR (M2)` directly on their row in `docs/requirements/functional-requirements.csv` and `non-functional-requirements.csv` (DEC-005 keeps the CSV as source of truth; this table is the narrative view). They're not a new identifier series — DEC-003 doesn't have one for ASRs, and these are existing FR-/NFR- rows, just flagged as ones that force a structural decision rather than being satisfiable by any reasonable implementation. Five actual drivers, not nine independent ones:
+
+| Driver | Requirements | Forces |
+|---|---|---|
+| Audit-trail immutability enforced against the application itself | FR-025, NFR-006 | Transaction boundaries and persistence privileges — ADR-002 |
+| A controlled 7-state machine, cross-cut by role and field guards | FR-015 | A dedicated status-lifecycle design decision instead of conditionals scattered wherever a transition can be triggered — ADR-003 |
+| Notification that must stay extensible to a channel not yet built (SCOPE-D-03) | FR-009 | A notification mechanism not hard-wired to one channel — ADR-004, ADR-006 |
+| Performance and availability targets specified against a free-tier constraint (CN-03) | NFR-001, NFR-002, NFR-013 | The architecture-style and deployment decision — a preference exercise becomes an engineering one once every extra service is a free-tier instance that idles out — ADR-001, ADR-005 |
+| Access control and privacy enforced against every interface, not the intended one | NFR-004, NFR-012 | Where authorisation actually sits in the architecture, as a cross-cutting concern rather than a per-screen check — ADR-001 |
+
+This is a starting set, not a ceiling — if the proof of concept or the architecture ADR itself surfaces another requirement that genuinely forces a structural choice, it gets tagged the same way, added here, and the reason stated.
+
 ---
 
 ## Appendix B — Request Lifecycle States (compiled PED appendix)
