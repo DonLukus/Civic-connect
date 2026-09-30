@@ -3,6 +3,7 @@ import sqlite3
 import uuid
 
 from src.persistence.request_repository import RequestRepository
+from src.persistence.lifecycle import LifecycleValidator
 
 
 class RequestService:
@@ -109,7 +110,7 @@ class RequestService:
 
             previous_status, previous_assignee_id, previous_version = current
 
-            if previous_status != "New" or previous_assignee_id is not None or previous_version != expected_version:
+            if not LifecycleValidator.can_accept(previous_status, previous_assignee_id) or previous_version != expected_version:
                 conn.rollback()
                 return False
 
