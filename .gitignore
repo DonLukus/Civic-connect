@@ -2,13 +2,34 @@
 .env
 .env.*
 !.env.example
+
+# Secrets and credentials (hardening for public repos)
+.env.local
+.env.development
+.env.production
+.env.test
+.env.staging
+.env.*.local
+.env.*.development
+.env.*.production
+.env.*.test
+.env.*.staging
+secrets.json
 *.pem
 *.pfx
 *.p12
 *.key
-appsettings.Development.json
-appsettings.Production.json
-secrets.json
+*.crt
+*.cer
+*.jks
+*.keystore
+*.sqlite
+*.db
+*.dump
+*.sql
+private_key.txt
+oauth_token.txt
+api_keys.txt
 
 # Dependencies
 node_modules/
@@ -16,6 +37,9 @@ __pycache__/
 *.py[cod]
 venv/
 .venv/
+.pytest_cache/
+*.sqlite
+*.sqlite3
 
 # Build output
 bin/

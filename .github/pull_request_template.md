@@ -12,6 +12,11 @@ Closes #
 
 <!-- e.g. FR-011..FR-018, RSK-04, DEC-002. Write "none" if none. -->
 
+## How this was tested
+
+<!-- What you actually ran and what it showed - test names, manual steps, or "no executable
+     change" if this is documentation only. "Diff reviewed" is not a test. -->
+
 ## Traceability impact
 
 - [ ] RTM updated, or not affected
