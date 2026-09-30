@@ -1,35 +1,31 @@
-# PED §19 — Design Decisions
+# PED §20 — Integration and Deployment
 
-## 19.1 Lifecycle decision
+## 20.1 Integration decision
 
-The lifecycle problem is the real status-transition problem, not merely a UI state. FR-015..FR-018 constrain the legal movement of request status, and the same rules must be enforced in the domain service as well as in the UI.
+Request state changes, audit records and notification delivery must integrate without losing
+correctness or auditability (FR-009, FR-025), under the free-tier cost constraint (CN-03). The
+full alternatives-considered analysis, rationale and consequences are recorded in
+**ADR-006** (`docs/decisions/adr/ADR-006-integration-decision.md`), not duplicated here per the
+M2 brief's instruction to reference decision evidence rather than restate it.
 
-Decision: use a transition-table validator rather than a pure State pattern.
+Summary: outbox-based asynchronous integration. The domain service writes the business change,
+its audit row and a pending outbox row in one local transaction; a separate process (currently
+`OutboxProcessor`, manually invoked — no scheduler yet, see the deployment direction below)
+publishes the event and marks it sent or failed. A downstream notification failure never rolls
+back the business fact — only the message-send attempt is retried.
 
-Reason:
-- the rules are finite and explicit
-- the project needs easy review and tests
-- the legal transitions can be expressed in a table and enforced in a single validation step
+## 20.2 Deployment direction
 
-## 19.2 Notification and audit fan-out decision
+The current deployment direction — where the deployable unit runs, configuration and secrets
+handling, where state lives, and networking — is recorded in
+`docs/deployment/deployment-direction.md` and is **Proposed**, gated on the DEC-008
+proof-of-concept, consistent with ADR-001. Deliberately deferred deployment decisions and the
+evidence still required are listed there rather than assumed here.
 
-FR-009 and FR-025 require both requester communication and immutable auditability.
+## 20.3 What is not yet established
 
-Decision: use observer-style fan-out, but do not roll back the status change when a notifier fails.
-
-Reason:
-- the request state is the business fact
-- notification is a downstream delivery concern
-- email or in-app channel outages must not erase a valid lifecycle change
-
-The failure handling is therefore:
-- change is committed
-- audit row is committed
-- outbox event is inserted as pending
-- notification is retried or marked failed
-
-## 19.3 Persistence decision summary
-
-The persistence layer uses a versioned aggregate plus immutable audit and outbox.
-
-This is an adapted A2 solution with direct application to the current requirement set.
+- No scheduler for the outbox worker (§20.1) — invoked manually today.
+- No verified hosting provider (§20.2) — SQLite vs. PostgreSQL for production is an open
+  question, not a decision (see `docs/decisions/technology-versions.md` and RSK-15).
+- No authentication/authorization boundary sits in front of any endpoint yet (RSK-16) — this is a
+  forward engineering consideration for the next slice, not silently assumed solved.

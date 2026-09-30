@@ -2,7 +2,7 @@
 
 - **Status:** Proposed
 - **Date:** 2026-09-30
-- **Deciders:** Masego (proposed); needs Don and Emile
+- **Deciders:** Masego (proposed); Emile (reviewed 2026-09-30, see §"Emile's review" below — agrees with the architecture style, per-layer options and the traced-slice choice; flags one gap); still needs Don
 
 ## Context
 
@@ -47,7 +47,7 @@ audit row on every *status change and assignment change*. Creation sets the init
 not a change from a prior one. Whether a request's creation gets its own audit row (for a
 complete history from the very first moment) or whether the audit trail begins at the first
 transition is a real design choice, not a detail — recommend: yes, write one, of `action_type =
-'CREATED'`, so `RequestAudit` — already shaped for this in `docs/PED/19-design-decisions.md`
+'CREATED'`, so `RequestAudit` — already shaped for this in `docs/PED/17-data-persistence.md`
 §17.2 — never has a gap between "this record exists" and "this record's first tracked event."
 No outbox row is needed on creation itself: FR-009 triggers notification on accepted, rejected,
 commented or completed, not on submission, so the requester's confirmation is the synchronous
@@ -66,6 +66,37 @@ response, not an async notification.
   §25). Nothing here is Accepted until verified there.
 - **CN-08** — whatever is chosen goes through the same branch/PR/two-approval workflow already in
   force.
+
+## Architecture diagram
+
+Logical layers (left) inside the single physical deployment unit Option A commits to (right) —
+the brief requires these kept visibly distinct rather than conflated:
+
+```mermaid
+graph TB
+    subgraph logical["Logical layers"]
+        UI["Web UI<br/>src/web/templates/<br/>(server-rendered forms)"]
+        APP["Application layer<br/>src/web/app.py<br/>(Flask routes)"]
+        SVC["Domain service<br/>RequestService<br/>- create_request (FR-005/006)<br/>- accept_request (FR-014)<br/>- transition guard (ADR-003)<br/>- outbox write (ADR-004)"]
+        REPO["Repository<br/>RequestRepository"]
+        DB[("Relational store<br/>SQLite (dev/test)<br/>PostgreSQL (production candidate)")]
+        WORKER["Outbox worker<br/>OutboxProcessor<br/>(manually invoked - no scheduler yet)"]
+        UI --> APP --> SVC --> REPO --> DB
+        SVC -.->|"writes pending event,<br/>same transaction"| DB
+        WORKER -->|"polls pending events"| DB
+    end
+
+    subgraph physical["Physical deployment (M2 direction - ADR-001 Proposed)"]
+        HOST["One free-tier host process<br/>(single deployable unit, PED §5.1)<br/>runs UI + app + service + repo + worker"]
+        HOSTDB[("Database instance<br/>separate service or same host,<br/>not yet verified - see deployment-direction.md")]
+        HOST --> HOSTDB
+    end
+```
+
+**What this is not yet:** authentication/authorization has no box above — RSK-16 tracks that gap
+explicitly; the diagram would grow an `Auth` layer between UI and Application once that ADR
+exists. The outbox worker is drawn logically inside the same process because nothing has
+justified splitting it out yet (PED §5.1's cost-chain reasoning), not because it was assumed.
 
 ## Alternatives considered — the architecture style
 
@@ -205,3 +236,34 @@ this stays Proposed and the team stays free to change any recommendation above o
 ## Later consequence (updated when evidence emerges)
 
 Left blank at decision time.
+
+## Emile's review
+
+Agree with the architecture style (single deployable unit), the per-layer recommendations, and
+the FR-005/FR-006 traced-slice choice — each is argued from the ADRs and constraints already
+accepted, not asserted, and I checked the reasoning holds against PED §5.1 and the ASRs in
+`docs/PED/06-requirements.md` §6.3.
+
+**One real gap: this ADR resolves five layers (frontend, backend, database, testing, CI) but
+never places authentication or authorization architecturally**, even though two of the five ASR
+drivers in §6.3 are exactly this — NFR-004 (authorisation enforcement) and NFR-012 (privacy of
+requester information), both Must-priority and both requiring server-side enforcement "not
+assumed." The traced slice currently ships against `REQUESTER_ID = 1`, a hardcoded stand-in with
+no session, no role and no authorization check — correctly disclosed as a known limitation in
+`src/web/app.py`, not hidden, but the architecture for what replaces it isn't decided anywhere
+yet, and FEC-04 already warned this specifically: "retrofitting access control after features
+exist means re-touching every endpoint individually."
+
+**Proposed addition, consistent with the backend choice already made:** Flask-Login (or Flask's
+built-in session mechanism) for authentication, with the role stored on the user record and
+**authorization checks enforced in the service layer** — the same place ADR-002's transaction
+boundary and ADR-003's transition validator already live — not in the Flask view functions. This
+keeps the pattern this ADR already established (business rules in the service layer, views stay
+thin) rather than introducing a second enforcement style for one specific concern. A view-level
+check alone would satisfy NFR-004's letter today and fail it the moment a second entry point to
+the same operation exists — exactly the FEC-04 risk above.
+
+This doesn't block accepting the rest of ADR-001 — the architecture style, per-layer stack and
+traced-slice choice all stand on their own reasoning. It does mean the next traced slice that
+needs role differentiation (Staff accept/assign, FR-014) can't start until this gets its own
+short ADR or an addition here. Logged as RSK-16 so it doesn't just live in this paragraph.

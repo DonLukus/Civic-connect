@@ -50,6 +50,13 @@ The State pattern remains a possible future refactor if the lifecycle becomes mu
 - FR-015, FR-016, FR-017, FR-018
 - PED lifecycle states definition in docs/PED/06-requirements.md
 - Project requirement traceability from RTM
+- **Implementation**: `src/persistence/lifecycle.py::LifecycleValidator`, extracted from the
+  inline check previously in `RequestService.accept_request`. Deliberately partial — only the
+  New→Accepted transition (FR-014, CHG-001) is encoded, because it is the only one the requirement
+  set currently specifies concretely; encoding the rest of FR-015's table without an approved
+  specification would be inventing business rules, not implementing them. Tested in
+  `tests/test_lifecycle_validator.py` (3 tests) and exercised indirectly by
+  `tests/test_request_acceptance.py`.
 
 ## Downstream consequences
 

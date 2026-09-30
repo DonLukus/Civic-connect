@@ -22,6 +22,42 @@ AI assistant reads to get up to speed without asking anyone.
 
 ---
 
+### 2026-09-30 — ADR-007 proposed: authentication/authorization placement (resolves RSK-16's design gap)
+**Who:** Masego · **Type:** decision
+**What:** Drafted ADR-007 following Emile's RSK-16 finding on ADR-001 review. Decision: identity
+via Flask's built-in session at the route layer; authorization checked inside the domain service,
+per-record, before any write — the same placement ADR-002's transaction and ADR-003's transition
+guard already use, not a route decorator (which cannot express NFR-012's per-record "assigned
+staff member only" rule). Placement only — FR-001..FR-004 (the login feature itself) is not built
+here. Updated RTM `TR-015` (NFR-012) and `TR-017` (NFR-004) to "Design decided, implementation
+pending" rather than leaving them at Pending M2 with no design behind that status. Also advanced
+`TR-007` (FR-025), `TR-008` (NFR-006) and `TR-011` (FR-014) to reflect the audit-trail and
+lifecycle-validator evidence that already exists in `src/persistence/`.
+**Affects:** ADR-007 (new); RSK-16 (moves from "undecided" to "placement decided, not
+implemented"); TR-007, TR-008, TR-011, TR-015, TR-017.
+**Evidence:** Issue #46; branch `m2/auth-placement-adr`; 10/10 tests still passing (no code
+behaviour changed, RTM and ADR only).
+
+### 2026-09-30 — M2 brief compliance pass: diagram, baseline sign-off, PED fix, ADR-003 evidence
+**Who:** Masego · **Type:** artefact, decision, governance
+**What:** Checked the repo against the actual M2 brief text for the first time (previously
+working from context alone) and closed four gaps. Added the M2 brief's required architecture
+diagram (mermaid, logical layers vs. physical deployment) to ADR-001. Wrote the missing
+Architecture/Technology/Initial Design Baseline sign-off - status Proposed, honestly listing what
+remains open. Fixed a real defect: `docs/PED/17-data-persistence.md`, `19-design-decisions.md`
+and `20-integration-deployment.md` each held a different section's content than their filename
+claimed, and one of them was actually `ADR-006: Integration Decision` mis-filed as a PED section
+- rotated to the correct files and extracted ADR-006 properly. Extracted ADR-003's New->Accepted
+guard out of `RequestService.accept_request` into `LifecycleValidator`, tested directly - closing
+the "documented decision, no extracted implementation" gap, deliberately without inventing the
+rest of FR-015's transition table, which has no approved specification yet. Also resolved merge
+conflicts (additive, not substantive) between four separately-authored open PRs and `main` -
+`ai-usage-register.csv`, `RTM.csv`, `risk-register.csv`, `PROJECT_HISTORY.md` - each time because
+two branches appended non-overlapping rows/entries at the same point.
+**Affects:** ADR-001, ADR-003, ADR-006 (new), TR-012, `docs/baseline/M2-baseline-signoff.md`
+(new), `docs/PED/17`/`19`/`20`, `src/persistence/lifecycle.py` (new).
+**Evidence:** Issue #44; branch `m2/architecture-diagram-and-baseline`; 10/10 tests passing.
+
 ### 2026-09-30 — Traced slice built: citizen submits a service request (FR-005, FR-006)
 **Who:** Masego · **Type:** artefact
 **What:** Built the M2 traced slice end to end per ADR-001: `RequestService.create_request`
