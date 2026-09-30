@@ -50,3 +50,4 @@ empty by design at this milestone.
 
 `main` is protected. Substantive changes require a pull request with **two approvals from members
 other than the author**. Self-approval is not accepted. See [`PROJECT_RULES.md`](PROJECT_RULES.md) §10.
+
