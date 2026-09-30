@@ -25,27 +25,26 @@ not been deployed or rerun on the BC desktop. RSK-16/ADR-007 remain open for tea
 
 ## What is NOT done — and why, honestly
 
-### 1. The actual Render deployment
+### 1. Render deployment status (1 October 2026)
 
-**Not done.** No Render service, live URL or persistence-after-restart result has been observed.
-The local WSGI/login test is not evidence of a hosted deployment.
+A Render web service exists at `https://civic-connect-bcx2.onrender.com`. The dashboard showed a
+successful deployment of `a1ceff8` from `main`, which contains the revert of the login PoC. That
+deployment is **not** evidence for the protected login/save flow. The service was then suspended
+to avoid presenting the older build as a validated public version. The configured branch is now
+`m2/restore-login-poc` (PR #62); no successful deployment or live login/save test of that branch
+has been observed. The service's build command is `pip install -r requirements.txt` and its start
+command is `gunicorn --bind 0.0.0.0:$PORT wsgi:app`. The Render environment contains the names
+`SECRET_KEY`, `BOOTSTRAP_REQUESTER_EMAIL`, `BOOTSTRAP_REQUESTER_PASSWORD` and
+`SESSION_COOKIE_SECURE`; secret values are deliberately absent from this record.
 
-**What Masego (or whoever has the Render account) needs to do, exactly:**
-
-1. On [render.com](https://render.com), **New → Web Service**, connect the `DonLukus/Civic-connect`
-   repository, branch `main` (or this PR's branch, for a preview first).
-2. Runtime: Python 3. Build command: `pip install -r requirements.txt`. Start command:
-   `gunicorn wsgi:app`. Instance type: **Free**. Set `SECRET_KEY`,
-   `BOOTSTRAP_REQUESTER_EMAIL`, `BOOTSTRAP_REQUESTER_PASSWORD` and
-   `SESSION_COOKIE_SECURE=true` in the host's secret/config store, using fresh PoC values.
-3. **Do not add a Postgres resource for this pass** — the point is specifically to find out
-   whether SQLite survives on Render's free tier, not to skip past that question.
-4. Deploy, then follow the persistence test in the next section and fill in the result table
-   below (or report it back and this file gets updated in a follow-up commit).
+PR #62 restores the login PoC. Its GitHub `test`, `scan` and `traceability` checks passed on
+1 October 2026. A separate local Windows Python 3.12 run of the restored branch reported
+**15 tests passed**. These checks establish repository-level behaviour, not a successful hosted
+deployment or persistent storage after a restart.
 
 ### 2. The persistence/idle-timeout observation
 
-**Not done — depends on #1.** Once deployed:
+**Not done — depends on deploying and testing the protected branch.** Once available:
 
 1. Open the live URL's `/login`, sign in with the throwaway PoC account, submit a request
    containing no real personal information, and note the reference number shown.
@@ -56,7 +55,7 @@ The local WSGI/login test is not evidence of a hosted deployment.
 
 | Field | Result |
 |---|---|
-| Deployed URL | *(pending — fill in once step 1 above is done)* |
+| Service URL | `https://civic-connect-bcx2.onrender.com` (protected branch not verified live) |
 | Request submitted, reference # | *(pending)* |
 | How the restart/idle was triggered | *(pending — idle wait or manual redeploy)* |
 | Data present after restart? | *(pending)* |
@@ -80,7 +79,7 @@ commit without a repeat run. `gunicorn` was intentionally not installed or run i
 environment; PyCharm installed the two packages required for the test run, not the entire
 `requirements.txt`. Python 3.11, the full dependency install, an interactive login, a live
 request submission and a hosted deployment remain **unverified on the BC platform**. The earlier
-Windows Python 3.13 result above is a separate data point, not campus evidence.
+Local Windows Python 3.12 results above are separate data points, not campus evidence.
 
 ## What this does and does not close
 
@@ -90,6 +89,6 @@ Windows Python 3.13 result above is a separate data point, not campus evidence.
 - Does provide new, real evidence toward that decision: the schema-bootstrap approach works and is
   idempotent, `gunicorn` is confirmed installable and licensed appropriately, and the Windows/Unix
   boundary around `gunicorn` is now known rather than assumed.
-- Leaves the hosted deployment, persistence-after-restart observation and BC rerun of the new
+- Leaves the protected hosted deployment, persistence-after-restart observation and BC rerun of the new
   login slice open. The campus 10-test result narrows platform risk but predates the 15-test
   local login extension and does not close DEC-008.

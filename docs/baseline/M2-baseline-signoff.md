@@ -25,8 +25,9 @@ direction to develop without repeatedly making foundational decisions ad hoc.
   dev/test, PostgreSQL as the production candidate, pytest, GitHub Actions — versions verified
   against PyPI's published metadata, not asserted (`docs/decisions/technology-versions.md`).
 - **Traced feature slice**: "Citizen submits a service request" (FR-005, FR-006) built end to
-  end — `src/web/`, `RequestService.create_request`, 6 passing tests — the evidence this baseline
-  is not aspirational.
+  end — `src/web/` and `RequestService.create_request`. The original slice passed 10 tests on the
+  Belgium Campus desktop. The restored session-login/save candidate on PR #62 passed 15 tests
+  locally and its GitHub checks passed; it has not been verified live on Render.
 - **Deployment direction** (Proposed): `docs/deployment/deployment-direction.md`.
 - **Architecture diagram**: `docs/decisions/adr/ADR-001-architecture-and-stack-options.md`
   (logical layers vs. physical deployment, explicitly distinguished per brief §5.3).
@@ -40,9 +41,10 @@ than an unsupported claim of completeness.
    save, deploy — run on the actual Belgium Campus platform, per CN-07. Nothing above is final
    until that evidence exists.
 2. **Authentication and authorization architecture is undecided** (RSK-16, opened during Emile's
-   review of ADR-001). The traced slice runs against a hardcoded stand-in requester, disclosed in
-   the code and the README, not hidden. This must be resolved before the next role-differentiated
-   slice (FR-014) is built against an unreviewed assumption.
+   review of ADR-001). The original traced slice used a hardcoded stand-in requester. PR #62
+   restores a session-login/save PoC, and ADR-007 proposes a direction, but neither constitutes
+   an accepted full authentication/authorization design. The next role-differentiated slice
+   (FR-014) needs that review.
 3. ~~ADR-003's transition-table validator has no extracted implementation~~ — **fixed in this
    same baseline**: `src/persistence/lifecycle.py::LifecycleValidator` now holds the New→Accepted
    rule as an explicit, tested, reusable check. Still partial by design: only the one transition
@@ -50,8 +52,8 @@ than an unsupported claim of completeness.
    seven-state table has no approved specification yet, and inventing it would not be
    implementing a decision, it would be making one nobody reviewed.
 4. **SQLite vs. PostgreSQL for production is unverified.** ADR-001 recommends SQLite for dev/test
-   only, on the reasoning that it is a SPOF risk in a real hosted deployment — this has not been
-   tested under an actual deployment attempt.
+   only. An older reverted build deployed to Render, but the protected branch and persistence
+   after restart were not tested there. No production database choice follows from that attempt.
 5. ~~A file/content numbering mismatch existed in `docs/PED/`~~ — **fixed in this same
    baseline**: `17-data-persistence.md`, `19-design-decisions.md` and
    `20-integration-deployment.md` each held content whose own heading named a different section
@@ -68,8 +70,8 @@ than an unsupported claim of completeness.
 | Decision | Evidence still required |
 |---|---|
 | DEC-008 (stack/architecture/hosting, formally Deferred in the decision log) | Belgium Campus platform PoC — login, save, deploy |
-| Authentication/authorization placement (RSK-16) | An ADR-001 addition or its own short ADR, before the next role-restricted slice |
-| SQLite vs. PostgreSQL for production | An actual deployment attempt against both |
+| Authentication/authorization placement (RSK-16) | Review and decide Proposed ADR-007 before the next role-restricted slice |
+| SQLite vs. PostgreSQL for production | Protected-branch deployment and persistence-after-restart evidence; compare database options before selection |
 | M2 team-lettering (Member A/B/C mapping in `docs/PED/00-document-control.md`, PR #22) | Confirmation against the actual M2 assessment brief's criteria text — flagged, not resolved unilaterally |
 
 ## Outcome
@@ -77,6 +79,11 @@ than an unsupported claim of completeness.
 **PROPOSED** — sufficient controlled direction exists to continue development (the traced slice
 is the evidence), but the baseline is not yet **ACCEPTED** because ADR-001 itself is Proposed and
 RSK-16 is unresolved. Re-run this sign-off once the DEC-008 PoC evidence lands.
+
+The signatures below record the team's 30 September proposed-baseline review. They do not
+approve the 1 October evidence update, PR #62 or an unobserved hosted test. Each member should
+review the revised evidence and record any subsequent approval through the normal repository
+review/sign-off process.
 
 ## Signatures
 
