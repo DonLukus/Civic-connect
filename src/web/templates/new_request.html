@@ -14,6 +14,7 @@
   <!-- FR-005: title, description, category and location are mandatory.
        FR-006: category comes only from the controlled, active list below. -->
   <form method="post" action="/requests">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <p>
       <label for="title">Title</label><br>
       <input type="text" id="title" name="title" value="{{ values.get('title', '') }}" required>
