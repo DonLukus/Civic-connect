@@ -64,21 +64,19 @@ this PoC. Report it as found.
 
 ### 3. Belgium Campus platform check
 
-**Not checked, explicitly.** This session ran on a Windows machine (`C:\Users\mmots\...`) that has
-not been confirmed to be one of the actual Belgium Campus institutional lab computers — CN-07 and
-brief §25 specifically withdraw any guarantee about *that* environment, not about any Windows
-machine generally. What can honestly be said from here:
+**Partly checked on 2026-09-30.** On the Belgium Campus remote desktop, the public repository was
+cloned into `C:\Users\BC-STUDENT\PycharmProjects\civic-connect` and opened in PyCharm. The desktop
+provided Python 3.14, not the proposed Python 3.11. A fresh project virtual environment was
+created. PyCharm installed Flask 3.1.3 and pytest 9.1.1 into that environment, then ran the
+repository's `tests/` folder with pytest. Its test runner reported **10 tests passed, 10 total,
+600 ms**. This is real evidence that the current test suite runs on that BC desktop.
 
-- `pip install -r requirements.txt` succeeds on this Windows Python 3.13 install, including
-  `gunicorn`. That is one data point, on one machine that is not confirmed to be the campus
-  platform.
-- `gunicorn` itself cannot run on Windows (see above) — if the campus lab machines are Windows,
-  this is irrelevant to them anyway, since they would only ever run the Flask dev server locally
-  (`python -m src.web.app`), never `gunicorn`, which is Render/Linux-only.
-- Whether Python 3.11 specifically, and this exact dependency set, install and run on the actual
-  campus lab image is **not verified** and should not be assumed either way. Someone with access
-  to those machines needs to run `pip install -r requirements.txt` and `python -m pytest tests/ -v`
-  there and report the result.
+The clone's commit SHA was not captured, so this result must not be attributed to a later main
+commit without a repeat run. `gunicorn` was intentionally not installed or run in this Windows
+environment; PyCharm installed the two packages required for the test run, not the entire
+`requirements.txt`. Python 3.11, the full dependency install, an interactive login, a live
+request submission and a hosted deployment remain **unverified on the BC platform**. The earlier
+Windows Python 3.13 result above is a separate data point, not campus evidence.
 
 ## What this does and does not close
 
@@ -88,5 +86,5 @@ machine generally. What can honestly be said from here:
 - Does provide new, real evidence toward that decision: the schema-bootstrap approach works and is
   idempotent, `gunicorn` is confirmed installable and licensed appropriately, and the Windows/Unix
   boundary around `gunicorn` is now known rather than assumed.
-- Leaves three concrete, named actions for whoever can actually touch the missing infrastructure:
-  deploy to Render, observe the persistence result, and check the Belgium Campus lab machines.
+- Leaves the hosted deployment and persistence observation open, along with the login part of
+  DEC-008. The campus pytest result narrows the platform risk but does not close it.
