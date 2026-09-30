@@ -1,62 +1,73 @@
-# ADR-006: Integration Decision
+# PED §17 — Data Persistence
 
-- Status: Accepted
-- Date: 2026-09-30
-- Deciders: Don, Masego, Emile
+## 17.1 Purpose
 
-## Context
+This section captures the M2 persistence design for CivicConnect. It sets the authoritative persistence model for request data, audit data, and integration events, and it ties the design to the project requirements and quality constraints.
 
-The project must integrate request state updates, audit records, and notification delivery without losing correctness or auditability. A2 provided a four-way integration comparison; the project currently needs a practical pattern adequate for a small team and free-tier hosting constraints.
+## 17.2 Data model
 
-The decision must explicitly answer the rollback question: if a downstream notification or integration event fails, does the request state rollback? The answer must be no for the domain fact, yes only for the message send attempt if the send is still in the same local transaction.
+The core aggregate is the Request. A Request has one current state, one assignee, a version, and an immutable audit trail. The request aggregate is responsible for lifecycle legality and for tracking assignment changes.
 
-## Constraints
+Entities:
+- User
+- Request
+- Category
+- RequestComment
+- RequestAudit
+- OutboxEvent
 
-- CN-03: low-cost, free-tier constraints
-- NFR-011: backup and recoverability
-- FR-009 / FR-025: audit and notifications must remain accurate
-- NFR-004: unauthorised state changes are blocked without state mutation
+Key fields:
+- Request.id
+- Request.version
+- Request.status
+- Request.assignee_id
+- Request.requester_id
+- Request.category_id
+- Request.created_at, updated_at
+- RequestAudit.request_id, actor_user_id, previous_status, new_status, previous_assignee_id, new_assignee_id, changed_at, correlation_id
+- OutboxEvent.correlation_id, aggregate_type, aggregate_id, event_type, payload_json, state, attempts, last_error, created_at
 
-## Alternatives considered
+## 17.3 Correctness rule for FR-014 and FR-025
 
-| Option | Description | Pros | Cons |
-|---|---|---|---|
-| A | Synchronous HTTP integration | Easy to reason about initially | Couples services, poor resilience, blocks business transaction |
-| B | Message queue with direct publisher | Better decoupling | Requires operational message broker and monitoring |
-| C | Outbox-based async integration | Correct audit boundaries, resilient, low operational complexity | More moving parts than synchronous calls |
-| D | Do nothing; keep everything local | Simplest | Fails FR-009 and auditability under operational failure |
+The real concurrency control is not a UI check. It is a conditional optimistic update with version verification.
 
-## Decision
+Pseudo-SQL:
 
-Use an outbox-based asynchronous integration model. The request service writes the business change and audit row in one transaction, then emits an outbox row with a shared correlation ID. A separate process publishes the event and moves the outbox row from pending to sent or failed with an attempt count.
+```sql
+UPDATE requests
+SET assignee_id = :staff_id,
+    status = 'Accepted',
+    version = version + 1,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = :request_id
+  AND assignee_id IS NULL
+  AND status = 'New'
+  AND version = :expected_version;
+```
 
-## Rationale
+If rowcount = 0, then another Staff member or transaction has already changed the request. The system rejects the second acceptance. This is the actual correctness mechanism protecting FR-014/FR-025.
 
-This is the best fit for a small team and low-cost project. It preserves core business correctness, avoids blocking UI operations on third-party services, and supports retry semantics without undoing the business fact. This is the correct adaptation of A2's four-way comparison for CivicConnect.
+## 17.4 Audit and outbox consistency design
 
-## Trade-offs accepted
+The request-change transaction must be atomic across three writes:
+1. update the Request row with version increment
+2. insert the immutable RequestAudit row
+3. insert the outbox row with the same correlation ID
 
-- Event processing is eventually consistent
-- Some notifications may be delayed during outages
-- Monitoring and retry logic are required
+This guarantees that the domain fact and the evidence of change stay together. The outbox row is the integration boundary and the audit row is the authoritative trace.
 
-## Risks created
+Outbox state machine:
+- pending -> sent -> failed
+- failed carries attempts and last_error
+- failed items may be retried without altering the request state
 
-- RSK-08: downstream service outage may delay notifications
-- RSK-02: infrastructure failure at the app or DB layer can affect event emission
+## 17.5 SPOF, backup and scalability notes
 
-## Evidence
+- There is a single primary database by default; the app tier remains stateless.
+- Daily backup and periodic restore testing is required by NFR-011.
+- Outbox processing is asynchronous and replayable so a notification outage does not break the business transaction.
+- The design avoids a large synchronous fan-out on the request path and remains compatible with free-tier hosting constraints.
 
-- FR-009, FR-025, NFR-011
-- Persistence ADR and notification ADR
-- Architecture decision requirement for explicit rollback semantics
+## 17.6 Decision summary
 
-## Downstream consequences
-
-- Every business state change must have a correlation ID and an outbox row.
-- Notification failures are retried or marked as failed; they do not revert the request lifecycle state.
-- The deployment model must include monitoring of the outbox worker and backup/restore tests.
-
-## Later consequence (updated when evidence emerges)
-
-Left blank at decision time.
+The persistence design is an adapted version of A2: relational versioned aggregate + immutable audit row + outbox. It preserves correctness, operational resilience, and project-fit for the current M2 constraints.
