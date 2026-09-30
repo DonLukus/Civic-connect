@@ -12,11 +12,19 @@ def setup_db(db_path: str):
         os.remove(db_path)
 
     schema_path = os.path.join(os.path.dirname(__file__), '..', 'src', 'persistence', 'schema.sql')
-    with sqlite3.connect(db_path) as conn:
+    # NOTE: `with sqlite3.connect(...) as conn:` commits/rolls back on exit but does NOT close
+    # the connection (stdlib sqlite3 behaviour) - left open, this holds a Windows file lock that
+    # a later os.remove() on the db file fails against. Explicit close fixes it (found by
+    # actually running this test on the target platform, not assumed).
+    conn = sqlite3.connect(db_path)
+    try:
         with open(schema_path, 'r') as f:
             conn.executescript(f.read())
+    finally:
+        conn.close()
 
-    with sqlite3.connect(db_path) as conn:
+    conn = sqlite3.connect(db_path)
+    try:
         conn.execute("INSERT INTO users (email, password_hash, role, is_active) VALUES (?, ?, 'Staff', 1)", ('staff1@example.com', 'hash'))
         conn.execute("INSERT INTO users (email, password_hash, role, is_active) VALUES (?, ?, 'Staff', 1)", ('staff2@example.com', 'hash'))
         conn.execute("INSERT INTO users (email, password_hash, role, is_active) VALUES (?, ?, 'Requester', 1)", ('requester@example.com', 'hash'))
@@ -26,6 +34,8 @@ def setup_db(db_path: str):
             (3, None, 1),
         )
         conn.commit()
+    finally:
+        conn.close()
 
 
 def test_double_accept_rejected():
@@ -36,18 +46,21 @@ def test_double_accept_rejected():
 
     # First staff member accepts; should succeed
     assert service.accept_request(1, 1, 0) is True, "First acceptance should succeed"
-    
+
     # Second staff member tries to accept with same version; should fail
     assert service.accept_request(1, 2, 0) is False, "Second acceptance should be rejected (concurrency guard)"
 
-    with sqlite3.connect(db_path) as conn:
+    conn = sqlite3.connect(db_path)
+    try:
         row = conn.execute("SELECT assignee_id, status, version FROM requests WHERE id = 1").fetchone()
         assert row == (1, 'Accepted', 1), f"Expected (1, 'Accepted', 1), got {row}"
         audit_count = conn.execute("SELECT COUNT(*) FROM request_audit WHERE request_id = 1").fetchone()[0]
         assert audit_count == 1, f"Expected 1 audit row, got {audit_count}"
+    finally:
+        conn.close()
 
     os.remove(db_path)
-    print("✓ test_double_accept_rejected passed")
+    print("[PASS] test_double_accept_rejected passed")
 
 
 if __name__ == '__main__':
