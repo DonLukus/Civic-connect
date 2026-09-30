@@ -46,3 +46,14 @@ Deferring is acceptable and often correct where the team can state the evidence 
 | Evidence required | Verified availability and compatibility on the Belgium Campus desktop platform; free-tier limits and cold-start behaviour of candidate hosts; an honest team capability audit; a small proof of concept exercising authentication, persistence and deployment. |
 | What it determines | Determines architecture, persistence, CI, deployment, operational cost and the achievability of NFR-001, NFR-002, NFR-010 and NFR-013. |
 | Risk | RSK-02, RSK-03, RSK-12 |
+
+## 10.2 M2 progress on DEC-008
+
+The DEFERRED status above is untouched — this records where the evidence-gathering actually
+stands, not a decision yet. ADR-001 (`docs/decisions/adr/ADR-001-architecture-and-stack-options.md`)
+proposes single deployable unit / Flask / SQLite-dev-Postgres-production / pytest / GitHub
+Actions, building on the already-accepted ADR-002 (persistence), ADR-003 and ADR-004 (design
+patterns). ADR-001's own status is **Proposed, not Accepted** — it states explicitly that the
+proof-of-concept evidence DEC-008 requires (verified on the actual Belgium Campus platform, not
+assumed) hasn't been gathered yet. DEC-008 stays deferred until that evidence exists and ADR-001
+moves to Accepted.
