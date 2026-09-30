@@ -57,3 +57,11 @@ patterns). ADR-001's own status is **Proposed, not Accepted** — it states expl
 proof-of-concept evidence DEC-008 requires (verified on the actual Belgium Campus platform, not
 assumed) hasn't been gathered yet. DEC-008 stays deferred until that evidence exists and ADR-001
 moves to Accepted.
+
+## 10.3 Change requests since baseline
+
+Formal changes to baselined requirements go through `docs/change/`, using the CHG- identifier series DEC-003 already reserves for exactly this. Listed here for discoverability; the change request itself is the authoritative record.
+
+| ID | Date | Requirements affected | Summary |
+|---|---|---|---|
+| CHG-001 | 2026-09-30 | FR-009 (AC-009), FR-014 (AC-014) | Closes two acceptance-criteria gaps the team had already agreed on informally in Assignment 2 (§5.1) but never written back into the baseline: FR-009's AC now covers the comment-added notification trigger the requirement text already names; FR-014's AC now states explicitly that both a Staff self-accept and a Manager's initial assignment move a request from New to Accepted, while a Manager reassigning an already-assigned request only changes the assignee. See `docs/change/CHG-001-fr009-fr014-notification-and-acceptance-trigger.md`. |
