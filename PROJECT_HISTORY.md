@@ -22,6 +22,25 @@ AI assistant reads to get up to speed without asking anyone.
 
 ---
 
+### 2026-09-30 — M2 deployment PoC: wsgi.py and gunicorn added, Render deployment left explicit
+**Who:** Masego · **Type:** artefact, decision
+**What:** Built the production entrypoint (`wsgi.py`) for DEC-008's proof-of-concept requirement.
+Checked first that neither `RequestService` nor `RequestRepository` initialises the database
+schema (they don't), so `wsgi.py` does it once, idempotently — verified by importing it twice
+against the same file in separate processes and confirming no error and no duplicate rows.
+Added and verified `gunicorn==26.2.0` (MIT, PyPI-checked). Confirmed by actually installing it in
+an isolated venv that gunicorn cannot run on Windows (`fcntl` is Unix-only) — expected, since it
+only needs to run on Render, but confirmed rather than assumed. Full existing test suite still
+10/10 passing. **Did not** perform the actual Render deployment, the idle-timeout persistence
+observation, or the Belgium Campus lab-machine check — none possible from this session (no Render
+account/API access; no access to confirm this dev machine matches the institutional platform).
+`docs/decisions/poc-log.md` states each gap explicitly with exact next steps for whoever has that
+access, rather than guessing at a result. Does not move ADR-001 or DEC-008's status — that is a
+team decision once the real evidence exists.
+**Affects:** `wsgi.py` (new), `requirements.txt`, `docs/decisions/technology-versions.md`,
+`docs/decisions/poc-log.md` (new). DEC-008 and ADR-001 status unchanged, deliberately.
+**Evidence:** Issue #52; branch `m2/poc-deployment`; 10/10 tests passing; AI-023.
+
 ### 2026-09-30 — README rewritten in plain, grade-8-level English
 **Who:** Masego · **Type:** artefact
 **What:** Rewrote `README.md` for accessibility — shorter sentences, plain words, jargon

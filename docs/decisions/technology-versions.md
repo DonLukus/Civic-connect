@@ -10,6 +10,13 @@ official source, not asserted by an AI model from memory. This file is that veri
 | pytest | 9.1.1 | MIT | `https://pypi.org/pypi/pytest/json` (published package metadata) | 2026-09-30 |
 | Python | 3.11 (proposed) | PSF License | Not yet verified against the Belgium Campus desktop platform — see below | — |
 | sqlite3 | stdlib (ships with Python) | PSF License | Part of the CPython standard library; no separate install or licence | — |
+| gunicorn | 26.2.0 | MIT | `https://pypi.org/pypi/gunicorn/json` (published package metadata) | 2026-09-30 |
+
+**gunicorn note**: installs cleanly on Windows via pip, but fails at import (`ModuleNotFoundError:
+No module named 'fcntl'`) — confirmed by actually installing and running it, not assumed. It
+imports the Unix-only `fcntl` module. This is expected and does not block anything: gunicorn is
+only needed for the Render (Linux) production deployment; local development keeps using
+`python -m src.web.app` (Flask's own dev server), which is unaffected.
 
 ## What this does not yet verify
 
