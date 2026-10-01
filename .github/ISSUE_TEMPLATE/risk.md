@@ -1,35 +1,24 @@
 ---
 name: Risk
-about: Raise a new risk or a change to an existing one
+about: Raise or update a project risk
 labels: risk
 ---
 
-## Risk
-
-<!-- Describe a specific, measurable event or condition that could negatively impact the project. 
-     Example: "Database migration fails during production deployment" 
-     NOT vague: "Coding problems" or "Team issues" -->
+## Risk Description
+<!-- Specific, measurable event that could negatively impact the project -->
 
 ## Cause
+<!-- Root factor that could trigger this risk -->
 
-<!-- What is the underlying cause or root factor that could trigger this risk? -->
-
-## Probability (1-5) and Impact (1-5)
-
-<!-- Rate likelihood (1=rare, 5=certain) and impact (1=negligible, 5=catastrophic) -->
-- **Probability:** [1-5]
-- **Impact:** [1-5]
+## Probability & Impact
+- **Probability:** [1-5, where 5=certain]
+- **Impact:** [1-5, where 5=catastrophic]
 
 ## Mitigation
-
-<!-- Actions taken NOW to reduce the likelihood or impact BEFORE the risk occurs.
-     Example: "Add automated database migration testing", "Increase code review coverage" -->
+<!-- Actions to reduce likelihood or impact NOW -->
 
 ## Contingency
-
-<!-- Concrete actions to take IF the risk happens (must differ from mitigation).
-     Example: "Rollback procedure to previous database state", "Emergency team escalation" -->
+<!-- Concrete actions if risk occurs (must differ from mitigation) -->
 
 ## Owner
-
-<!-- Single person responsible for monitoring and managing this risk -->
+<!-- @username responsible for monitoring -->
