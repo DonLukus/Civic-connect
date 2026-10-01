@@ -1,32 +1,23 @@
 ---
-name: Requirement change
-about: Propose a change to a baselined requirement — after baseline this needs a change request
-labels: change, requirements
+name: Requirement Change
+about: Propose change to a baselined requirement (requires change request)
+labels: change,requirements
 ---
 
-## Requirement affected
-
+## Requirement Affected
 <!-- FR-nnn / NFR-nnn -->
 
-## Proposed change
+## Proposed Change
+<!-- What should change and why? -->
 
-## Reason / expected value
-
-## Impact analysis
-
+## Impact Analysis
 | Area | Impact |
 |---|---|
-| Requirements & acceptance criteria | |
-| Architecture & design | |
-| UI / API / data | |
-| Security & privacy | |
-| Scope | |
-| Schedule & resources | |
-| Cost | |
-| Testing & regression | |
-| Deployment & operations | |
-| Risk & technical debt | |
+| Requirements & Acceptance | |
+| Architecture & Design | |
+| Scope & Schedule | |
+| Risk | |
+| Testing | |
 
 ## Recommendation
-
-ACCEPT / MODIFY / DEFER / REJECT — with rationale.
+<!-- ACCEPT / MODIFY / DEFER / REJECT + rationale -->
