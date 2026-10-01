@@ -1,4 +1,4 @@
-# 🏛️ CivicConnect
+#  CivicConnect
 
 > A community service request platform that brings order to chaos.
 
@@ -6,22 +6,22 @@
 
 ---
 
-## 🎯 What This Does
+##  What This Does
 
 CivicConnect solves a critical problem: **citizen service requests are scattered across email, phone, WhatsApp, spreadsheets, and paper.** Nobody can track progress, requests get lost or duplicated, and accountability is impossible.
 
 **Our solution:**
-- ✅ One shared, controlled record for all requests
-- ✅ Permanent audit trail of every change
-- ✅ Role-based access control (Requester, Staff, Manager)
-- ✅ Real-time status tracking
-- ✅ Lightweight and cost-effective to run
+-  One shared, controlled record for all requests
+-  Permanent audit trail of every change
+-  Role-based access control (Requester, Staff, Manager)
+-  Real-time status tracking
+-  Lightweight and cost-effective to run
 
 **Built for:** Municipal governments, nonprofits, service organizations.
 
 ---
 
-## 📊 Project Status
+##  Project Status
 
 | Aspect | Status |
 |--------|--------|
@@ -36,7 +36,7 @@ CivicConnect solves a critical problem: **citizen service requests are scattered
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 
@@ -180,17 +180,17 @@ python -m pytest tests/ --cov=src --cov-report=html
 ```
 
 **Test Coverage:**
-- ✅ Request creation (FR-005, FR-006)
-- ✅ Validation (required fields, category list)
-- ✅ End-to-end web flow (login → submit → confirm)
-- ✅ Race condition prevention (FR-014: concurrent acceptance)
-- ✅ Authentication & CSRF protection
-- ✅ Role-based access control
-- ✅ Bootstrap & WSGI startup
+-  Request creation (FR-005, FR-006)
+-  Validation (required fields, category list)
+-  End-to-end web flow (login → submit → confirm)
+-  Race condition prevention (FR-014: concurrent acceptance)
+-  Authentication & CSRF protection
+-  Role-based access control
+-  Bootstrap & WSGI startup
 
 ---
 
-## 🏗️ Project Structure
+##  Project Structure
 
 ```
 CivicConnect/
@@ -228,7 +228,7 @@ CivicConnect/
 
 ---
 
-## 🔐 Security & Secret Key Management
+##  Security & Secret Key Management
 
 ### How Secrets Are Handled
 
@@ -263,7 +263,7 @@ openssl rand -base64 32
 
 ---
 
-## ⚡ Performance & Optimization
+##  Performance & Optimization
 
 ### Current Bottlenecks
 
@@ -301,7 +301,7 @@ openssl rand -base64 32
 
 ---
 
-## 📚 Learn More
+##  Learn More
 
 | Want to Know | See |
 |---|---|
@@ -314,7 +314,7 @@ openssl rand -base64 32
 
 ---
 
-## 🎓 Technology Stack
+##  Technology Stack
 
 | Component | Technology | Version | License |
 |-----------|-----------|---------|---------|
@@ -327,7 +327,7 @@ openssl rand -base64 32
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 
 This is a university project with structured governance. See [`PROJECT_RULES.md`](PROJECT_RULES.md) for:
 - Branch naming conventions
@@ -343,7 +343,7 @@ MIT License — See LICENSE file.
 
 ---
 
-## 👥 Team
+##  Team
 
 - **Don** (Workstream B): Backend architecture, database, business logic
 - **Masego** (Workstream A): Frontend, UI/UX
@@ -351,7 +351,7 @@ MIT License — See LICENSE file.
 
 ---
 
-## 📞 Support
+##  Support
 
 For issues, feature requests, or questions:
 1. Check [`docs/risk/`](docs/risk/) for known issues
