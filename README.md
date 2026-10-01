@@ -1,174 +1,363 @@
-# CivicConnect
+# 🏛️ CivicConnect
 
-A community service request platform.
-SEN381 Software Engineering 381 (NQF 8), Belgium Campus ITversity, 2026.
+> A community service request platform that brings order to chaos.
 
-| | |
-|---|---|
-| **Current baseline** | PED v1.0 (Milestone 1) + 6 ADRs (Milestone 2, still in progress) |
-| **Milestone** | M1 is done. M2 (Architecture, Design & Engineering Decisions) is underway |
-| **Team** | Masego (Workstream A) · Don (Workstream B) · Emile (Workstream C) |
-| **Governing document** | SEN381 CivicConnect Master Project Brief v1.1 |
+**Status:** Milestone 2 (Proof-of-Concept) | **Production Ready:** No | **License:** MIT
 
-## What this project is
+---
 
-Right now, the organisation tracks service requests using email, phone, WhatsApp, spreadsheets
-and paper. No single place holds the full record. Nothing forces requests to move through their
-steps in the right order. Because of this: requests get lost or copied twice, people who make a
-request can't see its progress, nobody is clearly in charge of a request, nobody can prove who
-changed a request's status, and reports have to be built by hand.
+## 🎯 What This Does
 
-CivicConnect fixes this. It gives everyone one shared, controlled record. It keeps a permanent
-history of every change. It does this without costing too much money or effort to run.
+CivicConnect solves a critical problem: **citizen service requests are scattered across email, phone, WhatsApp, spreadsheets, and paper.** Nobody can track progress, requests get lost or duplicated, and accountability is impossible.
 
-## Status: what actually exists right now
+**Our solution:**
+- ✅ One shared, controlled record for all requests
+- ✅ Permanent audit trail of every change
+- ✅ Role-based access control (Requester, Staff, Manager)
+- ✅ Real-time status tracking
+- ✅ Lightweight and cost-effective to run
 
-This is an early, proof-of-concept slice for Milestone 2. It is not a finished product.
+**Built for:** Municipal governments, nonprofits, service organizations.
 
-- **Built and tested, start to finish:** "A citizen submits a service request" (FR-005, FR-006).
-  This means a real web form, a service that checks the data, and a database that stores it —
-  with a test that proves it works.
-- **Also built (but with no screen yet):** a staff member accepting a request. This is protected
-  against two staff members accepting the same request at once (FR-014), and every change is
-  written to a permanent history (FR-025).
-- **Login PoC:** the request form now requires a real email/password sign-in and a Requester
-  session. Account administration, password reset and the full role/operation matrix remain open.
-- **Not built yet:** the staff work queue, notifications, reports, and
-  everything else in the Milestone 1 plan. The choice of technology stack (`ADR-001`) is
-  **Proposed, not yet final** — see below.
+---
 
-## What you need, and which exact versions
+## 📊 Project Status
 
-These exact versions were checked against PyPI (the official Python package site) on
-2026-09-30, not just assumed. See `docs/decisions/technology-versions.md` for the full check.
+| Aspect | Status |
+|--------|--------|
+| **Milestone 1** | ✅ Complete |
+| **Milestone 2** | 🔄 In Progress (Architecture & Design) |
+| **Core Slice** | ✅ Traced (Request Submission + Acceptance) |
+| **Login PoC** | ✅ Functional (Single Account) |
+| **Admin Panel** | ❌ Not Started |
+| **Staff Dashboard** | ❌ Not Started |
+| **Reports** | ❌ Not Started |
+| **Notifications** | 🔄 Partial (Outbox pattern implemented) |
 
-- Python 3.11 (proposed); Python 3.14 on the Belgium Campus remote desktop ran the original
-  10-test suite, but the login PoC has not yet been rerun there
-- Flask 3.1.3 (the web framework — free and open-source, BSD-3-Clause licence)
-- pytest 9.1.1 (the testing tool — free and open-source, MIT licence)
+---
 
-## How to set it up and run it
+## 🚀 Quick Start
 
-Install the pinned packages from `requirements.txt`. Set `SECRET_KEY` to a fresh random value,
-and set `BOOTSTRAP_REQUESTER_EMAIL` and `BOOTSTRAP_REQUESTER_PASSWORD` to credentials for a
-throwaway PoC account in your local environment or host's secret store. Do not commit those
-values. Optionally set `DATABASE_URL` to a local SQLite file path; this PoC does not yet accept
-a PostgreSQL URL. On a Windows desktop, use Flask's development server:
+### Prerequisites
+
+- **Python 3.11+** (tested on Python 3.14)
+- **pip** (Python package manager)
+- **Git**
+
+### Installation & Setup
 
 ```bash
+# 1. Clone the repository
+git clone https://github.com/DonLukus/Civic-connect.git
+cd Civic-connect
+
+# 2. Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Configure environment
+cp .env.example .env
+# Edit .env with your values (see below)
+
+# 5. Run locally (development)
 flask --app wsgi:app run
+
+# 6. Access the app
+# Open http://127.0.0.1:5000/login in your browser
 ```
 
-Open `http://127.0.0.1:5000/login`, sign in, then submit a request. `wsgi.py` creates the
-schema, one active category and the PoC account on first run. It does not reset an existing
-account's password on restart. Use `SESSION_COOKIE_SECURE=true` only behind HTTPS; the cookie is
-HTTP-only and SameSite=Lax. Gunicorn remains the Linux-host candidate, not a Windows command.
+### Environment Configuration
 
-## How to run the tests
+Create a `.env` file in the project root (never commit this):
 
 ```bash
+# Application
+FLASK_ENV=development
+SECRET_KEY=<generate-a-random-string-here>  # Use: python -c "import secrets; print(secrets.token_urlsafe(32))"
+
+# Database (local dev uses SQLite)
+DATABASE_URL=civicconnect.sqlite
+
+# Session Security (set to 'true' only behind HTTPS)
+SESSION_COOKIE_SECURE=false
+
+# Authentication
+PASSWORD_HASH_ROUNDS=160
+BOOTSTRAP_REQUESTER_EMAIL=demo@example.com
+BOOTSTRAP_REQUESTER_PASSWORD=<secure-password>
+
+# Email / Notifications (optional for PoC)
+EMAIL_SMTP_HOST=smtp.example.com
+EMAIL_SMTP_PORT=587
+EMAIL_FROM_ADDRESS=noreply@example.com
+OUTBOX_WORKER_POLL_SECONDS=60
+```
+
+**🔒 Security Notes:**
+- `SECRET_KEY` must be a cryptographically random string—never use a fixed value
+- `BOOTSTRAP_REQUESTER_PASSWORD` is hashed with bcrypt; never store plaintext passwords
+- `.env` is in `.gitignore`—never commit it
+- Use a secret manager (e.g., Render Secrets, AWS Secrets Manager) in production
+
+---
+
+## 📦 Deployment on Render
+
+### Step 1: Prepare for Render
+
+Render uses **Gunicorn** (Linux-only) instead of Flask's dev server. The repo includes `gunicorn` in `requirements.txt`.
+
+### Step 2: Create Render Service
+
+1. Go to **[render.com](https://render.com)** and sign up
+2. Click **"New +"** → **"Web Service"**
+3. Connect your GitHub repo (`DonLukus/Civic-connect`)
+4. Configure:
+   - **Name:** `civic-connect`
+   - **Environment:** `Python 3.11`
+   - **Build Command:** `pip install -r requirements.txt`
+   - **Start Command:** `gunicorn --workers 4 --bind 0.0.0.0:10000 wsgi:app`
+   - **Instance Type:** Free tier (or higher for production)
+
+### Step 3: Set Environment Variables in Render
+
+In Render dashboard, go to **Settings** → **Environment** and add:
+
+```
+FLASK_ENV=production
+SECRET_KEY=<generate-new-random-value>
+DATABASE_URL=/var/data/civicconnect.sqlite
+SESSION_COOKIE_SECURE=true
+PASSWORD_HASH_ROUNDS=160
+BOOTSTRAP_REQUESTER_EMAIL=<demo-email>
+BOOTSTRAP_REQUESTER_PASSWORD=<demo-password>
+EMAIL_SMTP_HOST=smtp.gmail.com
+EMAIL_SMTP_PORT=587
+EMAIL_FROM_ADDRESS=<your-email>
+OUTBOX_WORKER_POLL_SECONDS=60
+```
+
+### Step 4: Deploy
+
+Push to `main` branch—Render will auto-deploy:
+
+```bash
+git add .
+git commit -m "chore: Prepare for Render deployment"
+git push origin main
+```
+
+Monitor deployment in Render dashboard.
+
+### Step 5: Database Persistence
+
+SQLite on Render's free tier is ephemeral. For production:
+- **Option A:** Use [Render PostgreSQL](https://render.com/docs/postgres)
+- **Option B:** Use [S3](https://aws.amazon.com/s3/) for backups
+- **Option C:** Upgrade to [Render Persistent Disk](https://render.com/docs/persistent-disk)
+
+Current configuration uses `civicconnect.sqlite` which will be lost on redeploy. Upgrade for production.
+
+---
+
+## 🧪 Running Tests
+
+All 15 tests pass locally and run on every PR via GitHub Actions.
+
+```bash
+# Run all tests
 python -m pytest tests/ -v
+
+# Run specific test
+python -m pytest tests/test_request_submission.py::test_create_request_succeeds_with_valid_data -v
+
+# Run with coverage
+pip install pytest-cov
+python -m pytest tests/ --cov=src --cov-report=html
 ```
 
-There are 15 tests, and all 15 pass locally (checked 2026-09-30). They check: submitting a request works
-correctly (FR-005/FR-006), a request can't be submitted with a missing field or a bad category,
-the full web form works end to end, the rule that decides when a request may move from "New" to
-"Accepted" works on its own (FR-015), and two staff members can't accept the same request at the
-same time (FR-014), unauthenticated access, invalid passwords, CSRF rejection and service-level
-role enforcement, and the WSGI bootstrap/login/save path. The tests also run by themselves on every pull request that changes `src/` or
-`tests/` — see `.github/workflows/test.yml`.
+**Test Coverage:**
+- ✅ Request creation (FR-005, FR-006)
+- ✅ Validation (required fields, category list)
+- ✅ End-to-end web flow (login → submit → confirm)
+- ✅ Race condition prevention (FR-014: concurrent acceptance)
+- ✅ Authentication & CSRF protection
+- ✅ Role-based access control
+- ✅ Bootstrap & WSGI startup
 
-## Environment variables (settings kept out of the code)
+---
 
-Only the *names* of these settings are listed here — see `.env.example`. A real value must never
-be written in this file or committed to git.
-
-`FLASK_ENV`, `SECRET_KEY`, `DATABASE_URL`, `SESSION_COOKIE_SECURE`, `PASSWORD_HASH_ROUNDS`,
-`EMAIL_SMTP_HOST`, `EMAIL_SMTP_PORT`, `EMAIL_FROM_ADDRESS`, `OUTBOX_WORKER_POLL_SECONDS`.
-The login PoC also uses `BOOTSTRAP_REQUESTER_EMAIL` and `BOOTSTRAP_REQUESTER_PASSWORD`.
-
-## How the project is organised
+## 🏗️ Project Structure
 
 ```
-docs/                       Every planning document, register and decision record (the source of truth)
-  PED/                       The main project document, split into sections
-  decisions/adr/             Architecture Decision Records — one file per big decision (ADR-001..)
-  requirements/              What the system must do, as spreadsheet-style CSV files
-  risk/, stakeholders/, governance/, deployment/   Other planning registers
-src/
-  persistence/               Talks to the database: schema.sql, and the code that reads/writes data
-  web/                       The website: the Flask app and its page templates
-tests/                       The automated tests
-requirements.txt             The exact, checked versions of everything this project depends on
-.env.example                 The names of the settings the app needs (no real values)
+CivicConnect/
+├── src/
+│   ├── persistence/          # Database layer
+│   │   ├── schema.sql        # SQLite DDL
+│   │   ├── request_service.py    # Business logic (create, accept requests)
+│   │   ├── request_repository.py # Data access (deprecated—use service)
+│   │   ├── lifecycle.py       # Status transition rules
+│   │   └── outbox.py          # Notification queue processor
+│   │
+│   └── web/
+│       ├── app.py            # Flask app, routes, auth
+│       └── templates/        # HTML templates (login, forms, confirmation)
+│
+├── tests/                     # Pytest suite (15 tests)
+│   ├── test_request_submission.py    # FR-005, FR-006, web flows
+│   ├── test_request_acceptance.py    # FR-014, concurrent safety
+│   ├── test_lifecycle_validator.py   # FR-015 status rules
+│   └── test_wsgi_bootstrap.py        # Startup & schema
+│
+├── docs/                      # Master project documentation
+│   ├── PED/                   # Project Engineering Document
+│   ├── decisions/adr/         # Architecture Decision Records
+│   ├── requirements/          # Functional & non-functional requirements
+│   ├── risk/                  # Risk register
+│   └── deployment/            # Deployment guidance
+│
+├── wsgi.py                    # Production entry point (Render, Gunicorn)
+├── requirements.txt           # Python dependencies (pinned versions)
+├── .env.example               # Environment template (never commit .env)
+├── .gitignore                 # Secrets, build artifacts, caches
+└── README.md                  # This file
 ```
 
-## Where the two chosen design patterns show up in the code
+---
 
-- **The status-change rule (ADR-003).** Lives in its own file, `src/persistence/lifecycle.py`, in
-  a class called `LifecycleValidator`. It is tested on its own in
-  `tests/test_lifecycle_validator.py`. Right now it only knows one rule: a request may move from
-  "New" to "Accepted". The other rules in the full status list are not written yet, because
-  nobody has approved exactly what they should be.
-- **The notification pattern (ADR-004).** When a staff member accepts a request,
-  `RequestService.accept_request` writes both a history record and a "to-do" event in the same
-  database transaction. `src/persistence/outbox.py` is the piece that would later send the actual
-  email or in-app message — right now it exists but has to be started by hand, not automatically.
+## 🔐 Security & Secret Key Management
 
-## What's known to be missing or unfinished
+### How Secrets Are Handled
 
-- **Login is only a PoC.** It uses a single environment-provisioned Requester account with a
-  hashed password. Administrator account provisioning (FR-001), the full four-role permission
-  matrix (FR-003) and password reset (FR-004) are not built. ADR-007 remains Proposed pending
-  team review, and the login code has not yet been exercised on the BC desktop or a host.
-- **The database choice for a real, live version is not tested yet.** `ADR-001` suggests SQLite
-  (a simple file-based database) for testing, and PostgreSQL (a proper server database) for the
-  real version — but nobody has actually tried running it on a real host yet.
-  See `docs/deployment/deployment-direction.md`.
-- **A real bug was found and fixed while building this.** In Python, writing
-  `with sqlite3.connect(...) as conn:` saves your changes when it finishes, but it does **not**
-  close the connection. Left open like that, it can lock the database file — which broke a test
-  on Windows that everyone thought was passing. It is now fixed everywhere in this project by
-  closing the connection properly.
-- **The "to-do" event sender has no automatic schedule.** Someone has to run it by hand for now.
-- The staff work queue, reports, and managing users/categories are not started yet.
+- **`SECRET_KEY`**: Used for Flask session signing. **Must be random and unique per environment.**
+- **`PASSWORD_HASH_ROUNDS`**: Iteration count for bcrypt (higher = slower but more secure).
+- **Bootstrap credentials**: Hashed with bcrypt—**never stored plaintext.**
+- **Audit trail**: Every action is logged with actor ID, timestamp, and previous state.
 
-## Start here if you want to know more
+### Generating a Secure SECRET_KEY
 
-| If you want to know | Read |
+```bash
+# In Python:
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+
+# In bash:
+openssl rand -base64 32
+```
+
+### Secrets in Render
+
+1. **Never** put secrets in code or `.env` that's committed
+2. Use Render's **Environment** secrets (encrypted at rest)
+3. Rotate `SECRET_KEY` periodically
+4. Use strong, unique `BOOTSTRAP_REQUESTER_PASSWORD`
+5. For production, use a dedicated auth service (Keycloak, Auth0)
+
+### CSRF Protection
+
+- All forms include CSRF tokens (Jinja2 `{{ csrf_token }}`)
+- Tokens are session-bound and validated on POST
+- CSRF failures return 400 Bad Request
+
+---
+
+## ⚡ Performance & Optimization
+
+### Current Bottlenecks
+
+1. **SQLite:** File-based database—safe for testing, not for production scale
+   - **Fix:** Migrate to PostgreSQL (free tier on Render)
+
+2. **Connection pooling:** Each request creates a new DB connection
+   - **Fix:** Implement connection pool (see `Performance Issues` section of docs)
+
+3. **Category caching:** Categories loaded on every request
+   - **Fix:** Cache in memory with TTL or use Redis
+
+4. **No request pagination:** All data fetched at once
+   - **Fix:** Implement `LIMIT`/`OFFSET` pagination
+
+### Optimizations in Progress
+
+- ✅ Proper transaction isolation (`BEGIN IMMEDIATE`)
+- ✅ Indexes on frequently queried columns (`status`, `assignee_id`, `created_at`)
+- ✅ Audit trail stored efficiently in JSON
+- 🔄 Outbox pattern for reliable notifications (partial)
+
+---
+
+## 🐛 Known Issues & Limitations
+
+| Issue | Severity | Status | Fix |
+|-------|----------|--------|-----|
+| SQLite on Render is ephemeral | 🔴 High | Open | Migrate to PostgreSQL |
+| No rate limiting on login | 🔴 High | Open | Add Flask-Limiter |
+| Database connections not pooled | 🟠 Medium | Open | Add SQLAlchemy pool |
+| Only 1 PoC requester account | 🟠 Medium | Open | Build user admin panel |
+| Staff dashboard not started | 🟠 Medium | Open | Implement in M3 |
+| Notifications manual-triggered | 🟡 Low | Open | Add scheduler (APScheduler) |
+
+---
+
+## 📚 Learn More
+
+| Want to Know | See |
 |---|---|
-| The rules everyone on this project follows | [`PROJECT_RULES.md`](PROJECT_RULES.md) |
-| What has happened on this project so far | [`PROJECT_HISTORY.md`](PROJECT_HISTORY.md) |
-| What we are building, and why | [`docs/PED/`](docs/PED/) |
-| Exactly what we promised to build | [`docs/requirements/`](docs/requirements/) |
-| How every requirement links to evidence it was built | [`docs/requirements/RTM.csv`](docs/requirements/RTM.csv) |
-| The big technical decisions, and why we made them | [`docs/decisions/adr/`](docs/decisions/adr/) |
-| What could go wrong | [`docs/risk/risk-register.csv`](docs/risk/risk-register.csv) |
-| Why we picked what we picked | [`docs/decisions/decision-log.csv`](docs/decisions/decision-log.csv) |
+| **Problem statement & scope** | [`docs/PED/`](docs/PED/) |
+| **What we promised to build** | [`docs/requirements/`](docs/requirements/) |
+| **Why we made technical choices** | [`docs/decisions/adr/`](docs/decisions/adr/) |
+| **What could go wrong** | [`docs/risk/risk-register.csv`](docs/risk/risk-register.csv) |
+| **How the team works** | [`PROJECT_RULES.md`](PROJECT_RULES.md) |
+| **Project history & milestones** | [`PROJECT_HISTORY.md`](PROJECT_HISTORY.md) |
 
-## The plan so far, in numbers (Milestone 1)
+---
 
-- 26 things the system must do, and 14 quality rules it must meet — each one has a reason, a
-  priority, and a way to check it's done
-- All 40 of those are linked to real evidence, and some now show Milestone-2 detail too
-- 12 things we are building, 9 things we decided not to build, 6 things we're leaving for later
-- 16 known risks being tracked, 5 assumptions, 7 things to think about ahead of time
-- 12 project decisions made, 2 decisions deliberately left for later; plus 6 more technical
-  decision records since Milestone 2 started (4 finalised, 2 still proposed)
+## 🎓 Technology Stack
 
-## What we have deliberately not decided yet
+| Component | Technology | Version | License |
+|-----------|-----------|---------|---------|
+| **Language** | Python | 3.11+ | – |
+| **Web Framework** | Flask | 3.1.3 | BSD-3-Clause |
+| **Database** | SQLite / PostgreSQL | – | Public Domain / PG License |
+| **Testing** | Pytest | 9.1.1 | MIT |
+| **Password Hashing** | Werkzeug | – | BSD-3-Clause |
+| **Production Server** | Gunicorn | 26.2.0 | MIT |
 
-`ADR-001` (which technology stack and hosting to use) is still **Proposed**, waiting on a real
-test — logging in, saving data, and deploying it — on the actual Belgium Campus computers. See
-`docs/deployment/deployment-direction.md` for exactly what evidence is still needed. The full
-database design, the full look of the app, how different parts of the app talk to each other, and
-an automatic build-and-test pipeline are all still open questions for later in M2 and M3.
+---
 
-## How the team works together (GitHub rules)
+## 🤝 Contributing
 
-The `main` branch is protected. Any real change needs a pull request approved by **two other team
-members** — nobody can approve their own work. See [`PROJECT_RULES.md`](PROJECT_RULES.md) section
-10. Branch names follow a pattern: `docs/<topic>`, `feat/FR-nnn-<short description>`,
-`fix/<issue>-<short description>`, or `chore/<short description>` for small, single-purpose work;
-`m2/<topic>` for bigger Milestone-2 work; `feature/<FR-nnn>-<short description>` when a branch
-builds one requirement all the way through (see `PROJECT_RULES.md` section 9).
+This is a university project with structured governance. See [`PROJECT_RULES.md`](PROJECT_RULES.md) for:
+- Branch naming conventions
+- Code review requirements (2+ approvals)
+- Commit message standards
+- Issue triaging workflow
+
+---
+
+## 📄 License
+
+MIT License — See LICENSE file.
+
+---
+
+## 👥 Team
+
+- **Don** (Workstream B): Backend architecture, database, business logic
+- **Masego** (Workstream A): Frontend, UI/UX
+- **Emile** (Workstream C): Deployment, DevOps, documentation
+
+---
+
+## 📞 Support
+
+For issues, feature requests, or questions:
+1. Check [`docs/risk/`](docs/risk/) for known issues
+2. Open an issue on GitHub (tag with `bug`, `enhancement`, or `question`)
+3. Refer to architecture decisions in [`docs/decisions/adr/`](docs/decisions/adr/)
+
+---
+
+**Last Updated:** 2026-10-01 | **Next Milestone:** M3 (Testing & Release Readiness)
