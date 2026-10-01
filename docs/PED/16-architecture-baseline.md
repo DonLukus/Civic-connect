@@ -20,4 +20,4 @@ Before adding any M2 decision, the whole M1 baseline (`docs/PED/01`–`15`, the 
 
 ## 16.2 Architecture decision
 
-Pending. DEC-008 requires a proof-of-concept — exercising authentication, persistence and deployment on the actual Belgium Campus platform — before the architecture and technology decisions are taken, not just compared on paper. This section gets filled in once that evidence exists, referencing ADR-001.
+ADR-001 remains Proposed and DEC-008 remains Deferred. The original request slice passed 10 tests on the Belgium Campus desktop on 30 September 2026. The later session-login/save slice passed 15 tests locally and the checks on PR #62 passed, but that branch has not been rerun on the campus desktop or verified as a live hosted deployment. Render was prepared and an older, reverted build deployed successfully; the service was suspended pending a protected-branch test. The persistence-after-restart result is still unknown. These results narrow platform risk but do not satisfy DEC-008's complete login/save/deploy gate. The observations and remaining test are recorded in `docs/decisions/poc-log.md`.

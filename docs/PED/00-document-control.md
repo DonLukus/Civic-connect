@@ -29,6 +29,7 @@ Version 2.0 (in progress) — Architecture, Technology & Initial Design Baseline
 | 0.9 | 2026-09-08 | Emile | Sections integrated; identifiers reconciled across all registers | Masego, Don | In review |
 | 1.0 | 8 September 2026 | Team | Baselined. Scope, requirements and acceptance criteria under change control. | All three | BASELINED |
 | 2.0 (in progress) | 2026-09-30 | Emile | M2 document control opened. PED continues from the v1.0 baseline — nothing below is rewritten, M2 adds new sections (16–21) for architecture, data, technology, design and the M2 sign-off. | Don, Masego (pending) | Draft |
+| 2.0 review candidate | 2026-10-01 | Emile | Reconciled PoC, campus test, PR #62 and Render deployment evidence with the architecture and deployment sections. | Don, Masego (pending) | In review |
 
 Note on the M2 team table above: the Member A/B/C split for Milestone 2 is not the same grouping as the Workstream A/B/C split above it — those were fixed at M1 baseline and stay as the historical record. M2 uses its own lettering, matching the assessment brief's grading criteria (Emile: criteria A + B, architecture and requirements; Don: criteria C + E, data and design patterns; Masego: criteria D + F, technology and delivery).
 
