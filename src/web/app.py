@@ -59,7 +59,7 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
             "SELECT id, role FROM users WHERE id = ? AND is_active = 1", (user_id,)
         ) if isinstance(user_id, int) else None
         if g.current_user is None:
-            session.clear()
+            session.clear() if user_id is not None else None
             return redirect(url_for("login"))
 
     @app.route("/login", methods=["GET", "POST"])
