@@ -26,7 +26,7 @@ AI assistant reads to get up to speed without asking anyone.
 **Who:** Emile with AI assistance · **Type:** change
 **What:** Traced the browser login HTTP 400 to the unauthenticated request guard clearing the anonymous session during the browser's `/favicon.ico` request, which removed the login form's CSRF token. The fix limits session clearing to requests with a `user_id`, and a regression test covers the browser request sequence. The local suite passes 16 tests. Live Render login and persistence checks remain pending.
 **Affects:** DEC-008 (PoC evidence); no requirement changed.
-**Evidence:** `src/web/app.py`; `tests/test_request_submission.py`; review branch `fix/login-favicon-csrf-complete`.
+**Evidence:** `src/web/app.py`; `tests/test_request_submission.py`; review branch `fix/login-favicon-csrf-final`.
 
 
 ### 2026-09-30 — Reconciled ADR-006 vs deployment-direction.md on outbox placement; refined DEC-007
