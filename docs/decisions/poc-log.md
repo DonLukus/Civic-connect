@@ -81,7 +81,21 @@ PyCharm at `C:\Users\BC-STUDENT\PycharmProjects\Civic-connect`. On Python **3.14
 isolated `.venv` was created and Flask 3.1.3 plus pytest 9.1.1 were installed. The full
 `tests/` suite reported **15 passed in 7.75 seconds**; the terminal screenshot is preserved at
 [`evidence/bc-desktop-pytest-15-passed-2026-10-05.png`](evidence/bc-desktop-pytest-15-passed-2026-10-05.png).
-The exact checked-out commit SHA was not captured.
+The exact checked-out commit SHA was not captured during this first run.
+
+**Commit and dependency verification, later on 5 October.** Emile then captured the checkout
+identity and repeated the test command from the same BC Desktop project. `git rev-parse HEAD` and
+`git rev-parse origin/main` both returned
+`6beeb7a1353fdfdf8a9ed6966e1028b7fd3e0d75`, confirming that this run tested the then-current
+`main` commit. Installing `requirements.txt` in the project's isolated `.venv` completed
+successfully, including Gunicorn 26.2.0. The repeat run reported **15 passed in 5.88 seconds**.
+The supplied terminal screenshots are preserved at
+[`evidence/bc-desktop-requirements-installed-2026-10-05.png`](evidence/bc-desktop-requirements-installed-2026-10-05.png),
+[`evidence/bc-desktop-pytest-current-main-2026-10-05.png`](evidence/bc-desktop-pytest-current-main-2026-10-05.png)
+and
+[`evidence/bc-desktop-main-sha-python-2026-10-05.png`](evidence/bc-desktop-main-sha-python-2026-10-05.png).
+These confirm the test suite and dependency installation for that commit on this desktop; they do
+not establish that Python 3.11 is available there or prove production deployment behaviour.
 
 The interactive PoC was then run with Flask's development server bound only to
 `127.0.0.1:5000`, using a disposable test account, an ephemeral secret key in the terminal

@@ -22,6 +22,17 @@ AI assistant reads to get up to speed without asking anyone.
 
 ---
 
+### 2026-10-05 — BC Desktop test evidence tied to current main commit
+**Who:** Emile · **Type:** artefact
+**What:** Captured the later BC Desktop dependency-install and test run: `requirements.txt` installed
+successfully and all 15 tests passed on Python 3.14.5 in 5.88 seconds. `HEAD` and `origin/main`
+both resolved to `6beeb7a1353fdfdf8a9ed6966e1028b7fd3e0d75`. This supplements the earlier run
+whose SHA was not captured; it does not resolve the Render result or change DEC-008's status.
+**Affects:** DEC-008, `docs/decisions/poc-log.md`, `docs/PED/10-decision-log.md`,
+`docs/PED/16-architecture-baseline.md`.
+**Evidence:** Emile's BC Desktop terminal screenshots supplied 2026-10-05; repeat result recorded
+in `docs/decisions/poc-log.md`.
+
 ### 2026-10-05 — DEC-008 PoC evidence recorded from Render and BC Desktop
 **Who:** Emile, with ChatGPT/Codex assistance · **Type:** artefact, governance
 **What:** Recorded the observed Render login/submission and post-redeploy result, plus the BC
