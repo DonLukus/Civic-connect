@@ -7,9 +7,9 @@ import sqlite3
 def test_wsgi_login_save_and_repeat_bootstrap(tmp_path, monkeypatch):
     db_path = tmp_path / "civicconnect.sqlite"
     monkeypatch.setenv("DATABASE_URL", str(db_path))
-    monkeypatch.setenv("SECRET_KEY", "test-only-secret")
+    monkeypatch.setenv("SECRET_KEY", "x")
     monkeypatch.setenv("BOOTSTRAP_REQUESTER_EMAIL", "poc@example.test")
-    monkeypatch.setenv("BOOTSTRAP_REQUESTER_PASSWORD", "test-only-password")
+    monkeypatch.setenv("BOOTSTRAP_REQUESTER_PASSWORD", "pw")
 
     import wsgi
     importlib.reload(wsgi)
@@ -20,7 +20,7 @@ def test_wsgi_login_save_and_repeat_bootstrap(tmp_path, monkeypatch):
     with client.session_transaction() as sess:
         csrf = sess["_csrf_token"]
     assert client.post("/login", data={
-        "email": "poc@example.test", "password": "test-only-password", "csrf_token": csrf,
+        "email": "poc@example.test", "password": "pw", "csrf_token": csrf,
     }).status_code == 302
     with client.session_transaction() as sess:
         csrf = sess["_csrf_token"]
