@@ -1,7 +1,10 @@
 # Pinned versions, verified against PyPI's published metadata (not asserted from memory) on
 # 2026-09-30. See docs/decisions/technology-versions.md for the verification record and
-# licences. CN-07: none of this is confirmed to run on the Belgium Campus desktop platform yet -
-# that is the outstanding DEC-008 proof-of-concept action, not something this file can assert.
+# licences. On 2026-10-05, requirements.txt installed successfully on BC Desktop with Python
+# 3.14.5 and the then-current suite passed 15 tests at SHA
+# 6beeb7a1353fdfdf8a9ed6966e1028b7fd3e0d75 (see docs/decisions/poc-log.md). This records that
+# test run only; full platform/deployment suitability and Render persistence remain open under
+# DEC-008.
 #
 # gunicorn is production/Render-only - it imports the Unix-only `fcntl` module and confirmed
 # does not run on Windows (installs fine, fails at import). Local dev still uses
