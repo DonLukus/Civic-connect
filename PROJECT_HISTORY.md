@@ -44,6 +44,12 @@ Proposed status. AI-026 records the assistance and verification limits.
 `docs/decisions/poc-log.md`, `docs/decisions/evidence/`, AI-026.
 **Evidence:** Branch `docs/emile-task2-poc-evidence`; `docs/decisions/poc-log.md` and linked
 screenshots; Render cause remains unknown and the BC checkout SHA was not captured.
+### 2026-10-05 — Login PoC browser CSRF defect identified and fixed
+**Who:** Emile with AI assistance · **Type:** change
+**What:** Traced the browser login HTTP 400 to the unauthenticated request guard clearing the anonymous session during the browser's `/favicon.ico` request, which removed the login form's CSRF token. The fix limits session clearing to requests with a `user_id`, and a regression test covers the browser request sequence. The local suite passes 16 tests. Live Render login and persistence checks remain pending.
+**Affects:** DEC-008 (PoC evidence); no requirement changed.
+**Evidence:** `src/web/app.py`; `tests/test_request_submission.py`; review branch `fix/login-favicon-csrf-final`.
+
 
 ### 2026-09-30 — Reconciled ADR-006 vs deployment-direction.md on outbox placement; refined DEC-007
 **Who:** Masego (applying a review attributed to Don) · **Type:** decision
