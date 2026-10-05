@@ -22,6 +22,18 @@ AI assistant reads to get up to speed without asking anyone.
 
 ---
 
+### 2026-10-05 — DEC-008 PoC evidence recorded from Render and BC Desktop
+**Who:** Emile, with ChatGPT/Codex assistance · **Type:** artefact, governance
+**What:** Recorded the observed Render login/submission and post-redeploy result, plus the BC
+Desktop 15-test run and local request's survival across a Flask process restart. Linked the four
+supporting screenshots and kept the unknown Render persistence cause and missing BC commit SHA
+explicit. Updated DEC-008's evidence summary without changing its Deferred status or ADR-001's
+Proposed status. AI-026 records the assistance and verification limits.
+**Affects:** DEC-008 (`docs/decisions/decision-log.csv`, `docs/PED/10-decision-log.md`),
+`docs/decisions/poc-log.md`, `docs/decisions/evidence/`, AI-026.
+**Evidence:** Branch `docs/emile-task2-poc-evidence`; `docs/decisions/poc-log.md` and linked
+screenshots; Render cause remains unknown and the BC checkout SHA was not captured.
+
 ### 2026-09-30 — Reconciled ADR-006 vs deployment-direction.md on outbox placement; refined DEC-007
 **Who:** Masego (applying a review attributed to Don) · **Type:** decision
 **What:** ADR-006 said a separate process publishes outbox events; `deployment-direction.md` said
