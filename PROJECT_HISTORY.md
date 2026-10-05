@@ -22,6 +22,39 @@ AI assistant reads to get up to speed without asking anyone.
 
 ---
 
+### 2026-10-05 — Repeated Render persistence check remains unsuccessful
+**Who:** Emile, with Codex assistance · **Type:** artefact
+**What:** After a successful manual redeploy of `main` at `6beeb7a`, request #1's confirmation
+route returned 404 again. Rechecking the route in Emile's signed-in Edge session produced the
+same result. The cause remains unknown; DEC-008 stays Deferred while the team investigates the
+persistence failure and reviews the evidence.
+**Affects:** DEC-008, `docs/decisions/poc-log.md`, `docs/decisions/decision-log.csv`,
+`docs/PED/10-decision-log.md`, `docs/PED/16-architecture-baseline.md`.
+**Evidence:** Render deployment `dep-db1ulb6k1f9s738e4jhg`; Render access log; signed-in Edge result;
+`docs/decisions/poc-log.md`.
+
+### 2026-10-05 — BC Desktop test evidence tied to current main commit
+**Who:** Emile · **Type:** artefact
+**What:** Captured the later BC Desktop dependency-install and test run: `requirements.txt` installed
+successfully and all 15 tests passed on Python 3.14.5 in 5.88 seconds. `HEAD` and `origin/main`
+both resolved to `6beeb7a1353fdfdf8a9ed6966e1028b7fd3e0d75`. This supplements the earlier run
+whose SHA was not captured; it does not resolve the Render result or change DEC-008's status.
+**Affects:** DEC-008, `docs/decisions/poc-log.md`, `docs/PED/10-decision-log.md`,
+`docs/PED/16-architecture-baseline.md`.
+**Evidence:** Emile's BC Desktop terminal screenshots supplied 2026-10-05; repeat result recorded
+in `docs/decisions/poc-log.md`.
+
+### 2026-10-05 — DEC-008 PoC evidence recorded from Render and BC Desktop
+**Who:** Emile, with ChatGPT/Codex assistance · **Type:** artefact, governance
+**What:** Recorded the observed Render login/submission and post-redeploy result, plus the BC
+Desktop 15-test run and local request's survival across a Flask process restart. Linked the four
+supporting screenshots and kept the unknown Render persistence cause and missing BC commit SHA
+explicit. Updated DEC-008's evidence summary without changing its Deferred status or ADR-001's
+Proposed status. AI-026 records the assistance and verification limits.
+**Affects:** DEC-008 (`docs/decisions/decision-log.csv`, `docs/PED/10-decision-log.md`),
+`docs/decisions/poc-log.md`, `docs/decisions/evidence/`, AI-026.
+**Evidence:** Branch `docs/emile-task2-poc-evidence`; `docs/decisions/poc-log.md` and linked
+screenshots; Render cause remains unknown and the BC checkout SHA was not captured.
 ### 2026-10-05 — Login PoC browser CSRF defect identified and fixed
 **Who:** Emile with AI assistance · **Type:** change
 **What:** Traced the browser login HTTP 400 to the unauthenticated request guard clearing the anonymous session during the browser's `/favicon.ico` request, which removed the login form's CSRF token. The fix limits session clearing to requests with a `user_id`, and a regression test covers the browser request sequence. The local suite passes 16 tests. Live Render login and persistence checks remain pending.

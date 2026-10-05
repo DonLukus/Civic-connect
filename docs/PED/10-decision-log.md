@@ -41,22 +41,22 @@ Deferring is acceptable and often correct where the team can state the evidence 
 |---|---|
 | Context | These are the most consequential technical decisions in the project and are explicitly outside the M1 boundary. |
 | Status | DEFERRED to M2, to be taken through a weighted decision matrix and an Architecture Decision Record supported by a measured proof of concept. |
-| Why deferring is correct | The evidence required to choose well does not exist yet. Baselined requirements and NFRs are inputs to the decision, not outputs of it. Choosing a stack in M1 would be a preference exercise rather than an engineering decision, and the Master Project Brief makes technology selection an assessed decision. |
+| Why deferring is correct | Evidence gathering has started, but the current PoC results do not compare the candidate stacks or explain the different persistence observations on Render and the BC desktop. Baselined requirements and NFRs are inputs to the decision, not outputs of it. The team still needs the remaining platform evidence and a reviewed comparison before selecting a stack. |
 | Consequence accepted | The team cannot begin construction, which compresses M2. Accepted deliberately. |
-| Evidence required | Verified availability and compatibility on the Belgium Campus desktop platform; free-tier limits and cold-start behaviour of candidate hosts; an honest team capability audit; a small proof of concept exercising authentication, persistence and deployment. |
+| Evidence required | Gathered 2026-10-05: hosted Render login and request submission; test request #1 was unavailable at its confirmation route after two successful manual redeploys, including a repeat in Emile's signed-in Edge session (cause unknown). On BC Desktop, a repeat run on Python 3.14.5 installed `requirements.txt` successfully and passed all 15 tests in 5.88 seconds. `git rev-parse HEAD` and `git rev-parse origin/main` both returned `6beeb7a1353fdfdf8a9ed6966e1028b7fd3e0d75`. A separate local test request remained available after a Flask process restart using local SQLite; this does not explain the Render result. Still required: verify compatibility against the supported Belgium Campus environment; compare candidate-host free-tier limits and cold-start behaviour; complete the team capability audit; diagnose the Render persistence failure and decide how to verify persistence; review the combined evidence as a team. See `docs/decisions/poc-log.md`. |
 | What it determines | Determines architecture, persistence, CI, deployment, operational cost and the achievability of NFR-001, NFR-002, NFR-010 and NFR-013. |
 | Risk | RSK-02, RSK-03, RSK-12 |
 
 ## 10.2 M2 progress on DEC-008
 
-The DEFERRED status above is untouched — this records where the evidence-gathering actually
-stands, not a decision yet. ADR-001 (`docs/decisions/adr/ADR-001-architecture-and-stack-options.md`)
-proposes single deployable unit / Flask / SQLite-dev-Postgres-production / pytest / GitHub
-Actions, building on the already-accepted ADR-002 (persistence), ADR-003 and ADR-004 (design
-patterns). ADR-001's own status is **Proposed, not Accepted** — it states explicitly that the
-proof-of-concept evidence DEC-008 requires (verified on the actual Belgium Campus platform, not
-assumed) hasn't been gathered yet. DEC-008 stays deferred until that evidence exists and ADR-001
-moves to Accepted.
+The DEFERRED status above is untouched — this records evidence gathered so far, not a decision.
+The 2026-10-05 PoC log records the Render login/submission check and the BC Desktop test and
+process-restart check, including their limits. The Render request was unavailable after two
+successful redeploys; the second check in Emile's signed-in Edge session returned the same 404.
+The cause is not established. The BC result used local SQLite and does not explain the Render
+result. ADR-001 (`docs/decisions/adr/ADR-001-architecture-and-stack-options.md`) remains
+**Proposed, not Accepted**. The team must review the evidence and complete the remaining
+comparisons before deciding DEC-008 or accepting ADR-001.
 
 ## 10.3 Change requests since baseline
 
