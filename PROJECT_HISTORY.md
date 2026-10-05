@@ -8,6 +8,12 @@ AI assistant reads to get up to speed without asking anyone.
 
 **Rule.** Every pull request adds an entry here. Newest at the top.
 
+### 2026-10-05 — M2 Member B evidence completed: lifecycle validation and traceability evidence
+**Who:** Don · **Type:** requirements, artefact
+**What:** Completed the M2 evidence for the approved Member B requirement slice by formalising the FR-014 transition in `src/persistence/lifecycle.py`, wiring the same rule into `RequestService.accept_request`, and extending the lifecycle tests to prove the accepted transition is the only one currently implemented. This keeps the change within Don's workstream and avoids Emile-owned PED/baseline/risk files.
+**Affects:** FR-014, FR-015, TR-011, TR-012, `src/persistence/lifecycle.py`, `src/persistence/request_service.py`, `tests/test_lifecycle_validator.py`.
+**Evidence:** `python -m pytest tests/test_lifecycle_validator.py -q` and `python -m pytest tests/test_request_acceptance.py -q` both passed on the branch.
+
 ---
 
 ## Format
@@ -55,12 +61,12 @@ Proposed status. AI-026 records the assistance and verification limits.
 `docs/decisions/poc-log.md`, `docs/decisions/evidence/`, AI-026.
 **Evidence:** Branch `docs/emile-task2-poc-evidence`; `docs/decisions/poc-log.md` and linked
 screenshots; Render cause remains unknown and the BC checkout SHA was not captured.
+
 ### 2026-10-05 — Login PoC browser CSRF defect identified and fixed
 **Who:** Emile with AI assistance · **Type:** change
 **What:** Traced the browser login HTTP 400 to the unauthenticated request guard clearing the anonymous session during the browser's `/favicon.ico` request, which removed the login form's CSRF token. The fix limits session clearing to requests with a `user_id`, and a regression test covers the browser request sequence. The local suite passes 16 tests. Live Render login and persistence checks remain pending.
 **Affects:** DEC-008 (PoC evidence); no requirement changed.
 **Evidence:** `src/web/app.py`; `tests/test_request_submission.py`; review branch `fix/login-favicon-csrf-final`.
-
 
 ### 2026-09-30 — Reconciled ADR-006 vs deployment-direction.md on outbox placement; refined DEC-007
 **Who:** Masego (applying a review attributed to Don) · **Type:** decision
