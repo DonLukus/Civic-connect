@@ -29,7 +29,7 @@ def setup_db(db_path: str):
 
     conn = sqlite3.connect(db_path)
     try:
-        conn.execute("INSERT INTO users (email, password_hash, role, is_active) VALUES (?, ?, 'Requester', 1)", ('requester@example.com', generate_password_hash('test-password')))
+        conn.execute("INSERT INTO users (email, password_hash, role, is_active) VALUES (?, ?, 'Requester', 1)", ('requester@example.com', generate_password_hash('pw')))
         conn.execute("INSERT INTO categories (name, target_resolution_hours, is_active) VALUES ('Utilities', 48, 1)")
         conn.execute("INSERT INTO categories (name, target_resolution_hours, is_active) VALUES ('Retired category', 48, 0)")
         conn.commit()
@@ -129,7 +129,7 @@ def login_client(client):
     with client.session_transaction() as sess:
         csrf = sess['_csrf_token']
     response = client.post('/login', data={
-        'email': 'requester@example.com', 'password': 'test-password', 'csrf_token': csrf,
+        'email': 'requester@example.com', 'password': 'pw', 'csrf_token': csrf,
     })
     assert response.status_code == 302
     with client.session_transaction() as sess:
@@ -255,7 +255,7 @@ def test_browser_favicon_request_does_not_invalidate_login_csrf():
 
     client.get('/favicon.ico')
     response = client.post('/login', data={
-        'email': 'requester@example.com', 'password': 'test-password', 'csrf_token': csrf,
+        'email': 'requester@example.com', 'password': 'pw', 'csrf_token': csrf,
     })
     assert response.status_code == 302
     assert response.headers['Location'].endswith('/requests/new')
