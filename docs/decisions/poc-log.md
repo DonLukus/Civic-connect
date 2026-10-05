@@ -52,6 +52,17 @@ captured browser screenshot is preserved at
 This records the observed result; it does not identify the underlying cause or prove that every
 request was deleted.
 
+**Repeat check on 5 October 2026, 20:21–20:22 SAST.** Before a second manual redeploy, reference
+#1 was still displayed on its confirmation page. Render then redeployed the latest `main` commit
+`6beeb7a1353fdfdf8a9ed6966e1028b7fd3e0d75` (deployment `dep-db1ulb6k1f9s738e4jhg`) and reported
+**Deploy succeeded / Live**. After it became live, the same `/requests/1/submitted` URL returned
+**404 Not Found** again. Render's access log also recorded a `GET /requests/1/submitted` with
+status 404 at 20:22:36 SAST. Repeating the check in Emile's signed-in Edge session produced the
+same 404. This reproduces the earlier observation after another successful redeploy; it still
+does not establish why the record was unavailable or prove that all data was lost. The Render
+deployment detail/log and browser result were directly observed during this check; no new
+screenshot file has been added to this repository.
+
 | Field | Result |
 |---|---|
 | Service URL | `https://civic-connect-bcx2.onrender.com` |

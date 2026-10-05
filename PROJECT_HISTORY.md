@@ -22,6 +22,17 @@ AI assistant reads to get up to speed without asking anyone.
 
 ---
 
+### 2026-10-05 — Repeated Render persistence check remains unsuccessful
+**Who:** Emile, with Codex assistance · **Type:** artefact
+**What:** After a successful manual redeploy of `main` at `6beeb7a`, request #1's confirmation
+route returned 404 again. Rechecking the route in Emile's signed-in Edge session produced the
+same result. The cause remains unknown; DEC-008 stays Deferred while the team investigates the
+persistence failure and reviews the evidence.
+**Affects:** DEC-008, `docs/decisions/poc-log.md`, `docs/decisions/decision-log.csv`,
+`docs/PED/10-decision-log.md`, `docs/PED/16-architecture-baseline.md`.
+**Evidence:** Render deployment `dep-db1ulb6k1f9s738e4jhg`; Render access log; signed-in Edge result;
+`docs/decisions/poc-log.md`.
+
 ### 2026-10-05 — BC Desktop test evidence tied to current main commit
 **Who:** Emile · **Type:** artefact
 **What:** Captured the later BC Desktop dependency-install and test run: `requirements.txt` installed
