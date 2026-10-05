@@ -20,4 +20,28 @@ class LifecycleValidator:
     @staticmethod
     def can_accept(current_status: str, current_assignee_id: Optional[int]) -> bool:
         """FR-014: a request may move New -> Accepted only while unassigned and in New."""
+        if current_status is None:
+            return False
         return current_status == "New" and current_assignee_id is None
+
+    @staticmethod
+    def validate_transition(
+        current_status: Optional[str],
+        current_assignee_id: Optional[int],
+        target_status: str,
+        target_assignee_id: Optional[int] = None,
+    ) -> bool:
+        """Validate only the transition explicitly specified and approved for M2.
+
+        FR-014 defines the only approved M2 state change in the current requirement set:
+        a still-New, unassigned request may move to Accepted when a Staff/Manager takes it.
+        The rest of FR-015 remains deferred until a requirement is written and reviewed.
+        """
+        if target_status == "Accepted":
+            return (
+                current_status == "New"
+                and current_assignee_id is None
+                and target_assignee_id is not None
+            )
+
+        return False

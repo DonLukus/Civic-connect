@@ -43,11 +43,6 @@ class RequestService:
 
         correlation_id = str(uuid.uuid4())
 
-        # NOTE: `with sqlite3.connect(...) as conn:` only wraps the transaction (commit/rollback
-        # on exit) - it does NOT close the connection (stdlib sqlite3 behaviour). Left open, this
-        # holds a Windows file lock that a later os.remove() on the db file fails against - caught
-        # by actually running the traced-slice tests on the target platform, not assumed. Explicit
-        # try/finally close fixes it here and in accept_request below.
         conn = sqlite3.connect(self.db_path)
         try:
             conn.execute("BEGIN IMMEDIATE")
@@ -124,7 +119,13 @@ class RequestService:
 
             previous_status, previous_assignee_id, previous_version = current
 
-            if not LifecycleValidator.can_accept(previous_status, previous_assignee_id) or previous_version != expected_version:
+            transition_valid = LifecycleValidator.validate_transition(
+                current_status=previous_status,
+                current_assignee_id=previous_assignee_id,
+                target_status="Accepted",
+                target_assignee_id=staff_id,
+            )
+            if not transition_valid or previous_version != expected_version:
                 conn.rollback()
                 return False
 
