@@ -243,7 +243,27 @@ def test_missing_csrf_does_not_write():
     os.remove(db_path)
 
 
-def test_service_rejects_staff_submission():
+def test_browser_favicon_request_does_not_invalidate_login_csrf():
+    """A browser's favicon request must not clear the anonymous login session."""
+    db_path = 'test_submission_web.sqlite'
+    setup_db(db_path)
+    client = create_app(db_path, secret_key=TEST_SESSION_KEY).test_client()
+
+    assert client.get('/login').status_code == 200
+    with client.session_transaction() as sess:
+        csrf = sess['_csrf_token']
+
+    client.get('/favicon.ico')
+    response = client.post('/login', data={
+        'email': 'requester@example.com', 'password': 'test-password', 'csrf_token': csrf,
+    })
+    assert response.status_code == 302
+    assert response.headers['Location'].endswith('/requests/new')
+    assert client.get('/requests/new').status_code == 200
+    os.remove(db_path)
+
+
+def test_missing_csrf_does_not_write():
     db_path = 'test_submission.sqlite'
     setup_db(db_path)
     conn = sqlite3.connect(db_path)
