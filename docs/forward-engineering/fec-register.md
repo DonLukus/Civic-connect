@@ -15,6 +15,13 @@ Recording a concern is not the same as implementing a response to it. The purpos
 
 **Linked artefacts.** RSK-02, RSK-03, CN-03, CN-07
 
+**M2 progress (2026-10-12).** Partially answered, not closed: a Render free-tier service was
+configured and an earlier build deployed; separately, 10 of the test suite's requests passed on
+the actual Belgium Campus desktop (`docs/decisions/poc-log.md`). Still missing: whether a request
+submitted through the current, protected login build survives the host going idle or cold-starting
+— persistence-after-restart is the one concrete test ADR-001 is still waiting on before it can
+move from Proposed to Accepted.
+
 ---
 
 ## FEC-02 — Testability of the request lifecycle
@@ -42,6 +49,13 @@ Recording a concern is not the same as implementing a response to it. The purpos
 **Risk of ignoring it.** Acceptance criteria are written that can only be verified manually, so quality evidence in M3 becomes screenshots and assertion rather than measurement.
 
 **Linked artefacts.** NFR-009, NFR-005, CN-04, DEC-008
+
+**M2 progress (2026-10-12).** Partially answered: `test.yml` now runs the full pytest suite on
+every pull request touching `src/` or `tests/`, answering "which build/test tooling the chosen
+stack supports" for the testing layer (pytest, version-verified against PyPI — see ADR-001's
+scored comparison). Still missing: no coverage gate is enforced on branch protection against
+NFR-009's 70% target, and static analysis is not yet part of the pipeline — both remain M3 work,
+not assumed here.
 
 ---
 
