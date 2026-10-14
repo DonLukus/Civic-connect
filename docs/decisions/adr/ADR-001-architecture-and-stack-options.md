@@ -174,6 +174,83 @@ untested until the PoC actually deploys against it.
 
 **Recommendation: A** — add one workflow file, nothing else changes.
 
+## Scored comparison (M2 brief §5.5)
+
+The tables above are qualitative; the brief specifically asks for options scored against named
+criteria. Scored 1 (poor) to 5 (excellent) per criterion, against the same options and the same
+reasoning already given above — the score is meant to justify the recommendation already made,
+not replace it, so a rejected option scoring well on one criterion (e.g. PostgreSQL on ASR fit)
+is expected and stated plainly rather than smoothed over.
+
+Criteria, in the brief's own order: **ASR fit** (requirements/ASRs) · **Team** (team capability)
+· **Sched** (schedule) · **Cost** (cost/licensing) · **Sec** (security) · **Maint**
+(maintainability) · **Eco** (ecosystem/dependency risk) · **Deploy** (deployment compatibility).
+
+### Architecture style
+
+| Option | ASR fit | Team | Sched | Cost | Sec | Maint | Eco | Deploy | Total /40 |
+|---|---|---|---|---|---|---|---|---|---|
+| A — single deployable unit | 5 | 5 | 5 | 5 | 3 | 4 | 4 | 5 | **36** |
+| B — separate frontend/backend | 1 | 2 | 2 | 2 | 4 | 4 | 4 | 1 | 20 |
+| C — microservices | 1 | 1 | 1 | 1 | 3 | 2 | 2 | 1 | 12 |
+
+A scores lower on security than B/C (one process is a larger blast radius if compromised, against
+B/C's cleaner per-service boundaries) — accepted deliberately, since CN-03's cost chain outweighs
+it at this scale and the gap is small (3 vs 4).
+
+### Frontend
+
+| Option | ASR fit | Team | Sched | Cost | Sec | Maint | Eco | Deploy | Total /40 |
+|---|---|---|---|---|---|---|---|---|---|
+| A — server-rendered | 5 | 4 | 5 | 5 | 4 | 4 | 5 | 5 | **37** |
+| B — separate SPA | 2 | 2 | 2 | 3 | 3 | 3 | 3 | 2 | 20 |
+| C — HTMX-style | 4 | 2 | 3 | 5 | 4 | 3 | 2 | 4 | 27 |
+
+### Backend
+
+| Option | ASR fit | Team | Sched | Cost | Sec | Maint | Eco | Deploy | Total /40 |
+|---|---|---|---|---|---|---|---|---|---|
+| A — Python/Flask | 5 | 4 | 5 | 5 | 4 | 4 | 5 | 5 | **37** |
+| B — Node.js | 2 | 3 | 2 | 5 | 4 | 4 | 5 | 4 | 29 |
+| C — Java/C# | 2 | 3 | 2 | 4 | 4 | 4 | 4 | 2 | 25 |
+
+B and C both score well on cost, ecosystem and (for B) deployment — the thing that actually
+separates A from them is schedule and ASR fit, specifically because A continues a verified,
+tested spike and the other two would re-prove it for no engineering reason (ADR-001's own
+rationale, scored rather than just asserted here).
+
+### Database
+
+| Option | ASR fit | Team | Sched | Cost | Sec | Maint | Eco | Deploy | Total /40 |
+|---|---|---|---|---|---|---|---|---|---|
+| A — SQLite (dev/test) | 2 | 5 | 5 | 5 | 3 | 3 | 4 | 2 | 29 |
+| B — PostgreSQL (production candidate) | 5 | 3 | 3 | 4 | 4 | 4 | 4 | 4 | **31** |
+| C — MySQL/MariaDB | 4 | 3 | 3 | 4 | 4 | 3 | 4 | 4 | 29 |
+
+This is the one table where the recommended *pair* (A for dev/test, B as the production
+candidate) doesn't collapse to a single winner — correctly, since ADR-001 never claimed SQLite is
+right for production. B scores highest overall; A still wins on team/schedule/cost for the
+*current* dev/test use, which is the only thing it's actually recommended for.
+
+### Testing
+
+| Option | ASR fit | Team | Sched | Cost | Sec | Maint | Eco | Deploy | Total /40 |
+|---|---|---|---|---|---|---|---|---|---|
+| A — pytest | 5 | 4 | 5 | 5 | 5 | 5 | 5 | 5 | **39** |
+| B — unittest (stdlib) | 3 | 5 | 4 | 5 | 5 | 3 | 5 | 4 | 34 |
+| C — a different framework | 1 | 1 | 1 | 3 | 3 | 2 | 3 | 2 | 16 |
+
+### CI
+
+| Option | ASR fit | Team | Sched | Cost | Sec | Maint | Eco | Deploy | Total /40 |
+|---|---|---|---|---|---|---|---|---|---|
+| A — GitHub Actions | 5 | 5 | 5 | 5 | 5 | 5 | 5 | 5 | **40** |
+| B — a different hosted CI | 2 | 2 | 2 | 3 | 3 | 2 | 3 | 2 | 19 |
+| C — self-hosted runner | 2 | 2 | 2 | 3 | 2 | 2 | 2 | 2 | 17 |
+
+A is the one table with no real trade-off — every criterion already favours continuing what
+`DEC-001` and the existing `docs-check.yml`/`secret-scan.yml` already established.
+
 ## Decision
 
 Not yet — **Proposed**, pending Don and Emile's review and the PoC evidence in Section "What

@@ -8,6 +8,20 @@ AI assistant reads to get up to speed without asking anyone.
 
 **Rule.** Every pull request adds an entry here. Newest at the top.
 
+### 2026-10-12 — Scored stack comparison added to ADR-001; FEC-01/FEC-03 progress notes
+**Who:** Masego · **Type:** decision, artefact
+**What:** M2 brief §5.5 asks for stack options to be scored against 8 named criteria, not just
+compared qualitatively - ADR-001 had the comparison tables but no scores. Added a scored matrix
+(architecture style, frontend, backend, database, testing, CI) against the same options and
+reasoning already in the ADR, including one deliberately unsmoothed result: PostgreSQL outscores
+SQLite overall on the database table even though SQLite stays recommended for dev/test - the two
+aren't in conflict, SQLite was never recommended for production. Also added dated M2-progress
+notes to FEC-01 (deployment) and FEC-03 (CI), citing the real Render/Belgium-Campus evidence and
+the `test.yml` pytest workflow - neither FEC is marked closed, both still name what's missing.
+**Affects:** ADR-001 (new "Scored comparison" section), FEC-01, FEC-03.
+**Evidence:** Issue #77; branch `m2/scored-stack-comparison-fec-update`; AI-027; 15/15 tests
+unaffected (docs-only change).
+
 ### 2026-10-05 — M2 Member B evidence completed: lifecycle validation and traceability evidence
 **Who:** Don · **Type:** requirements, artefact
 **What:** Completed the M2 evidence for the approved Member B requirement slice by formalising the FR-014 transition in `src/persistence/lifecycle.py`, wiring the same rule into `RequestService.accept_request`, and extending the lifecycle tests to prove the accepted transition is the only one currently implemented. This keeps the change within Don's workstream and avoids Emile-owned PED/baseline/risk files.
