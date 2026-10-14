@@ -263,7 +263,7 @@ def test_browser_favicon_request_does_not_invalidate_login_csrf():
     os.remove(db_path)
 
 
-def test_missing_csrf_does_not_write():
+def test_service_rejects_staff_request_creation():
     db_path = 'test_submission.sqlite'
     setup_db(db_path)
     conn = sqlite3.connect(db_path)

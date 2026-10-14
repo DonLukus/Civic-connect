@@ -28,6 +28,12 @@ AI assistant reads to get up to speed without asking anyone.
 
 ---
 
+### 2026-10-06 — Correct PoC test collection and BC evidence note
+**Who:** Emile, with Codex assistance · **Type:** change, artefact
+**What:** Preserved the login CSRF guard fix, removed a redundant browser regression test from the working change, and gave the service-level Staff rejection test a unique name so pytest collects it. Updated the requirements note to distinguish the recorded BC Desktop install/test run from full deployment compatibility; DEC-008 remains Deferred.
+**Affects:** `src/web/app.py`, `tests/test_request_submission.py`, `requirements.txt`, `docs/governance/ai-usage-register.csv` (AI-027).
+**Evidence:** Full test suite: 16 passed; `docs/decisions/poc-log.md` records the earlier BC run and its SHA.
+
 ### 2026-10-05 — Repeated Render persistence check remains unsuccessful
 **Who:** Emile, with Codex assistance · **Type:** artefact
 **What:** After a successful manual redeploy of `main` at `6beeb7a`, request #1's confirmation
