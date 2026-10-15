@@ -12,7 +12,7 @@ feedback on PR #80 pointed out that this file and the AI register had drifted ap
 accurate, current split:
 
 **Actually verified, for real, on this machine (Python 3.12.10, installed 2026-10-15 — see
-`docs/governance/ai-usage-register.csv` AI-029):**
+`docs/governance/ai-usage-register.csv` AI-030):**
 
 - The script compiles and imports cleanly.
 - Its `p95` calculation is correct against synthetic data.
