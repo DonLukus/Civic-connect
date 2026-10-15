@@ -135,12 +135,11 @@ def single_request(base_url: str, status_filter: str, jar: http.cookiejar.Cookie
         return RequestResult(elapsed_seconds=elapsed, status_code=0, looks_like_queue_page=False, result_rows_seen=0, error=str(exc))
 
 
-def simulated_user_loop(base_url: str, email: str, password: str, status_filter: str, deadline: float) -> list[RequestResult]:
-    """One simulated user: its own login, its own session, looping requests
-    back-to-back until the deadline. This is what makes `concurrency` virtual
-    users independent of each other rather than one shared session fanned
-    out across threads."""
-    jar = login(base_url, email, password)
+def request_loop(base_url: str, status_filter: str, jar: http.cookiejar.CookieJar, deadline: float) -> list[RequestResult]:
+    """One already-logged-in simulated user firing requests back-to-back
+    until the deadline. Login happens before this is called, not inside
+    it - see `run()` - so login/warm-up time never eats into the timed
+    measurement window."""
     results = []
     while time.monotonic() < deadline:
         results.append(single_request(base_url, status_filter, jar))
@@ -149,14 +148,20 @@ def simulated_user_loop(base_url: str, email: str, password: str, status_filter:
 
 def run(base_url: str, email: str, password: str, status_filter: str,
         concurrency: int, duration_seconds: int, min_expected_results: int) -> RunSummary:
-    deadline = time.monotonic() + duration_seconds
     summary = RunSummary(min_expected_results=min_expected_results)
 
+    # Warm-up phase: every simulated user logs in first. Deliberately NOT
+    # part of the timed window - NFR-001 measures warm-instance response
+    # time, not login latency, and starting the clock before everyone is
+    # actually logged in would silently shrink each user's real firing time.
+    with ThreadPoolExecutor(max_workers=concurrency) as login_pool:
+        jars = list(login_pool.map(lambda _: login(base_url, email, password), range(concurrency)))
+
+    # Timed measurement phase: the clock starts only once every user is
+    # ready to fire requests immediately.
+    deadline = time.monotonic() + duration_seconds
     with ThreadPoolExecutor(max_workers=concurrency) as pool:
-        futures = [
-            pool.submit(simulated_user_loop, base_url, email, password, status_filter, deadline)
-            for _ in range(concurrency)
-        ]
+        futures = [pool.submit(request_loop, base_url, status_filter, jar, deadline) for jar in jars]
         for f in futures:
             summary.results.extend(f.result())
 
@@ -179,6 +184,16 @@ def main() -> None:
     parser.add_argument("--duration-seconds", type=int, default=NFR_001_MIN_DURATION_SECONDS,
                          help=f"NFR-001: {NFR_001_MIN_DURATION_SECONDS} seconds (5 minutes)")
     args = parser.parse_args()
+
+    # `required=True` only forces the flag to be present - it does not stop
+    # someone passing an empty/zero value that would defeat the whole point
+    # of requiring it. Reject those explicitly.
+    if not args.status_filter.strip():
+        parser.error("--status-filter must not be empty - NFR-001 is about a FILTERED list; "
+                      "an empty filter tests an unfiltered dump instead")
+    if args.min_expected_results < 1:
+        parser.error("--min-expected-results must be at least 1 - a zero (or negative) "
+                      "expectation can never catch an empty or under-seeded response")
 
     qualifies = (args.concurrency >= NFR_001_MIN_CONCURRENCY and args.duration_seconds >= NFR_001_MIN_DURATION_SECONDS)
     if not qualifies:

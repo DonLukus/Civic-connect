@@ -13,7 +13,7 @@ unilaterally.
 | Option | What it would mean |
 |---|---|
 | Render (continuing from M2) | Reuses the existing service; M2's unresolved persistence-after-redeploy problem (`docs/decisions/poc-log.md`) would need to be understood or worked around before trusting any M3 result on it |
-| Local/simulated (e.g. a second SQLite file, run via Flask's dev server or gunicorn where available) | Avoids the unresolved Render persistence question entirely, but needs to be run on a machine that can actually install the full `requirements.txt` — not this one; see the performance README for the same local-Python gap |
+| Local/simulated (e.g. a second SQLite file, run via Flask's dev server or gunicorn where available) | Avoids the unresolved Render persistence question entirely. A full `requirements.txt` install (including `gunicorn`) and the real test suite now run successfully on this machine (Python 3.12.10, installed 2026-10-15 — AI-030) — the earlier "no Python available" limitation is gone. Still needs a decision on which machine hosts the actual M3 staging candidate, since this is a development venv, not an agreed staging host. |
 
 ## Configuration and secrets (inherits the M2 approach)
 
