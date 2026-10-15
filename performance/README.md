@@ -7,16 +7,23 @@ warm instance.
 
 ## Status
 
-**Design and tooling only — not yet executed.** This could not be run as part of the change that
-added it, for two concrete reasons, neither hidden:
+**Local checks done for real; the live-server run has not happened yet.** Updated after review
+feedback on PR #80 pointed out that this file and the AI register had drifted apart — here's the
+accurate, current split:
 
-1. No working Python interpreter exists on the machine this was written on (checked directly —
-   `python`/`python3`/`py` all resolve to the Microsoft Store install stub, not a real
-   interpreter). The script has been read through manually for syntax and logic correctness, but
-   that is not the same as actually running it.
-2. The script targets `GET /staff/queue?status=...` — a route that does not exist in `src/web/app.py`
-   yet (it's part of what's being agreed with Don for M3). This cannot produce a real result until
-   that route is live.
+**Actually verified, for real, on this machine (Python 3.12.10, installed 2026-10-15 — see
+`docs/governance/ai-usage-register.csv` AI-029):**
+
+- The script compiles and imports cleanly.
+- Its `p95` calculation is correct against synthetic data.
+- Its empty/under-seeded-result guard genuinely rejects a trivial pass (tested directly).
+- The row-counting heuristic (`<td>#` occurrences) was checked against `staff_queue.html`'s
+  actual rendered output and matches exactly.
+
+**Still not executed, and cannot be yet:** the script's actual HTTP/login path against a live
+server. `GET /staff/queue?status=...` does not exist in `src/web/app.py` yet (it's part of what's
+being agreed with Don for M3) — there is no route to point this at. This is the one real
+remaining gap, not a Python-availability problem.
 
 ## What's needed before a real result exists
 
@@ -36,15 +43,24 @@ python performance/load_test_staff_queue.py \
   --base-url https://<staging-or-render-host> \
   --email <staff-test-account-email> \
   --password <staff-test-account-password> \
-  --status-filter "" \
+  --status-filter "New" \
+  --min-expected-results <the seeded dataset's known row count for that filter> \
   --concurrency 10 \
   --duration-seconds 300
 ```
 
-Prints a JSON summary: total requests, successful requests (status 200 **and** the response body
-actually contains the queue page's own content — a login redirect or error page counted as a
-"successful" request would make this test meaningless), the 95th-percentile response time, and a
-pass/fail against the 2.0 second target.
+`--status-filter` and `--min-expected-results` are both required — there is no "all requests, any
+result" default, specifically so an unfiltered or accidentally-empty response can't be mistaken
+for NFR-001 evidence. Each of the `--concurrency` simulated users logs in with its own session,
+not one session shared across every thread, so this models the requirement's actual wording
+("10 concurrent users") rather than 10 threads replaying one person's cookie.
+
+Prints a JSON summary: the parameters actually used, whether the run even qualifies as a real
+NFR-001 measurement (concurrency ≥ 10 **and** duration ≥ 300s — a shorter smoke-test run is
+clearly labelled as such and never reported as a pass), total/successful requests (a success
+requires status 200, real queue-page content, **and** at least `--min-expected-results` rows
+actually present — not a login redirect, error page, or suspiciously empty result), the
+95th-percentile response time, and the final pass/fail against the 2.0 second target.
 
 ## Recording results
 

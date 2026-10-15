@@ -9,9 +9,21 @@ scope for this script and must be measured separately, before this test warms th
 
 Stdlib only (urllib + concurrent.futures) - no new dependency added without team agreement.
 
-This script is a design/tooling deliverable. It has NOT been executed against a live server as
-part of this change - see performance/README.md for exactly what is still needed before a real
-result exists, and docs/governance/ai-usage-register.csv for how this was verified.
+Local checks that could be run on this machine (compiles, imports, p95 math against synthetic
+data) are recorded in docs/governance/ai-usage-register.csv (AI-029). This script's actual
+HTTP/login path against a live server has NOT been executed - no route exists yet to point it
+at. That is a real, stated limitation, not a gap glossed over.
+
+Design notes added after review feedback (see PR #80 discussion):
+- `--status-filter` and `--min-expected-results` are both required, not defaulted. An empty
+  filter or an empty result set would let a trivial, unfiltered or unseeded response pass
+  as if it were real NFR-001 evidence - this script now refuses to call that a pass.
+- Each simulated user logs in with its own session (its own cookie jar), rather than one
+  session shared across every thread, since NFR-001 says "10 concurrent users", not
+  "10 concurrent requests from one session".
+- The report states the actual parameters used and whether the run qualifies as a real
+  NFR-001 result (concurrency >= 10, duration >= 300s) so a short smoke-test run can never be
+  mistaken for the required five-minute measurement.
 """
 
 from __future__ import annotations
@@ -26,22 +38,37 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 
+NFR_001_TARGET_SECONDS = 2.0
+NFR_001_MIN_CONCURRENCY = 10
+NFR_001_MIN_DURATION_SECONDS = 300
+
 
 @dataclass
 class RequestResult:
     elapsed_seconds: float
     status_code: int
     looks_like_queue_page: bool
+    result_rows_seen: int
     error: str | None = None
 
 
 @dataclass
 class RunSummary:
     results: list[RequestResult] = field(default_factory=list)
+    min_expected_results: int = 0
 
     @property
     def successes(self) -> list[RequestResult]:
-        return [r for r in self.results if r.error is None and r.status_code == 200 and r.looks_like_queue_page]
+        """A success must be a real queue page AND contain at least the
+        operator-asserted minimum row count - an empty or under-seeded
+        queue must not count as evidence for NFR-001."""
+        return [
+            r for r in self.results
+            if r.error is None
+            and r.status_code == 200
+            and r.looks_like_queue_page
+            and r.result_rows_seen >= self.min_expected_results
+        ]
 
     def p95_seconds(self) -> float | None:
         successes = sorted(r.elapsed_seconds for r in self.successes)
@@ -51,9 +78,8 @@ class RunSummary:
         return successes[min(index, len(successes) - 1)]
 
 
-def login_and_get_cookie_jar(base_url: str, email: str, password: str) -> http.cookiejar.CookieJar:
-    """Signs in once so every worker thread reuses an authenticated session,
-    matching NFR-001's own wording ("server response time"), not login time."""
+def login(base_url: str, email: str, password: str) -> http.cookiejar.CookieJar:
+    """One independent session per call - used once per simulated user, not shared."""
     jar = http.cookiejar.CookieJar()
     opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
 
@@ -82,10 +108,8 @@ def _extract_csrf_token(html: str) -> str:
 
 def single_request(base_url: str, status_filter: str, jar: http.cookiejar.CookieJar) -> RequestResult:
     opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
-    query = urllib.parse.urlencode({"status": status_filter}) if status_filter else ""
-    url = urllib.parse.urljoin(base_url, "/staff/queue")
-    if query:
-        url = f"{url}?{query}"
+    query = urllib.parse.urlencode({"status": status_filter})
+    url = f"{urllib.parse.urljoin(base_url, '/staff/queue')}?{query}"
 
     start = time.monotonic()
     try:
@@ -95,35 +119,46 @@ def single_request(base_url: str, status_filter: str, jar: http.cookiejar.Cookie
         # Guard against counting a login redirect or error page as a success -
         # a real queue page must contain this template's own caption text.
         looks_like_queue = "Service requests in your queue" in body or "No requests match this filter" in body
-        return RequestResult(elapsed_seconds=elapsed, status_code=response.status, looks_like_queue_page=looks_like_queue)
+        # staff_queue.html renders each result row as `<td>#{{ r.id }}</td>` -
+        # count those cells as a proxy for how many rows actually came back,
+        # so an unexpectedly empty/thin result can't quietly pass as a success.
+        rows_seen = body.count("<td>#")
+        return RequestResult(
+            elapsed_seconds=elapsed, status_code=response.status,
+            looks_like_queue_page=looks_like_queue, result_rows_seen=rows_seen,
+        )
     except urllib.error.HTTPError as exc:
         elapsed = time.monotonic() - start
-        return RequestResult(elapsed_seconds=elapsed, status_code=exc.code, looks_like_queue_page=False, error=str(exc))
+        return RequestResult(elapsed_seconds=elapsed, status_code=exc.code, looks_like_queue_page=False, result_rows_seen=0, error=str(exc))
     except Exception as exc:  # noqa: BLE001 - record any failure, don't let one thread crash the run
         elapsed = time.monotonic() - start
-        return RequestResult(elapsed_seconds=elapsed, status_code=0, looks_like_queue_page=False, error=str(exc))
+        return RequestResult(elapsed_seconds=elapsed, status_code=0, looks_like_queue_page=False, result_rows_seen=0, error=str(exc))
 
 
-def run(base_url: str, email: str, password: str, status_filter: str, concurrency: int, duration_seconds: int) -> RunSummary:
-    """Keeps exactly `concurrency` requests in flight until `duration_seconds`
-    elapses, then drains whatever is still running. Matches NFR-001's
-    "10 concurrent users over 5 minutes" wording rather than firing a batch
-    and waiting."""
-    jar = login_and_get_cookie_jar(base_url, email, password)
-    summary = RunSummary()
+def simulated_user_loop(base_url: str, email: str, password: str, status_filter: str, deadline: float) -> list[RequestResult]:
+    """One simulated user: its own login, its own session, looping requests
+    back-to-back until the deadline. This is what makes `concurrency` virtual
+    users independent of each other rather than one shared session fanned
+    out across threads."""
+    jar = login(base_url, email, password)
+    results = []
+    while time.monotonic() < deadline:
+        results.append(single_request(base_url, status_filter, jar))
+    return results
+
+
+def run(base_url: str, email: str, password: str, status_filter: str,
+        concurrency: int, duration_seconds: int, min_expected_results: int) -> RunSummary:
     deadline = time.monotonic() + duration_seconds
+    summary = RunSummary(min_expected_results=min_expected_results)
 
     with ThreadPoolExecutor(max_workers=concurrency) as pool:
-        in_flight: set = set()
-        while time.monotonic() < deadline or in_flight:
-            while len(in_flight) < concurrency and time.monotonic() < deadline:
-                in_flight.add(pool.submit(single_request, base_url, status_filter, jar))
-            done = {f for f in in_flight if f.done()}
-            for f in done:
-                summary.results.append(f.result())
-            in_flight -= done
-            if not done:
-                time.sleep(0.02)
+        futures = [
+            pool.submit(simulated_user_loop, base_url, email, password, status_filter, deadline)
+            for _ in range(concurrency)
+        ]
+        for f in futures:
+            summary.results.extend(f.result())
 
     return summary
 
@@ -133,16 +168,31 @@ def main() -> None:
     parser.add_argument("--base-url", required=True, help="e.g. https://civic-connect-bcx2.onrender.com")
     parser.add_argument("--email", required=True, help="Staff test account email - never commit real credentials")
     parser.add_argument("--password", required=True)
-    parser.add_argument("--status-filter", default="", help="Status value to filter the queue by (empty = all)")
-    parser.add_argument("--concurrency", type=int, default=10, help="NFR-001: 10 concurrent users")
-    parser.add_argument("--duration-seconds", type=int, default=300, help="NFR-001: 5 minutes")
+    parser.add_argument("--status-filter", required=True,
+                         help="Status value to filter the queue by - required, since NFR-001 "
+                              "is specifically about a FILTERED list, not an unfiltered dump")
+    parser.add_argument("--min-expected-results", type=int, required=True,
+                         help="The seeded dataset's known row count for this filter - a response "
+                              "with fewer rows than this does not count as NFR-001 evidence")
+    parser.add_argument("--concurrency", type=int, default=NFR_001_MIN_CONCURRENCY,
+                         help=f"NFR-001: {NFR_001_MIN_CONCURRENCY} concurrent users")
+    parser.add_argument("--duration-seconds", type=int, default=NFR_001_MIN_DURATION_SECONDS,
+                         help=f"NFR-001: {NFR_001_MIN_DURATION_SECONDS} seconds (5 minutes)")
     args = parser.parse_args()
 
-    print(f"Starting NFR-001 load test against {args.base_url} "
-          f"({args.concurrency} concurrent users, {args.duration_seconds}s)...")
+    qualifies = (args.concurrency >= NFR_001_MIN_CONCURRENCY and args.duration_seconds >= NFR_001_MIN_DURATION_SECONDS)
+    if not qualifies:
+        print(f"WARNING: this run uses concurrency={args.concurrency}, duration={args.duration_seconds}s - "
+              f"that does NOT meet NFR-001's {NFR_001_MIN_CONCURRENCY} users / "
+              f"{NFR_001_MIN_DURATION_SECONDS}s requirement. Treat this as a smoke test only, "
+              f"never as NFR-001 evidence.")
+
+    print(f"Starting load test against {args.base_url} "
+          f"({args.concurrency} concurrent users, {args.duration_seconds}s, "
+          f"status filter={args.status_filter!r})...")
     summary = run(
         args.base_url, args.email, args.password, args.status_filter,
-        args.concurrency, args.duration_seconds,
+        args.concurrency, args.duration_seconds, args.min_expected_results,
     )
 
     total = len(summary.results)
@@ -150,12 +200,17 @@ def main() -> None:
     p95 = summary.p95_seconds()
 
     report = {
+        "concurrency_used": args.concurrency,
+        "duration_seconds_used": args.duration_seconds,
+        "status_filter_used": args.status_filter,
+        "min_expected_results_required": args.min_expected_results,
+        "qualifies_as_nfr001_run": qualifies,
         "total_requests": total,
         "successful_requests": successful,
-        "failed_or_unexpected_requests": total - successful,
+        "failed_or_underfilled_requests": total - successful,
         "p95_seconds": p95,
-        "pass": (p95 is not None and p95 <= 2.0 and successful == total),
-        "nfr_target_seconds": 2.0,
+        "nfr_target_seconds": NFR_001_TARGET_SECONDS,
+        "pass": bool(qualifies and p95 is not None and p95 <= NFR_001_TARGET_SECONDS and successful == total),
     }
     print(json.dumps(report, indent=2))
 

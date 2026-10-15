@@ -3,5 +3,8 @@
 {% block content %}
   <h1>Request received</h1>
   <p class="flash flash--success">Your reference number is <strong>#{{ request_id }}</strong>. Keep it to check progress.</p>
-  <p><a href="/requests/new">Submit another request</a> &middot; <a href="/requests">View my requests</a></p>
+  <p><a href="/requests/new">Submit another request</a></p>
+  {# "View my requests" (GET /requests) deliberately not linked here yet - that route
+     does not exist in app.py (only POST /requests, for submission, exists today).
+     Add this link back once Don's GET /requests route is confirmed and live, not before. #}
 {% endblock %}
