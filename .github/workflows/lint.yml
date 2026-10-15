@@ -1,0 +1,39 @@
+name: Static code quality (ruff)
+
+# M3 verification ownership (Masego). Separate file from test.yml/secret-scan.yml so it can
+# evolve independently - coordinate any dependency/workflow overlap with Don before changing.
+#
+# Deliberately non-blocking for now: a first run against current main found 12 pre-existing
+# findings (11 cosmetic - import order, Optional[X] vs X | None syntax - plus one real, low-
+# severity finding: a blind `except Exception` in src/persistence/outbox.py, recorded as
+# DEF-003 in docs/quality/defect-register.csv). None are correctness bugs. Flipping this to a
+# blocking check is a team decision once those findings have owners and a plan, not something
+# to force silently by making CI red on day one.
+
+on:
+  pull_request:
+    paths: ['src/**', 'tests/**', 'wsgi.py']
+  push:
+    branches: [main]
+    paths: ['src/**', 'tests/**', 'wsgi.py']
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Pinned, verified against PyPI (ruff 0.17.0, MIT). Not added to requirements.txt, to
+      # avoid overlapping Don's dependency file - it's a CI-only tool, not an app dependency.
+      - name: Install ruff
+        run: python -m pip install ruff==0.17.0
+
+      - name: Run ruff (reports findings, does not fail the build yet)
+        run: python -m ruff check src/ tests/ wsgi.py
+        continue-on-error: true
