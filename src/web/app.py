@@ -5,6 +5,7 @@ import os
 import secrets
 import sqlite3
 
+import bcrypt
 from flask import Flask, abort, g, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash
 
@@ -24,6 +25,16 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
         SESSION_COOKIE_SECURE=os.environ.get("SESSION_COOKIE_SECURE", "false").lower() == "true",
     )
     service = RequestService(db_path)
+    password_cost = int(os.environ.get("PASSWORD_HASH_COST", "12"))
+    if not 10 <= password_cost <= 16:
+        raise RuntimeError("PASSWORD_HASH_COST must be between 10 and 16")
+
+    def hash_password(password: str) -> str:
+        if len(password.encode("utf-8")) > 72:
+            raise ValueError("password must be no longer than 72 UTF-8 bytes")
+        return bcrypt.hashpw(
+            password.encode("utf-8"), bcrypt.gensalt(rounds=password_cost)
+        ).decode("ascii")
 
     def query_one(sql: str, parameters=()):
         conn = sqlite3.connect(db_path)
@@ -74,14 +85,39 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
             email = request.form.get("email", "").strip().lower()
             password = request.form.get("password", "")
             user = query_one(
-                "SELECT id, password_hash FROM users WHERE lower(email) = ? AND is_active = 1",
+                "SELECT id, password_hash, role FROM users WHERE lower(email) = ? AND is_active = 1",
                 (email,),
             )
-            if user and check_password_hash(user[1], password):
+            password_matches = False
+            if user and len(password.encode("utf-8")) <= 72:
+                if user[1].startswith("$2"):
+                    try:
+                        password_matches = bcrypt.checkpw(
+                            password.encode("utf-8"), user[1].encode("ascii")
+                        )
+                    except (ValueError, TypeError):
+                        password_matches = False
+                else:
+                    password_matches = check_password_hash(user[1], password)
+                    if password_matches:
+                        conn = sqlite3.connect(db_path)
+                        try:
+                            conn.execute(
+                                "UPDATE users SET password_hash = ? WHERE id = ?",
+                                (hash_password(password), user[0]),
+                            )
+                            conn.commit()
+                        finally:
+                            conn.close()
+            if password_matches:
                 session.clear()
                 session["user_id"] = user[0]
                 csrf_token()
-                return redirect(url_for("new_request_form"))
+                if user[2] == "Requester":
+                    return redirect(url_for("new_request_form"))
+                if user[2] == "Staff":
+                    return redirect(url_for("staff_queue"))
+                return redirect(url_for("role_landing"))
             error = "Invalid email or password"
         return render_template("login.html", error=error, csrf_token=csrf_token())
 
@@ -132,6 +168,85 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
         if owner is None or owner[0] != g.current_user[0]:
             abort(404)
         return render_template("confirmation.html", request_id=request_id)
+
+    @app.route("/", methods=["GET"])
+    def home():
+        if g.current_user[1] == "Requester":
+            return redirect(url_for("request_list"))
+        if g.current_user[1] == "Staff":
+            return redirect(url_for("staff_queue"))
+        return redirect(url_for("role_landing"))
+
+    @app.route("/landing", methods=["GET"])
+    def role_landing():
+        if g.current_user[1] not in ("Manager", "Administrator"):
+            abort(403)
+        return render_template("role_landing.html", role=g.current_user[1])
+
+    @app.route("/requests", methods=["GET"])
+    def request_list():
+        if g.current_user[1] != "Requester":
+            abort(403)
+        status = request.args.get("status") or None
+        try:
+            requests = service.list_requester_requests(g.current_user[0], status=status)
+        except ValueError as exc:
+            return str(exc), 400
+        return render_template(
+            "requester_requests.html", requests=requests, statuses=service.STATUSES,
+            selected_status=status,
+        )
+
+    @app.route("/staff/queue", methods=["GET"])
+    def staff_queue():
+        if g.current_user[1] != "Staff":
+            abort(403)
+        status = request.args.get("status") or None
+        try:
+            requests = service.list_staff_queue(g.current_user[0], status=status)
+        except ValueError as exc:
+            return str(exc), 400
+        return render_template(
+            "staff_queue.html", requests=requests, statuses=service.STATUSES,
+            selected_status=status,
+        )
+
+    @app.route("/requests/<int:request_id>", methods=["GET"])
+    def request_detail(request_id: int):
+        try:
+            detail = service.get_request_detail(g.current_user[0], request_id)
+        except LookupError:
+            abort(404)
+        except PermissionError:
+            abort(403)
+        return render_template(
+            "request_detail.html", request=detail, csrf_token=csrf_token(),
+            can_accept=(g.current_user[1] == "Staff" and detail["status"] == "New"
+                        and detail["assignee_id"] is None),
+        )
+
+    @app.route("/staff/requests/<int:request_id>/accept", methods=["POST"])
+    def accept_request(request_id: int):
+        if g.current_user[1] != "Staff":
+            abort(403)
+        if not valid_csrf():
+            abort(400)
+        try:
+            expected_version = int(request.form.get("expected_version", ""))
+        except ValueError:
+            return "expected_version must be an integer", 400
+        if expected_version < 0:
+            return "expected_version must be non-negative", 400
+        if not service.accept_request(request_id, g.current_user[0], expected_version):
+            return "Request cannot be accepted in its current state", 409
+        return redirect(url_for("request_detail", request_id=request_id))
+
+    @app.route("/notifications", methods=["GET"])
+    def notifications():
+        if g.current_user[1] != "Requester":
+            abort(403)
+        items = service.list_notifications(g.current_user[0])
+        return render_template("notifications.html", notifications=items)
 
     return app
 

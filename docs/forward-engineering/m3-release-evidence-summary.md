@@ -1,68 +1,38 @@
-# M3 Staging Runbook
+# CivicConnect M3 Interface Agreement
 
-**Owner:** Don (DevSecOps/Architecture)  
-**Status:** Draft; execute and record actual values before claiming staging readiness.
+**Owner:** Don (backend contract)  
+**Status:** Backend routes implemented; template contract awaits Emile's implementation and team review.  
+**Purpose:** Shared route, data, form, validation, and traceability contract for Emile (templates) and Masego (verification).
+## Route Contract
 
-## 1. Purpose
+| Capability | Method and URL | Allowed roles | Template and data supplied | Form/query fields and CSRF | Validation, error behavior, service | Traceability |
+|---|---|---|---|---|---|---|
+| Login | GET/POST `/login` | Public | `login.html`: `error`, `csrf_token` | POST: `email`, `password`, `csrf_token`; CSRF required | Invalid credentials return the same message with HTTP 200; invalid CSRF returns 400. Bcrypt verification; a valid legacy Werkzeug hash is upgraded. | FR-002 / AC-002; NFR-003 / AC-N003; NFR-004 / AC-N004 |
+| Logout | POST `/logout` | Any authenticated role | No response template; redirects to login | `csrf_token`; required | Invalid CSRF returns 400; otherwise clear session and redirect. No service method. | FR-002 / AC-002; FR-003 / AC-003 |
+| Request submission form | GET `/requests/new` | Requester | Existing `new_request.html`: `categories` as `(id, name)` rows, `error`, `values`, `csrf_token` | No submission fields on GET | Other roles receive 403. Active categories loaded by the route. | FR-005 / AC-005; FR-006 / AC-006 |
+| Submit request | POST `/requests` | Requester | Success redirects to confirmation; validation failure re-renders `new_request.html` with `categories`, `error`, `values`, `csrf_token` | `title`, `description`, `category_id`, `location`, `csrf_token`; CSRF required | Invalid CSRF: 400; wrong role: 403; service `ValueError`: 400 with entered values retained. Calls `RequestService.create_request`. | FR-005 / AC-005; FR-006 / AC-006; NFR-014 / AC-N014 |
+| Submission confirmation | GET `/requests/<request_id>/submitted` | Owning Requester | Existing `confirmation.html`: `request_id` | None | Missing or non-owned request: 404. Direct ownership lookup. | FR-005 / AC-005; FR-008 / AC-008 |
+| Requester list and status filter | GET `/requests[?status=<status>]` | Requester | **Emile to add** `requester_requests.html`: `requests` (each: `reference`, `title`, `category`, `submitted_at`, `status`, `last_status_changed_at`), `statuses`, `selected_status` | Optional query `status`; no CSRF | Invalid status: 400. Role and ownership enforced by `RequestService.list_requester_requests`; SQL values are parameterized. | FR-007 / AC-007; FR-008 / AC-008; FR-012 / AC-012; NFR-001 / AC-N001 |
+| Request detail | GET `/requests/<request_id>` | Owning Requester; Staff when unassigned or assigned to them; Manager; Administrator | **Emile to add** `request_detail.html`: `request` dict (`reference`, `assignee_id`, `category_id`, `title`, `description`, `location`, `status`, `version`, `submitted_at`, `updated_at`, `accepted_at`, `last_status_changed_at`, `category`, optional `assignee_email`, conditionally supplied `requester_email`, `history`); plus `csrf_token`, `can_accept` | No fields on GET; acceptance form uses the POST contract below | Missing, non-owned, or assigned-to-other Staff request: 404. Disallowed role: 403. Service `RequestService.get_request_detail` enforces record access. `requester_email` is withheld from Requesters and unassigned Staff. | FR-007 / AC-007; FR-013 / AC-013; FR-025 / AC-025; NFR-004 / AC-N004; NFR-006 / AC-N006; NFR-012 / AC-N012 |
+| Staff queue and status filter | GET `/staff/queue[?status=<status>]` | Staff | **Emile to add** `staff_queue.html`: `requests` (each: `reference`, `title`, `category`, `submitted_at`, `status`, `assignee_id`, `last_status_changed_at`), `statuses`, `selected_status` | Optional query `status`; no CSRF | Invalid status: 400; other roles: 403. `RequestService.list_staff_queue` returns unassigned and this Staff user's requests only; SQL values are parameterized. | FR-011 / AC-011; FR-012 / AC-012; NFR-001 / AC-N001; NFR-004 / AC-N004 |
+| Staff self-acceptance | POST `/staff/requests/<request_id>/accept` | Staff | Success redirects to `/requests/<request_id>`; conflict response otherwise | `expected_version`, `csrf_token`; CSRF required | Invalid CSRF: 400; other role: 403; malformed/negative version: 400; stale version, missing request, or invalid transition: 409. Calls `RequestService.accept_request`; audit, state, and outbox writes are transactional. | FR-014 / AC-014; FR-015 / AC-015 (only New -> Accepted specified); FR-009 / AC-009; FR-025 / AC-025; NFR-004 / AC-N004; NFR-006 / AC-N006 |
+| Notifications | GET `/notifications` | Requester | **Emile to add** `notifications.html`: `notifications` (each: `id`, `request_id`, `event_type`, `message`, `created_at`, `read_at`) | None | Other roles: 403. `RequestService.list_notifications` returns only the current Requester's notifications. | FR-009 / AC-009; NFR-012 / AC-N012 |
+| Safe role landing | GET `/landing` | Manager, Administrator | **Emile to add** `role_landing.html`: `role` | None | Other roles: 403. No redirect to Requester pages. Manager dashboard and Administrator operations remain deferred; this page must not imply those features exist. | FR-003 / AC-003; NFR-004 / AC-N004 |
 
-Provide a repeatable deployment and verification procedure that separates development, test, staging, and production configuration. Staging must use synthetic test data, not real citizen data.
+## Shared Rules
 
-## 2. Configuration rules
+- All routes other than `/login` require an active session. Identity comes from the session, never a submitted user ID.
+- Every state-changing form includes `csrf_token`; the backend validates it before acting.
+- Service-layer checks remain authoritative even when the route also checks a role.
+- Valid status values: `New`, `Accepted`, `In Progress`, `On Hold`, `Resolved`, `Closed`, `Rejected`. Unknown filters are rejected, not interpolated into SQL.
+- History is the ordered audit log. Comments and resolution notes are absent from the current schema; do not fabricate those fields or claim FR-010/FR-016 detail is complete.
+- `requester_email` is supplied only to Manager/Administrator and the Staff member assigned to that request.
+- `/landing` is deliberately informational and non-operational for Manager/Administrator until their scoped features are implemented.
 
-- Store secrets in the hosting provider's secret/environment-variable facility; never commit `.env`.
-- Generate a unique random `SECRET_KEY` for each environment.
-- Set secure session cookies only when the environment is served over HTTPS.
-- Configure database connection/storage explicitly and verify persistence across redeploys.
-- Do not use production credentials in development, CI, or staging.
-- Keep configuration names consistent across environments, while values differ by environment.
-- Do not put secrets or personal data in logs, screenshots, or evidence artefacts.
+## Template Handoff
 
-## 3. Pre-deployment checklist
+Existing templates are `login.html`, `new_request.html`, and `confirmation.html`. The five templates marked **Emile to add** are absent from this checkout. Emile should implement them against the exact keys above. Any contract change requires review by Don and Masego; do not rename keys locally in Jinja without updating this agreement.
 
-- [ ] Identify the commit SHA and branch being deployed.
-- [ ] CI tests pass on that exact commit.
-- [ ] Dependency audit, static analysis, and secret scan have completed; findings are reviewed.
-- [ ] Required environment variables are present and validated at startup.
-- [ ] Database schema initialisation/migration has a documented, repeatable procedure.
-- [ ] Staging uses synthetic accounts and records.
-- [ ] HTTPS and cookie settings match the actual deployment endpoint.
-- [ ] A rollback/redeploy procedure and responsible person are recorded.
+## Verification Handoff
 
-## 4. Deployment verification
-
-Record each check with date/time, tester, commit SHA, expected result, actual result, and evidence link.
-
-1. Confirm deployment reports success and the deployed SHA matches the intended commit.
-2. Load the login page over HTTPS.
-3. Verify valid demo credentials work and invalid credentials fail without revealing which field was incorrect.
-4. Verify each role is directed only to authorised pages.
-5. Submit a synthetic request as a Requester.
-6. Verify the Requester can view their own request but cannot view another account's request.
-7. Verify staff can view the queue and filter only by allowed statuses.
-8. Attempt to accept one request concurrently as two staff sessions; only one acceptance should succeed.
-9. Verify successful acceptance produces one consistent status update, audit record, and outbox event.
-10. Verify notification delivery separately from outbox creation.
-11. Redeploy/restart and verify the request still exists. If it disappears, record a release blocker.
-12. Inspect logs for errors and confirm no credentials or sensitive personal data are exposed.
-
-## 5. Rollback
-
-- Stop promotion if authentication, authorisation, request integrity, or persistence checks fail.
-- Restore the last known-good deployment using the hosting provider's documented process.
-- Do not run destructive database rollback steps without a verified backup and an approved recovery procedure.
-- Record the incident, affected commit, impact, recovery action, and retest evidence.
-
-## 6. Evidence record
-
-| Field | Value |
-|---|---|
-| Environment URL | Fill in after verification |
-| Commit SHA | Fill in from deployment |
-| Deployment date/time | Record actual time |
-| Tester | Record name |
-| Test evidence | Link to CI run and staging results |
-| Persistence across redeploy | Pass/Fail/Not tested |
-| Known defects | Link issue IDs |
-| Decision | Proceed / Block / Retest |
-
-A successful hosting deployment alone is not proof of production readiness.
+Masego owns verification tests and RTM updates. Add coverage for role boundaries, requester ownership, Staff queue scoping, allowed/invalid filters, CSRF rejection, optimistic-concurrency conflict, audit/outbox atomicity, and notification delivery. Link test IDs to existing TR/AC identifiers; do not create or renumber requirement IDs here.

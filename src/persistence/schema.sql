@@ -59,7 +59,7 @@ CREATE TABLE outbox_events (
     event_type TEXT NOT NULL,
     correlation_id TEXT NOT NULL,
     payload_json TEXT NOT NULL,
-    state TEXT NOT NULL CHECK(state IN ('pending','sent','failed')) DEFAULT 'pending',
+    state TEXT NOT NULL CHECK(state IN ('pending','sending','sent','failed')) DEFAULT 'pending',
     attempts INTEGER NOT NULL DEFAULT 0,
     last_error TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -70,3 +70,19 @@ CREATE INDEX idx_requests_status ON requests(status);
 CREATE INDEX idx_requests_assignee ON requests(assignee_id);
 CREATE INDEX idx_audit_request ON request_audit(request_id);
 CREATE INDEX idx_outbox_state ON outbox_events(state, created_at);
+
+CREATE TABLE request_notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    outbox_event_id INTEGER NOT NULL UNIQUE,
+    request_id INTEGER NOT NULL,
+    requester_id INTEGER NOT NULL,
+    event_type TEXT NOT NULL,
+    message TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    read_at TEXT,
+    FOREIGN KEY (request_id) REFERENCES requests(id),
+    FOREIGN KEY (requester_id) REFERENCES users(id)
+);
+
+CREATE INDEX idx_request_notifications_requester
+    ON request_notifications(requester_id, created_at);

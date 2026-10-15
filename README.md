@@ -85,20 +85,32 @@ DATABASE_URL=civicconnect.sqlite
 SESSION_COOKIE_SECURE=false
 
 # Authentication
-PASSWORD_HASH_ROUNDS=160
+PASSWORD_HASH_COST=12
 BOOTSTRAP_REQUESTER_EMAIL=demo@example.com
 BOOTSTRAP_REQUESTER_PASSWORD=<secure-password>
 
-# Email / Notifications (optional for PoC)
+# Optional role accounts; use deployment secrets and unique synthetic addresses
+BOOTSTRAP_STAFF_EMAIL=<staff-demo-email>
+BOOTSTRAP_STAFF_PASSWORD=<secure-password>
+BOOTSTRAP_MANAGER_EMAIL=<manager-demo-email>
+BOOTSTRAP_MANAGER_PASSWORD=<secure-password>
+BOOTSTRAP_ADMIN_EMAIL=<admin-demo-email>
+BOOTSTRAP_ADMIN_PASSWORD=<secure-password>
+
+# Email / Notifications (required when enabling delivery)
+OUTBOX_WORKER_ENABLED=false
 EMAIL_SMTP_HOST=smtp.example.com
 EMAIL_SMTP_PORT=587
+EMAIL_SMTP_USERNAME=<smtp-username>
+EMAIL_SMTP_PASSWORD=<smtp-password>
 EMAIL_FROM_ADDRESS=noreply@example.com
 OUTBOX_WORKER_POLL_SECONDS=60
 ```
 
 **🔒 Security Notes:**
 - `SECRET_KEY` must be a cryptographically random string—never use a fixed value
-- `BOOTSTRAP_REQUESTER_PASSWORD` is hashed with bcrypt; never store plaintext passwords
+- Bootstrap accounts are optional and created only from environment secrets; passwords are hashed with bcrypt cost 12 or greater
+- Set `OUTBOX_WORKER_ENABLED=true` only when SMTP delivery settings are configured
 - `.env` is in `.gitignore`—never commit it
 - Use a secret manager (e.g., Render Secrets, AWS Secrets Manager) in production
 
@@ -131,11 +143,20 @@ FLASK_ENV=production
 SECRET_KEY=<generate-new-random-value>
 DATABASE_URL=/var/data/civicconnect.sqlite
 SESSION_COOKIE_SECURE=true
-PASSWORD_HASH_ROUNDS=160
+PASSWORD_HASH_COST=12
 BOOTSTRAP_REQUESTER_EMAIL=<demo-email>
 BOOTSTRAP_REQUESTER_PASSWORD=<demo-password>
+BOOTSTRAP_STAFF_EMAIL=<staff-demo-email>
+BOOTSTRAP_STAFF_PASSWORD=<staff-demo-password>
+BOOTSTRAP_MANAGER_EMAIL=<manager-demo-email>
+BOOTSTRAP_MANAGER_PASSWORD=<manager-demo-password>
+BOOTSTRAP_ADMIN_EMAIL=<admin-demo-email>
+BOOTSTRAP_ADMIN_PASSWORD=<admin-demo-password>
+OUTBOX_WORKER_ENABLED=true
 EMAIL_SMTP_HOST=smtp.gmail.com
 EMAIL_SMTP_PORT=587
+EMAIL_SMTP_USERNAME=<smtp-username>
+EMAIL_SMTP_PASSWORD=<smtp-password>
 EMAIL_FROM_ADDRESS=<your-email>
 OUTBOX_WORKER_POLL_SECONDS=60
 ```
@@ -159,7 +180,7 @@ SQLite on Render's free tier is ephemeral. For production:
 - **Option B:** Use [S3](https://aws.amazon.com/s3/) for backups
 - **Option C:** Upgrade to [Render Persistent Disk](https://render.com/docs/persistent-disk)
 
-Current configuration uses `civicconnect.sqlite` which will be lost on redeploy. Upgrade for production.
+Do not assume `/var/data` is persistent merely because it is an absolute path. Attach a persistent disk mounted at `/var/data` and verify survival across restart and redeploy before using SQLite for staging. If the selected free tier cannot provide persistent storage, use the approved managed PostgreSQL option instead. The hosting choice remains subject to DEC-008 evidence.
 
 ---
 
