@@ -1,23 +1,24 @@
 # Document Control
 
-> **PED section, v1.0 baselined, now evolving to v2.0.** Owner: Emile.
-> Authored here in Markdown and compiled to `docs/PED/exports/PED_v1.0.docx` at M1, `PED_v2.0.docx` at M2 (DEC-002).
+> **PED section, v1.0 baselined, v2.0 not yet baselined, now also opening v3.0.** Owner: Emile.
+> Authored here in Markdown and compiled to `docs/PED/exports/PED_v1.0.docx` at M1, `PED_v2.0.docx` at M2, `PED_v3.0.docx` at M3 (DEC-002).
 > The compiled document is an output — never edit it directly, and never treat it as the source of truth.
 
 ## SEN381 Software Engineering 381 — Project Engineering Document
 
 **CivicConnect — Community Service Request Management Platform**
-Version 2.0 (in progress) — Architecture, Technology & Initial Design Baseline · Milestone 2, evolving from the v1.0 Milestone 1 baseline below
+Version 3.0 (in progress) — Construction & Verification · Milestone 3, continuing from the v2.0 Milestone 2 work below, which is itself **not yet BASELINED** (see the graduation checklist further down this document — recorded honestly, not glossed over)
 
 | Field | Record |
 |---|---|
 | Module | SEN381 Software Engineering 381 (NQF 8), Belgium Campus ITversity |
 | Team (M1 workstreams) | Masego (Workstream A) · Don (Workstream B) · Emile (Workstream C) |
 | Team (M2 members) | Emile (Member A) · Don (Member B) · Masego (Member C) — see note below, the lettering changes between milestones |
+| Team (M3 roles) | Don — Backend & configuration · Masego — Verification & traceability · Emile — UI, staging, performance & release evidence |
 | Repository | https://github.com/DonLukus/Civic-connect |
-| Baseline date | M1: 8 September 2026 · M2: in progress |
-| Governing document | SEN381 CivicConnect Master Project Brief v1.1 (2026); SEN381 CivicConnect Milestone 2 brief |
-| Status | M1 baselined and gated. M2 underway: architecture, data, technology and design decisions not yet finalised. |
+| Baseline date | M1: 8 September 2026 · M2: in progress · M3: in progress |
+| Governing document | SEN381 CivicConnect Master Project Brief v1.1 (2026); SEN381 CivicConnect Milestone 2 brief; SEN381 CivicConnect Milestone 3 brief |
+| Status | M1 baselined and gated. M2 underway: see the v2.0 graduation checklist below for exactly what's still open. M3 construction has started in parallel (agreed M3 journey scope: login, submit request, view own requests/status, staff queue and accept) — starting construction before M2's baseline fully closes is a real, deliberate sequencing choice, not an oversight, and is recorded here rather than hidden. |
 
 ## Document Control
 
@@ -30,6 +31,7 @@ Version 2.0 (in progress) — Architecture, Technology & Initial Design Baseline
 | 1.0 | 8 September 2026 | Team | Baselined. Scope, requirements and acceptance criteria under change control. | All three | BASELINED |
 | 2.0 (in progress) | 2026-09-30 | Emile | M2 document control opened. PED continues from the v1.0 baseline — nothing below is rewritten, M2 adds new sections (16–21) for architecture, data, technology, design and the M2 sign-off. | Don, Masego (pending) | Draft |
 | 2.0 review candidate | 2026-10-01 | Emile | Reconciled PoC, campus test, PR #62 and Render deployment evidence with the architecture and deployment sections. | Don, Masego (pending) | In review |
+| 3.0 (in progress) | 2026-10-15 | Emile | M3 document control opened. PED continues from v2.0 — nothing above is rewritten. New sections numbered from 22 onward will cover construction, verification and release evidence as they land; none exist yet, this row only records that the version is open. | Don, Masego (pending) | Draft |
 
 Note on the M2 team table above: the Member A/B/C split for Milestone 2 is not the same grouping as the Workstream A/B/C split above it — those were fixed at M1 baseline and stay as the historical record. M2 uses its own lettering, matching the assessment brief's grading criteria (Emile: criteria A + B, architecture and requirements; Don: criteria C + E, data and design patterns; Masego: criteria D + F, technology and delivery).
 

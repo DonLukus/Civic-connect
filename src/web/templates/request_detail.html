@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Request #{{ request.id }} — CivicConnect{% endblock %}
+{% block content %}
+  <h1>Request #{{ request.id }}</h1>
+
+  {# FR-007: expects `request` with id, category_name, status,
+     last_status_change_at, resolution_note (may be empty).
+     FR-009: expects `notifications` - in-app notifications for this
+     request, most recent first; each with message and created_at.
+     Don/Masego confirm real field names when the route is wired. #}
+
+  <dl>
+    <dt>Category</dt><dd>{{ request.category_name }}</dd>
+    <dt>Status</dt><dd>{{ request.status }}</dd>
+    <dt>Last updated</dt><dd>{{ request.last_status_change_at }}</dd>
+    {% if request.resolution_note %}
+      <dt>Resolution note</dt><dd>{{ request.resolution_note }}</dd>
+    {% endif %}
+  </dl>
+
+  <h2>Notifications</h2>
+  {% if notifications %}
+    <ul>
+      {% for n in notifications %}
+        <li>{{ n.message }} <span class="nav__user">({{ n.created_at }})</span></li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="empty-state">No notifications yet for this request.</p>
+  {% endif %}
+
+  <p><a href="/requests">Back to my requests</a></p>
+{% endblock %}

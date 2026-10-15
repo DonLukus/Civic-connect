@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Request #{{ request.id }} — Staff view — CivicConnect{% endblock %}
+{% block content %}
+  <h1>Request #{{ request.id }}</h1>
+
+  {# FR-013: expects `request` with id, title, description, category_name,
+     location, status, assignee_name, created_at.
+     FR-014/FR-015: expects `can_accept` (bool - unassigned, status New,
+     signed-in user is Staff) to show/hide the accept action; the real
+     accept-eligibility check stays in RequestService/LifecycleValidator,
+     this template only reflects what the service decided.
+     Expects `audit_history` - ordered list of {actor_name, changed_at,
+     previous_status, new_status, previous_assignee_name, new_assignee_name}. #}
+
+  <dl>
+    <dt>Title</dt><dd>{{ request.title }}</dd>
+    <dt>Description</dt><dd>{{ request.description }}</dd>
+    <dt>Category</dt><dd>{{ request.category_name }}</dd>
+    <dt>Location</dt><dd>{{ request.location }}</dd>
+    <dt>Status</dt><dd>{{ request.status }}</dd>
+    <dt>Assignee</dt><dd>{{ request.assignee_name or "Unassigned" }}</dd>
+    <dt>Submitted</dt><dd>{{ request.created_at }}</dd>
+  </dl>
+
+  {% if can_accept %}
+    <form method="post" action="/staff/requests/{{ request.id }}/accept">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button type="submit">Accept this request</button>
+    </form>
+  {% endif %}
+
+  <h2>History</h2>
+  {% if audit_history %}
+    <table>
+      <caption class="visually-hidden">Status and assignment history for this request</caption>
+      <thead>
+        <tr>
+          <th scope="col">When</th>
+          <th scope="col">Who</th>
+          <th scope="col">Status change</th>
+          <th scope="col">Assignee change</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in audit_history %}
+          <tr>
+            <td>{{ h.changed_at }}</td>
+            <td>{{ h.actor_name }}</td>
+            <td>
+              {% if h.previous_status != h.new_status %}
+                {{ h.previous_status or "—" }} &rarr; {{ h.new_status }}
+              {% else %}—{% endif %}
+            </td>
+            <td>
+              {% if h.previous_assignee_name != h.new_assignee_name %}
+                {{ h.previous_assignee_name or "Unassigned" }} &rarr; {{ h.new_assignee_name or "Unassigned" }}
+              {% else %}—{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="empty-state">No history recorded yet.</p>
+  {% endif %}
+
+  <p><a href="/staff/queue">Back to queue</a></p>
+{% endblock %}
