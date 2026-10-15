@@ -8,6 +8,30 @@ AI assistant reads to get up to speed without asking anyone.
 
 **Rule.** Every pull request adds an entry here. Newest at the top.
 
+### 2026-10-15 — M3 verification kickoff: test inventory, gap analysis, isolation tests, defect register
+**Who:** Masego · **Type:** artefact, governance
+**What:** First M3 deliverable per the team's verification/testing/traceability role brief:
+`docs/quality/test-inventory.md` maps all 16 pre-existing tests to requirement, acceptance
+criterion, level, technique and risk, and tallies against the M3 brief's 8 coverage minimums.
+Seven of eight are met; the one real gap is a genuine browser-based E2E test (everything today
+runs through Flask's in-process test client, which the brief asks to be distinguished from real
+browser evidence) - flagged as a team decision, not assumed either way. Checked `src/web/app.py`
+and `templates/` directly and found the staff queue, request list, request detail and
+Manager/Administrator screens have **no implementation yet** - this blocks one of the two required
+integrated journeys and half of the other, so it's reported as a handoff to Don (routes) and Emile
+(templates), not invented or worked around. Added two new tests for requester isolation
+(`test_requester_isolation.py`) against the one route that already enforces it. Stood up
+`docs/quality/defect-register.csv`, backfilled with the two defects already found and fixed in
+PR #76 rather than starting empty. Added `.github/workflows/lint.yml` (ruff, non-blocking for
+now) and recorded its 12 findings' disposition - 11 cosmetic, left for their file owners; one
+real low-severity finding (a blind `except Exception` in `outbox.py`) logged as **DEF-003**,
+reported to Don rather than fixed in his file. Updated the RTM's M3 columns for the 8 requirements
+this inventory actually covers; the remaining 32 correctly stay Pending M3.
+**Affects:** `docs/quality/test-inventory.md` (new), `docs/quality/defect-register.csv` (new),
+`.github/workflows/lint.yml` (new), `tests/test_requester_isolation.py` (new), RTM rows TR-001,
+TR-003, TR-011, TR-012, TR-013, TR-016, TR-017, TR-027. DEF-003.
+**Evidence:** Issue #67; branch `m3/verification-test-inventory`; 18/18 tests passing; AI-028.
+
 ### 2026-10-12 — Scored stack comparison added to ADR-001; FEC-01/FEC-03 progress notes
 **Who:** Masego · **Type:** decision, artefact
 **What:** M2 brief §5.5 asks for stack options to be scored against 8 named criteria, not just
