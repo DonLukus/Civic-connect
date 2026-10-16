@@ -73,8 +73,8 @@ about a specific record's existence.
 
 - **Comments/messaging (FR-010), later lifecycle transitions, Reject/Close, password reset,
   category/user administration** — none of these exist yet; there is no operation to test. See
-  `docs/change/CHG-002-m3-delivery-slice.md`, which already formally records this as deferred
-  scope, not a quietly dropped requirement.
+  `docs/change/CHG-002-m3-delivery-slice.md`, which proposes deferring this scope pending formal
+  team approval. These remain baselined requirements, not quietly dropped requirements.
 - **Inactive/deactivated users** — every test above seeds `is_active = 1`. `require_login()` and
   every service-layer actor lookup filters on `is_active = 1`, so a deactivated account is
   rejected the same way an unauthenticated one is (redirected to `/login`), but that specific path
