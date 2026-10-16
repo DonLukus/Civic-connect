@@ -129,3 +129,63 @@ scenario (not duplicated here).
 **Needs a team decision:** whether Flask-test-client coverage satisfies the "E2E/system" minimum
 for M3, or whether real browser automation is required — affects schedule and tooling (a new
 dependency), so it isn't mine to decide unilaterally.
+
+## Part 5 — Update, 16 October 2026: Don's/Emile's routes landed, gaps above closed
+
+Everything Part 3 flagged as blocked on Don (routes) and Emile (templates) now exists on the
+integration candidate `m3/emile-release-verification` (PRs #82/#83/#84 merged into it — see
+`docs/release/m3-release-evidence-summary.md` for the full candidate composition). This section
+assigns stable IDs to the tests that arrived with that work, per
+`docs/quality/m3-verification-handoff.md` point 1, **without renumbering TST-001–018 above**.
+
+**Count reconciliation:** `python -m pytest tests/ -v` on the candidate reports **49 passed**
+(39 before this PR's additions, now +10 — see below). That total is higher than the ID count
+below because `test_m3_logout.py`'s one test function is parametrized over 5 role/page
+combinations (pytest counts each as a separate passing case; this inventory assigns it one ID,
+consistent with "ID = test function" everywhere else in this document).
+
+| TST ID | Test | File | Requirement(s) | Level | Technique | Risk |
+|---|---|---|---|---|---|---|
+| TST-019 | `test_list_requester_requests_returns_only_own_requests` | `test_m3_backend_routes.py` | FR-008 | Unit/component (service) | Equivalence partitioning | Cross-requester data leak |
+| TST-020 | `test_list_requester_requests_status_filter_and_invalid_value` | `test_m3_backend_routes.py` | FR-008 | Unit/component | Equivalence + boundary (invalid filter value) | Unfiltered/incorrect list |
+| TST-021 | `test_list_requester_requests_rejects_non_requester` | `test_m3_backend_routes.py` | NFR-004 | Unit/component, negative | Negative/security | Authorisation bypass |
+| TST-022 | `test_staff_queue_shows_unassigned_and_own_not_other_staffs` | `test_m3_backend_routes.py` | FR-011, FR-012 | Unit/component | Equivalence partitioning | Staff sees another staff member's assigned work |
+| TST-023 | `test_staff_queue_rejects_non_staff` | `test_m3_backend_routes.py` | NFR-004 | Unit/component, negative | Negative/security | Authorisation bypass |
+| TST-024 | `test_request_detail_owner_can_view_non_owner_cannot` | `test_m3_backend_routes.py` | FR-013, NFR-012 | Unit/component | Equivalence partitioning | Cross-requester data leak |
+| TST-025 | `test_request_detail_staff_visibility_follows_assignment` | `test_m3_backend_routes.py` | FR-013, NFR-012 | Unit/component | State-based partitioning (unassigned/assigned) | Staff sees another's assigned detail |
+| TST-026 | `test_request_detail_withholds_requester_email_from_unassigned_staff` | `test_m3_backend_routes.py` | NFR-012 | Unit/component | Equivalence partitioning | Requester contact details over-exposed |
+| TST-027 | `test_notifications_created_even_when_email_delivery_fails` | `test_m3_backend_routes.py` | FR-009 | Integration (service + outbox) | Scenario-based | Silent notification loss on delivery failure |
+| TST-028 | `test_notifications_rejects_non_requester` | `test_m3_backend_routes.py` | NFR-004 | Unit/component, negative | Negative/security | Authorisation bypass |
+| TST-029 | `test_route_request_list_allows_requester_blocks_staff` | `test_m3_backend_routes.py` | FR-008, NFR-004 | Black-box functional | Equivalence partitioning (role) | Authorisation bypass at the route |
+| TST-030 | `test_route_staff_queue_allows_staff_blocks_requester` | `test_m3_backend_routes.py` | FR-011, NFR-004 | Black-box functional | Equivalence partitioning (role) | Authorisation bypass at the route |
+| TST-031 | `test_route_accept_then_detail_end_to_end` | `test_m3_backend_routes.py` | FR-014, FR-013 | Black-box functional, integration | Scenario-based | Accept flow broken end-to-end, audit actor not rendered |
+| TST-032 | `test_route_accept_rejects_bad_csrf_and_wrong_role` | `test_m3_backend_routes.py` | NFR-004, NFR-005 | Black-box, negative/security | Negative/security | CSRF or role bypass on accept |
+| TST-033 | `test_route_notifications_and_landing` | `test_m3_backend_routes.py` | FR-009, NFR-004 | Black-box functional | Equivalence partitioning (role) | Authorisation bypass; landing page overclaiming built features |
+| TST-034 | `test_static_files_not_redirected_while_signed_out` | `test_m3_backend_routes.py` | Regression | Black-box, regression | Regression testing | Static assets wrongly gated behind login |
+| TST-035 | `test_logout_from_shared_navigation` (5 role/page combinations) | `test_m3_logout.py` | NFR-005 (session integrity) | Black-box, regression | Regression testing, parametrized across 5 roles | Logout CSRF broken for a given role's page, or session not actually cleared |
+
+### New this PR — route-level role x operation matrix (TST-036–045)
+
+Full rationale and the matrix table itself: `docs/quality/role-operation-matrix.md`. Summary:
+every test above that touches role/ownership enforcement (TST-019–030) asserts against
+`RequestService` directly, not the HTTP route — a route-wiring bug would not be caught. These
+ten close that gap by hitting the real route as every role expected to be rejected, including
+**Administrator**, which had no authorisation coverage anywhere before this (only a positive
+`GET /landing` check, inside a logout-mechanics test, not an authorisation test).
+
+| TST ID | Test | File | Requirement(s) | Level | Technique | Risk |
+|---|---|---|---|---|---|---|
+| TST-036 | `test_new_request_form_blocks_non_requester` | `test_m3_role_operation_matrix.py` | NFR-004 | Black-box functional, negative | Equivalence partitioning (role) | Route-level authorisation bypass |
+| TST-037 | `test_submit_request_blocks_non_requester_at_route` | `test_m3_role_operation_matrix.py` | NFR-004 | Black-box functional, negative | Equivalence partitioning (role) | Route-level authorisation bypass |
+| TST-038 | `test_request_submitted_blocks_non_requester_and_non_owner_roles` | `test_m3_role_operation_matrix.py` | NFR-004, NFR-012 | Black-box functional, negative | Equivalence partitioning (role) | Route-level authorisation bypass |
+| TST-039 | `test_request_list_blocks_staff_manager_administrator` | `test_m3_role_operation_matrix.py` | NFR-004 | Black-box functional, negative | Equivalence partitioning (role) | Route-level authorisation bypass |
+| TST-040 | `test_notifications_blocks_staff_manager_administrator` | `test_m3_role_operation_matrix.py` | NFR-004 | Black-box functional, negative | Equivalence partitioning (role) | Route-level authorisation bypass |
+| TST-041 | `test_staff_queue_blocks_requester_manager_administrator` | `test_m3_role_operation_matrix.py` | NFR-004 | Black-box functional, negative | Equivalence partitioning (role) | Route-level authorisation bypass |
+| TST-042 | `test_accept_request_blocks_requester_manager_administrator` | `test_m3_role_operation_matrix.py` | NFR-004, FR-014 | Black-box functional, negative | Equivalence partitioning (role) + state verification | Route-level authorisation bypass, or a rejected attempt mutating state anyway |
+| TST-043 | `test_landing_blocks_requester_and_staff_allows_manager_and_administrator` | `test_m3_role_operation_matrix.py` | NFR-004 | Black-box functional | Equivalence partitioning (role), both directions | Route-level authorisation bypass; Administrator never previously tested here |
+| TST-044 | `test_request_detail_route_enforces_role_and_ownership` | `test_m3_role_operation_matrix.py` | FR-013, NFR-004, NFR-012 | Black-box functional | Equivalence partitioning (role x ownership x assignment) | Route-wiring bug not caught by service-only tests |
+| TST-045 | `test_home_redirects_by_role` | `test_m3_role_operation_matrix.py` | NFR-004 (consistent role routing) | Black-box functional | Equivalence partitioning (role) | Wrong landing surface shown per role |
+
+**Result:** 49/49 passing on the candidate (39 + these 10), zero regressions, ruff clean. The
+"Full role matrix" residual risk in `docs/release/m3-release-evidence-summary.md` is now closed
+with automated evidence, not just reviewed.

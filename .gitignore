@@ -43,6 +43,11 @@ venv/
 *.sqlite
 *.sqlite3
 
+# Coverage tool output (ad hoc local runs, e.g. pytest --cov)
+.coverage
+.coverage.*
+htmlcov/
+
 # Build output
 bin/
 obj/
