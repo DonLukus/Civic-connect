@@ -1,10 +1,10 @@
 # 22. M3 construction, verification and release review
 
-**CivicConnect - PED v3.0 review candidate, 16 October 2026.** Prepared by Emile with AI assistance recorded in AI-036. Continues the existing M1/M2 PED sources; no historical signature or baseline status is changed. No new student approval is recorded.
+**CivicConnect - PED v3.0 review candidate, updated 17 October 2026.** Prepared by Emile with AI assistance recorded in AI-036 and AI-038/039. Continues the existing M1/M2 PED sources; no historical signature or baseline status is changed.
 
 ## 22.1 Candidate and construction
 
-The integration candidate combines the current main snapshot with the proposed backend, route tests, UI and dependency-check changes in PRs #80-84. Source revisions and file hashes are indexed in `docs/release/evidence/2026-10-16/source-manifest.json`. The registration addition is identified separately by `registration-source-manifest.json`. A final signed release SHA/tag is pending.
+The integration candidate combines the current main snapshot with the proposed backend, route tests, UI and dependency-check changes in PRs #80-84, plus PR #86 (the full role x operation authorisation matrix across all four roles, and the RTM scope-wording corrections both Don and Emile made after independent AI-assisted review). Source revisions and file hashes are indexed in `docs/release/evidence/2026-10-16/source-manifest.json`. The registration addition is identified separately by `registration-source-manifest.json`. A final signed release SHA/tag is pending.
 
 Implemented slice: public Requester registration, login, submission, own list/detail/status; Staff login, queue/status filter/detail/acceptance; acceptance notification through in-app and SMTP; Manager/Administrator login with a safe landing page. `docs/deployment/m3-interface-agreement.md` records actual routes, forms, roles and error behaviour. `CHG-002` records the proposed release-slice exclusions and impact without rewriting baselined priorities.
 
@@ -20,8 +20,9 @@ Staging is a distinct loopback Waitress process with a generated synthetic datab
 
 | Evidence | Result | Scope |
 |---|---|---|
-| pytest automated suite | 50 passed in 75.07s | registration-regression.xml; 11 new registration cases; earlier 39-case snapshot retained |
+| pytest automated suite | 60 passed (re-verified fresh in an isolated worktree, not just the commit message) | 39 historical + 11 registration cases (registration-regression.xml) + 10 new role x operation matrix cases (PR #86) |
 | Backend regression follow-up | 16 passed | Includes corrected rendered audit actor assertion |
+| Role x operation matrix | 10/10 passed, including the previously-missing positive case (assigned Staff viewing their own accepted request) | `tests/test_m3_role_operation_matrix.py`; `docs/quality/role-operation-matrix.md`; closes the coverage gap Don's AI-assisted review found on the first integration commit |
 | Ruff / Bandit / dependency audit | Clean / no medium-high findings / no known application dependency findings | Tool results at check time, not complete security proof |
 | Live HTTP system journey 1 | Passed | Requester login, submit #501, receipt, list/detail, logout and cross-requester denial |
 | Live HTTP system journey 2 | Passed | Staff filter/detail/accept, requester status, in-app notification and local SMTP capture |
@@ -64,12 +65,12 @@ Render documents that free-service local files disappear on restart/redeploy/spi
 
 Each student should be able to demonstrate: FR-014/AC-014 -> service version guard -> acceptance regression -> live journey #501 -> audit/outbox/notification evidence -> residual outbox recovery risk -> release condition. Emile should also explain NFR-001's dataset, concurrency, warm-up, duration, p95 method and local-only limits.
 
-## 22.7 Final review actions
+## 22.7 Final review actions - status as of 17 October 2026
 
-1. Emile inspects this candidate. The authenticated GitHub commit records technical authorship; personal acceptance and final baseline signatures remain separate.
-2. Don reviews backend/migration/outbox, existing ADR statuses and the six draft register rows.
-3. Masego independently verifies test classification, role/privacy coverage and RTM; both non-author reviewers review the exact integration diff.
-4. Record actual scope/decision agreement, resolve findings, pass required CI and merge through the PR process.
-5. Record the final SHA/tag, actual approvals and residual-risk acceptance; regenerate the controlled PED v3 PDF. This review export is not the final signed baseline.
+1. ~~Emile inspects this candidate~~ - done, repeatedly, across each corrected commit, with real re-execution each time (not just re-reading commit messages).
+2. ~~Don reviews backend/migration/outbox, existing ADR statuses and the six draft register rows~~ - done. Don's AI-assisted review of the first integration commit (9d10b11) found real gaps (stale test counts, a coverage overclaim, inaccurate test-layer history, a scope-approval wording overclaim); all were corrected, re-verified, and **Don approved PR #86 against the corrected commit (f060d41)**.
+3. Masego independently verified test classification, role/privacy coverage and RTM, and fixed everything Don's review flagged on her side (PR #86, commit 6eebb3c). **Her own CHG-002 decision/date, separate from the technical fix, is the one item still outstanding** - CHG-002 itself names her specifically, and her approving the PR mechanically does not substitute for it, since she is PR #86's author and cannot approve her own PR.
+4. PR #86: 2 real non-author approvals in (Don, Emile), both against the final corrected commit, both with documented re-verification. PR #85 (the broader integration candidate) still needs the same from both reviewers once #86 is folded into it.
+5. Record the final SHA/tag, actual approvals and residual-risk acceptance; regenerate the controlled PED v3 PDF once #85/#86 are consolidated and merged. This review export is still not the final signed baseline.
 
 Sources checked 16 October 2026: https://flask.palletsprojects.com/en/stable/testing/ and https://render.com/docs/free. Repository artefacts above supply implementation and execution evidence.
