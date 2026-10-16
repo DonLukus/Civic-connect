@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Staff queue — CivicConnect{% endblock %}
+{% block content %}
+  <h1>Staff queue</h1>
+
+  {# Per docs/deployment/m3-interface-agreement.md's Route Contract
+     (GET /staff/queue): `requests` rows carry reference, title, category,
+     submitted_at, status, assignee_id, last_status_changed_at. `statuses`
+     and `selected_status` drive the filter form. Detail/accept both live
+     at the unified GET /requests/<request_id>, not a separate staff path. #}
+
+  <form method="get" action="/staff/queue" class="filter-bar">
+    <div>
+      <label for="status">Filter by status</label>
+      <select id="status" name="status">
+        <option value="" {% if not selected_status %}selected{% endif %}>All</option>
+        {% for s in statuses %}
+          <option value="{{ s }}" {% if selected_status == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit">Apply filter</button>
+  </form>
+
+  {% if requests %}
+    <table>
+      <caption class="visually-hidden">Service requests in your queue</caption>
+      <thead>
+        <tr>
+          <th scope="col">Reference</th>
+          <th scope="col">Title</th>
+          <th scope="col">Category</th>
+          <th scope="col">Submitted</th>
+          <th scope="col">Status</th>
+          <th scope="col">Assignee</th>
+          <th scope="col">Last updated</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in requests %}
+          <tr>
+            <td>#{{ r.reference }}</td>
+            <td>{{ r.title }}</td>
+            <td>{{ r.category }}</td>
+            <td>{{ r.submitted_at }}</td>
+            <td>{{ r.status }}</td>
+            <td>{{ r.assignee_id or "Unassigned" }}</td>
+            <td>{{ r.last_status_changed_at }}</td>
+            <td><a href="/requests/{{ r.reference }}">View</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="empty-state">No requests match this filter.</p>
+  {% endif %}
+{% endblock %}

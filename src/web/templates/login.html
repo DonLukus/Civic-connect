@@ -1,17 +1,16 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Sign in — CivicConnect</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Sign in — CivicConnect{% endblock %}
+{% block content %}
   <h1>Sign in</h1>
-  {% if error %}<p role="alert">{{ error }}</p>{% endif %}
+  {% for message in get_flashed_messages(category_filter=["success"]) %}
+    <p class="success-message" role="status">{{ message }}</p>
+  {% endfor %}
+  {% if error %}<p class="error-text" role="alert">{{ error }}</p>{% endif %}
   <form method="post" action="/login">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-    <p><label for="email">Email</label><br><input id="email" name="email" type="email" required></p>
-    <p><label for="password">Password</label><br><input id="password" name="password" type="password" required></p>
+    <p><label for="email">Email</label><input id="email" name="email" type="email" required></p>
+    <p><label for="password">Password</label><input id="password" name="password" type="password" required></p>
     <p><button type="submit">Sign in</button></p>
   </form>
-</body>
-</html>
+  <p>New to CivicConnect? <a href="{{ url_for('register') }}">Create an account</a></p>
+{% endblock %}

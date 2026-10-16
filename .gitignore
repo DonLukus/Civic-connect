@@ -38,8 +38,15 @@ __pycache__/
 venv/
 .venv/
 .pytest_cache/
+.m3-local/
+.m3-test-temp/
 *.sqlite
 *.sqlite3
+
+# Coverage tool output (ad hoc local runs, e.g. pytest --cov)
+.coverage
+.coverage.*
+htmlcov/
 
 # Build output
 bin/

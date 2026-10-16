@@ -1,0 +1,34 @@
+{
+  "parent_commit": "f40c02d55d16425dcc57e63a97532979a0f79a8f",
+  "scope": "Public Requester registration; these files extend the earlier integration source manifest. Earlier load/recovery evidence was not rerun.",
+  "files": [
+    {
+      "path": "src/persistence/user_service.py",
+      "sha256_lf": "3209e2bd21add63fbcc2829ecfcab5cd576b085a5d444b51423efbc19e8e5291"
+    },
+    {
+      "path": "src/web/app.py",
+      "sha256_lf": "7f2e38e1d2ab9e4729493c68062aa15b8876162997c46e8c53ff72278a5739fb"
+    },
+    {
+      "path": "src/web/templates/register.html",
+      "sha256_lf": "76e1e7d8b6b4bc43e33ecbcbc88d8cf2273151ad64232eec1cea23be614de0b3"
+    },
+    {
+      "path": "src/web/templates/login.html",
+      "sha256_lf": "fd0ad270cae52f61fe66c8b680b444cfe36a5d0281e75ac4167f57e0c4493651"
+    },
+    {
+      "path": "tests/test_registration.py",
+      "sha256_lf": "4dc6bfdd7587dc9f55d661c6af087c59582844be134739454ababefcca6a06b1"
+    },
+    {
+      "path": "scripts/m3_verify_live.py",
+      "sha256_lf": "6750c8736336c5709e44549420c5bcedd748c23f8c0374e1856c8cc63ef145e0"
+    },
+    {
+      "path": "tools/build_m3_review_pdf.py",
+      "sha256_lf": "ff2b64116688afcaee7e1822c9d5657be50a354e795c7a6e9f7612f1cccab543"
+    }
+  ]
+}

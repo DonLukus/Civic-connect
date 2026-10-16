@@ -8,6 +8,23 @@ AI assistant reads to get up to speed without asking anyone.
 
 **Rule.** Every pull request adds an entry here. Newest at the top.
 
+### 2026-10-17 — M3 role x operation matrix: fixes from Don's review (overclaim, missing positive case, stale IDs)
+**Who:** Masego · **Type:** test, artefact
+**What:** Closed three specific gaps Don's AI-assisted review found in PR #86: (1) added the
+missing positive test case to `test_m3_role_operation_matrix.py` — an assigned Staff member
+viewing their own already-accepted request through the route, not just a different, unassigned
+Staff member correctly getting 404; (2) corrected an overclaim in both
+`docs/quality/role-operation-matrix.md` and `docs/quality/test-inventory.md` that said
+TST-019–030 were all tested at the service layer only — TST-029/030/032/033 were already
+route-level; (3) assigned TST-046–050 to the 5 registration test functions that landed with
+PR #85, updated TR-017 and TR-026 in `docs/requirements/RTM.csv`, and kept the 49-passed figure
+as a dated historical note rather than silently overwriting it with the current 60.
+**Evidence:** `python -m pytest tests/ -v` — 60/60 passing, zero regressions.
+**Why it matters:** NFR-004 and the role×operation matrix claim now rest on an accurate account
+of what was already route-level versus what this work actually added — the distinction matters
+for anyone reviewing the evidence later, not just for getting the count right.
+**AI usage:** AI-039 (Claude Code).
+
 ### 2026-10-15 — M3 verification kickoff: test inventory, gap analysis, isolation tests, defect register
 **Who:** Masego · **Type:** artefact, governance
 **What:** First M3 deliverable per the team's verification/testing/traceability role brief:
@@ -53,6 +70,16 @@ unaffected (docs-only change).
 **Evidence:** `python -m pytest tests/test_lifecycle_validator.py -q` and `python -m pytest tests/test_request_acceptance.py -q` both passed on the branch.
 
 ---
+
+
+### 2026-10-16 - Add public Requester registration (review pending)
+**Who:** Emile, with Codex assistance (AI-037). **What:** User-requested self-registration page/service; valid accounts are always Requesters, passwords use bcrypt, duplicate emails and invalid/CSRF submissions are rejected. No privileged role can be selected. **Evidence:** tests/test_registration.py and registration-live.json; full regression result recorded separately. **Scope:** FR-001 self-registration only; Administrator provisioning/audit, email verification and rate limiting remain outstanding. Existing load/recovery reports predate this addition.
+
+### 2026-10-16 - Integrated M3 candidate and local release evidence (review pending)
+**Who:** Emile, with Codex assistance. **Type:** change, verification, artefact.
+**What:** Combined main with PR #80/#81/#82/#83/#84 sources in an isolated branch; corrected shared logout CSRF and audit actor display, retained all colliding AI records under unique unbaselined IDs, and prepared staging, traceability, decision proposals and release evidence. No student review or approval is inferred.
+**Evidence:** 39 pytest cases passed; 16 backend cases passed after the audit display assertion; five-minute filtered queue load with 10 distinct Staff accounts/500 records produced 8,503 successful responses and p95 0.422s. Two live HTTP journeys, local process restart and online backup/restore passed. Local SMTP capture only; Render persistence and external delivery remain unverified. See docs/release/m3-release-evidence-summary.md and AI-036.
+**Next:** Review exact candidate, resolve scope/decision proposals, sign and publish candidate, pass GitHub checks and obtain both independent non-author reviews before baseline. DEC-008 remains Deferred.
 
 ## Format
 

@@ -1,0 +1,11 @@
+{
+  "pass": true,
+  "flow": "Public registration -> success -> login -> Requester submission page over live HTTP",
+  "email": "demo-register-0cdbc778@example.test",
+  "role": "Requester",
+  "bcrypt_cost": 12,
+  "privilege_injection_ignored": true,
+  "limits": "Local synthetic account; no email verification/rate-limit/production-readiness claim.",
+  "observed_at_utc": "2026-10-16T19:27:19.743624+00:00",
+  "environment": "Windows local simulated staging; Waitress, loopback HTTP, SQLite; local SMTP STARTTLS sink"
+}

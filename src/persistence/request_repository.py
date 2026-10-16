@@ -1,6 +1,5 @@
 import sqlite3
 import uuid
-from typing import Optional
 
 
 class RequestRepository:
@@ -29,10 +28,10 @@ class RequestRepository:
         request_id: int,
         actor_user_id: int,
         action_type: str,
-        previous_status: Optional[str],
+        previous_status: str | None,
         new_status: str,
-        previous_assignee_id: Optional[int],
-        new_assignee_id: Optional[int],
+        previous_assignee_id: int | None,
+        new_assignee_id: int | None,
         correlation_id: str,
         payload_json: str,
     ) -> None:
@@ -64,7 +63,7 @@ class RequestRepository:
         aggregate_id: int,
         event_type: str,
         payload_json: str,
-        correlation_id: Optional[str] = None,
+        correlation_id: str | None = None,
     ) -> None:
         correlation_id = correlation_id or str(uuid.uuid4())
         sql = """

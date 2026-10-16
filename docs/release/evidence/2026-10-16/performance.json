@@ -1,0 +1,19 @@
+{
+  "scenario": "NFR-001 filtered Staff queue",
+  "distinct_staff_accounts": 10,
+  "dataset_size": 500,
+  "expected_filtered_rows": 500,
+  "status_filter": "New",
+  "duration_seconds": 300,
+  "total_wall_seconds_including_login": 301.5,
+  "total_requests": 8503,
+  "successful_requests": 8503,
+  "failed_requests": 0,
+  "p95_seconds_nearest_rank": 0.4220000000204891,
+  "target_seconds": 2.0,
+  "qualifies_as_nfr001_run": true,
+  "pass": true,
+  "limits": "Client-observed HTTP elapsed time includes transfer/rendering; local machine only; no production-scale or uptime claim.",
+  "observed_at_utc": "2026-10-16T15:30:55.096782+00:00",
+  "environment": "Windows local simulated staging; Waitress, loopback HTTP, SQLite; local SMTP STARTTLS sink"
+}

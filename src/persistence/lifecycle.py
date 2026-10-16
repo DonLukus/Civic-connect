@@ -11,14 +11,13 @@ closing the "no extracted implementation" gap noted against ADR-003 without fabr
 of the table. Extend LifecycleValidator as each further transition is actually specified.
 """
 
-from typing import Optional
 
 
 class LifecycleValidator:
     """Stateless checks for FR-015 status transitions. See module docstring for scope."""
 
     @staticmethod
-    def can_accept(current_status: str, current_assignee_id: Optional[int]) -> bool:
+    def can_accept(current_status: str, current_assignee_id: int | None) -> bool:
         """FR-014: a request may move New -> Accepted only while unassigned and in New."""
         if current_status is None:
             return False
@@ -26,10 +25,10 @@ class LifecycleValidator:
 
     @staticmethod
     def validate_transition(
-        current_status: Optional[str],
-        current_assignee_id: Optional[int],
+        current_status: str | None,
+        current_assignee_id: int | None,
         target_status: str,
-        target_assignee_id: Optional[int] = None,
+        target_assignee_id: int | None = None,
     ) -> bool:
         """Validate only the transition explicitly specified and approved for M2.
 

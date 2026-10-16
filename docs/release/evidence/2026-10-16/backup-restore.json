@@ -1,0 +1,18 @@
+{
+  "pass": true,
+  "tables": [
+    "requests",
+    "request_audit",
+    "outbox_events"
+  ],
+  "source_and_restored_counts": [
+    502,
+    504,
+    2
+  ],
+  "request_id": 501,
+  "method": "SQLite online Connection.backup to backup file, then separate restored database; integrity_check and counts",
+  "limits": "One local recovery drill. No daily schedule, retention, cloud recovery or schema/code rollback claim.",
+  "observed_at_utc": "2026-10-16T16:08:56.936183+00:00",
+  "environment": "Windows local simulated staging; Waitress, loopback HTTP, SQLite; local SMTP STARTTLS sink"
+}
