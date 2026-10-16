@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Request #{{ request.reference }} — CivicConnect{% endblock %}
+{% block content %}
+  <h1>Request #{{ request.reference }}</h1>
+
+  {# Per docs/deployment/m3-interface-agreement.md's Route Contract
+     (GET /requests/<request_id>): one template serves the owning Requester,
+     Staff (unassigned or assigned to them), Manager and Administrator.
+     `requester_email` is only ever supplied to the roles allowed to see it
+     (Manager/Administrator/assigned Staff) - the backend withholds it
+     otherwise, so this template never decides that itself. `can_accept`
+     is backend-decided; this template only reflects it. `history` is the
+     audit log - comments/resolution notes don't exist in the schema yet,
+     so this view does not show or imply either. #}
+
+  <dl>
+    <dt>Title</dt><dd>{{ request.title }}</dd>
+    <dt>Description</dt><dd>{{ request.description }}</dd>
+    <dt>Category</dt><dd>{{ request.category }}</dd>
+    <dt>Location</dt><dd>{{ request.location }}</dd>
+    <dt>Status</dt><dd>{{ request.status }}</dd>
+    <dt>Assignee</dt><dd>{{ request.assignee_id or "Unassigned" }}</dd>
+    {% if request.requester_email %}
+      <dt>Requester</dt><dd>{{ request.requester_email }}</dd>
+    {% endif %}
+    {% if request.assignee_email %}
+      <dt>Assignee contact</dt><dd>{{ request.assignee_email }}</dd>
+    {% endif %}
+    <dt>Submitted</dt><dd>{{ request.submitted_at }}</dd>
+    <dt>Last updated</dt><dd>{{ request.last_status_changed_at }}</dd>
+  </dl>
+
+  {% if can_accept %}
+    <form method="post" action="/staff/requests/{{ request.reference }}/accept">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="expected_version" value="{{ request.version }}">
+      <button type="submit">Accept this request</button>
+    </form>
+  {% endif %}
+
+  <h2>History</h2>
+  {% if request.history %}
+    <table>
+      <caption class="visually-hidden">Status and assignment history for this request</caption>
+      <thead>
+        <tr>
+          <th scope="col">When</th>
+          <th scope="col">Who</th>
+          <th scope="col">Status change</th>
+          <th scope="col">Assignee change</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in request.history %}
+          <tr>
+            <td>{{ h.changed_at }}</td>
+            <td>User #{{ h.actor_user_id }}</td>
+            <td>
+              {% if h.previous_status != h.new_status %}
+                {{ h.previous_status or "—" }} &rarr; {{ h.new_status }}
+              {% else %}—{% endif %}
+            </td>
+            <td>
+              {% if h.previous_assignee_id != h.new_assignee_id %}
+                {{ h.previous_assignee_id or "Unassigned" }} &rarr; {{ h.new_assignee_id or "Unassigned" }}
+              {% else %}—{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="empty-state">No history recorded yet.</p>
+  {% endif %}
+{% endblock %}

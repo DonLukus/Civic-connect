@@ -38,6 +38,8 @@ __pycache__/
 venv/
 .venv/
 .pytest_cache/
+.m3-local/
+.m3-test-temp/
 *.sqlite
 *.sqlite3
 

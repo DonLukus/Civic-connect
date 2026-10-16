@@ -1,0 +1,3 @@
+reportlab==5.0.1
+Markdown==3.11.1
+pypdfium2==5.14.0

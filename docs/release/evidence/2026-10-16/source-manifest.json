@@ -1,0 +1,191 @@
+{
+  "candidate_branch": "m3/emile-release-verification",
+  "base_and_source_refs": {
+    "origin/main": "87deed23e07f99bbcac7b084163599a0d730dd7c",
+    "origin/m3/emile-ui-layout": "e375f0cd5a5218913a42ae9fea1a79c78035254d",
+    "origin/m3/dep-audit-and-lint-fixes": "0f20cdf3814741fb257aba1e2981b08993d6f05b",
+    "origin/feature/m3-backend-interface-handoff": "101f4e7dbf977834b3145e2d2ec5dcbbbb30af0b",
+    "origin/fix/emile-auth-context-for-don": "ba3ae95986527cd688ed4edfc6d5bf562c1e8171",
+    "origin/feat/emile-backend-tests-for-don": "546effea827113a6956e4900961d26e985ecc40a"
+  },
+  "identity": "Integration working tree with changes; no claim that it equals HEAD. Commit SHA recorded after signing.",
+  "files": [
+    {
+      "path": "src/__init__.py",
+      "sha256_lf": "44a90c63bc6f7197ef2bf95cb042185d426639e8c981f7db353f7f261784fb68"
+    },
+    {
+      "path": "src/persistence/__init__.py",
+      "sha256_lf": "c16714a22b75ec778968d8c2825cda2e3999f7b7b18817380533efcd3ee318d3"
+    },
+    {
+      "path": "src/persistence/lifecycle.py",
+      "sha256_lf": "4921691f2ba2f857092c454a29d60a4c34d3266e8806d1a95c557b197caf235a"
+    },
+    {
+      "path": "src/persistence/outbox.py",
+      "sha256_lf": "5a4fdcd0e931b21e36c1aab292b2f68356a43e1d1c2a08bb9f8dc86bfb91fcb1"
+    },
+    {
+      "path": "src/persistence/request_repository.py",
+      "sha256_lf": "1d3fe2aa168bf29256b249bdb0bd0abf892463fcdae1062ea2097a764cb6f0e7"
+    },
+    {
+      "path": "src/persistence/request_service.py",
+      "sha256_lf": "f76acc339d437f206dde459a75a99d176e2d34a049dc62676d158dba6bf2e97a"
+    },
+    {
+      "path": "src/web/__init__.py",
+      "sha256_lf": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/web/app.py",
+      "sha256_lf": "4a2f7d8ac7ef4efe3918400f673a4fbd85a2f598f940aa4ba5df9f415b061d36"
+    },
+    {
+      "path": "src/web/static/style.css",
+      "sha256_lf": "e525ec6245789d73f0dba318d6d1837711df3009b7e26be754d5fba501021c25"
+    },
+    {
+      "path": "src/web/templates/base.html",
+      "sha256_lf": "57c3bf92f537c89f35f8e8e6f3e334aebbf6a4a8c9d786ed8f60d52a9ca8bc22"
+    },
+    {
+      "path": "src/web/templates/confirmation.html",
+      "sha256_lf": "959d4deb13268d7caa798376fb3476d33f98485c43c3fad388e61d6e4f7bc196"
+    },
+    {
+      "path": "src/web/templates/login.html",
+      "sha256_lf": "e752c6d86331985499bbafb1eff7bc7bcc695f81a17233f2be1e3fedec557ee4"
+    },
+    {
+      "path": "src/web/templates/new_request.html",
+      "sha256_lf": "4dcc4f6383feecaafdcb275c161e22a66ac32a63b1c8a4a65920b1682dd5b651"
+    },
+    {
+      "path": "src/web/templates/notifications.html",
+      "sha256_lf": "1083cbf66207f2d808e91ae1e620a3a63b1ed86e5658066b140d8ee5c8778c07"
+    },
+    {
+      "path": "src/web/templates/request_detail.html",
+      "sha256_lf": "cebb3da6b62ee23db97c2045697d86c72c37eca340e443e5b430b50556335533"
+    },
+    {
+      "path": "src/web/templates/requester_requests.html",
+      "sha256_lf": "9a51a31d622a5def627aa4d46efbd1aa3de8db4116eb872e756dad050107439d"
+    },
+    {
+      "path": "src/web/templates/role_landing.html",
+      "sha256_lf": "950bc77ed779c3ddc33159319dea7604ef58154d92f4f8fd187294c018eafa9b"
+    },
+    {
+      "path": "src/web/templates/staff_queue.html",
+      "sha256_lf": "97c7b5524cf8541b8ce51c67683f831c5df8ab9ffb3c61e8545c5ccc71e310d7"
+    },
+    {
+      "path": "tests/__init__.py",
+      "sha256_lf": "96ef1d7374b189997691f6f01a0c8cfa9cd47ae024bfa081e04a882f36f364a3"
+    },
+    {
+      "path": "tests/test_lifecycle_validator.py",
+      "sha256_lf": "ba9b232d682a1d431a62f7338360d41800bdbeb4d30199568fa72c8a9fc1b532"
+    },
+    {
+      "path": "tests/test_m3_backend_routes.py",
+      "sha256_lf": "f21207e2ec5c00d2d4743a460cb737b7cefe55a667848a3f02888b23e7df7af2"
+    },
+    {
+      "path": "tests/test_m3_logout.py",
+      "sha256_lf": "43cb08b802dc4caf63b0be2ce1173014af28186bc4123e2e015329967d8de529"
+    },
+    {
+      "path": "tests/test_request_acceptance.py",
+      "sha256_lf": "9d09edc630a261eae8024062e1a2df224b362d7e685592aefae7a5395c084e61"
+    },
+    {
+      "path": "tests/test_request_submission.py",
+      "sha256_lf": "0381421bb9f364967fdec82b3e56414d3ba59504f94774118ccd7916f2ed8b7a"
+    },
+    {
+      "path": "tests/test_requester_isolation.py",
+      "sha256_lf": "cbefec53207b2947259a5b935bf53efc9e4e005d20e6c00818fe99d58a200bcb"
+    },
+    {
+      "path": "tests/test_wsgi_bootstrap.py",
+      "sha256_lf": "9110b28294656d56d8194b8b82496a6c007d8b44be14e64a7d7804ad6df6f7c2"
+    },
+    {
+      "path": "scripts/m3_staging.py",
+      "sha256_lf": "d307fb6e6b0cecc7c7ba363ef615c29c2371062e46aaa6fd3d732362ac1fe9d9"
+    },
+    {
+      "path": "scripts/m3_verify_live.py",
+      "sha256_lf": "a2efc86a8bf0ce0c6f9164730f8c87503603c08af73ad147b51463b6d14f41aa"
+    },
+    {
+      "path": "scripts/m3_verify_recovery.py",
+      "sha256_lf": "0052568663d70d2de0ddbfad07e0a03f28a14560032e4f4c2bbcddab7dd4c897"
+    },
+    {
+      "path": "performance/load_test_staff_queue.py",
+      "sha256_lf": "1d55e4616f377163ab6c9de7cd5a262a14b2148faef61439d0d18fa44d9a06d7"
+    },
+    {
+      "path": "performance/README.md",
+      "sha256_lf": "947ca250da97f9b22d89c491bb54463efa3f02fb9f4a54bfa6c88812950b33ab"
+    },
+    {
+      "path": ".github/workflows/dependency-audit.yml",
+      "sha256_lf": "f4deaceb4667b956cf325b9306d407ef4c75a4c9878a9500cd15d3d682942aa6"
+    },
+    {
+      "path": ".github/workflows/docs-check.yml",
+      "sha256_lf": "2b5619471fc32a6a95dfafe52dab533686d1a2ee707f893cdf83684560767ffc"
+    },
+    {
+      "path": ".github/workflows/lint.yml",
+      "sha256_lf": "6402a307c3ccee1d25fa62e54a3790a51cc7a4a329ef3c1ffd73042433f5a7d4"
+    },
+    {
+      "path": ".github/workflows/quality.yml",
+      "sha256_lf": "5f0f21bb75d2368147059baee9f3bc0ca449e8cf946bd0ee8c877628ce725eb1"
+    },
+    {
+      "path": ".github/workflows/secret-scan.yml",
+      "sha256_lf": "8b1e42415a87a3f6b897a3f4f6dc95c3b053cc288b02db0e44e798a99b05cedd"
+    },
+    {
+      "path": ".github/workflows/test.yml",
+      "sha256_lf": "598681a021812e0803bba56172465770750d86c45c7d418846b36c3e76dc965b"
+    },
+    {
+      "path": "requirements.txt",
+      "sha256_lf": "672f7a4f5ee7693f33ee5f8f5e4e0c7863cbeb64ee7106870f13f95b11a572a9"
+    },
+    {
+      "path": "requirements-staging.txt",
+      "sha256_lf": "6c29e6846bf7f6017e087e1314c4bd15db81ca5051a006b997ef899131c55217"
+    },
+    {
+      "path": "wsgi.py",
+      "sha256_lf": "38187c5a4dce54fa0b62cdd40883a1b77e10576d7a543fe5947fead12131ca30"
+    },
+    {
+      "path": ".env.example",
+      "sha256_lf": "58243bbd0da34aa4d6170a5463953fd9537b612be4241732d60488e5722d6d64"
+    },
+    {
+      "path": ".gitignore",
+      "sha256_lf": "0c1faf4f1849c61617642748f081f5cf2576beb536de0136d2f83a419c175805"
+    },
+    {
+      "path": "tools/build_m3_review_pdf.py",
+      "sha256_lf": "07161adb430cde75915518fb71d5a70cd5529545d9642b0e572415e6bbc51995"
+    },
+    {
+      "path": "requirements-docs.txt",
+      "sha256_lf": "cbd4af74666d2504df1000f8da56b1abf4a215fc036cd0942f99e407a3fe7c92"
+    }
+  ],
+  "observed_at_utc": "2026-10-16T16:14:06.254645+00:00"
+}

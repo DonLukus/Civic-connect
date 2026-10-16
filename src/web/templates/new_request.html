@@ -1,14 +1,10 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Submit a service request — CivicConnect</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Submit a service request — CivicConnect{% endblock %}
+{% block content %}
   <h1>Submit a service request</h1>
 
   {% if error %}
-    <p style="color:#b00020;"><strong>Could not submit:</strong> {{ error }}</p>
+    <p class="error-text"><strong>Could not submit:</strong> {{ error }}</p>
   {% endif %}
 
   <!-- FR-005: title, description, category and location are mandatory.
@@ -16,15 +12,15 @@
   <form method="post" action="/requests">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <p>
-      <label for="title">Title</label><br>
+      <label for="title">Title</label>
       <input type="text" id="title" name="title" value="{{ values.get('title', '') }}" required>
     </p>
     <p>
-      <label for="description">Description</label><br>
+      <label for="description">Description</label>
       <textarea id="description" name="description" required>{{ values.get('description', '') }}</textarea>
     </p>
     <p>
-      <label for="category_id">Category</label><br>
+      <label for="category_id">Category</label>
       <select id="category_id" name="category_id" required>
         <option value="">Select a category</option>
         {% for cat_id, cat_name in categories %}
@@ -33,10 +29,9 @@
       </select>
     </p>
     <p>
-      <label for="location">Location</label><br>
+      <label for="location">Location</label>
       <input type="text" id="location" name="location" value="{{ values.get('location', '') }}" required>
     </p>
     <p><button type="submit">Submit request</button></p>
   </form>
-</body>
-</html>
+{% endblock %}

@@ -54,6 +54,13 @@ unaffected (docs-only change).
 
 ---
 
+
+### 2026-10-16 - Integrated M3 candidate and local release evidence (review pending)
+**Who:** Emile, with Codex assistance. **Type:** change, verification, artefact.
+**What:** Combined main with PR #80/#81/#82/#83/#84 sources in an isolated branch; corrected shared logout CSRF and audit actor display, retained all colliding AI records under unique unbaselined IDs, and prepared staging, traceability, decision proposals and release evidence. No student review or approval is inferred.
+**Evidence:** 39 pytest cases passed; 16 backend cases passed after the audit display assertion; five-minute filtered queue load with 10 distinct Staff accounts/500 records produced 8,503 successful responses and p95 0.422s. Two live HTTP journeys, local process restart and online backup/restore passed. Local SMTP capture only; Render persistence and external delivery remain unverified. See docs/release/m3-release-evidence-summary.md and AI-036.
+**Next:** Review exact candidate, resolve scope/decision proposals, sign and publish candidate, pass GitHub checks and obtain both independent non-author reviews before baseline. DEC-008 remains Deferred.
+
 ## Format
 
 ```

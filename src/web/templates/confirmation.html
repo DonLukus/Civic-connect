@@ -1,12 +1,9 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Request submitted — CivicConnect</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Request submitted — CivicConnect{% endblock %}
+{% block content %}
   <h1>Request received</h1>
-  <p>Your reference number is <strong>#{{ request_id }}</strong>. Keep it to check progress.</p>
-  <p><a href="/requests/new">Submit another request</a></p>
-</body>
-</html>
+  <p class="flash flash--success">Your reference number is <strong>#{{ request_id }}</strong>. Keep it to check progress.</p>
+  <p><a href="/requests/new">Submit another request</a> &middot; <a href="/requests">View my requests</a></p>
+  {# GET /requests is specified in Don's interface agreement (PR #82) - relinked now that
+     a real route and template contract exist for it, even though that PR isn't merged yet. #}
+{% endblock %}

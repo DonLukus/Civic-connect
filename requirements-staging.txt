@@ -1,0 +1,4 @@
+# Optional local/simulated staging and synthetic SMTP capture; not production hosting.
+-r requirements.txt
+waitress==3.0.2
+aiosmtpd==1.4.6
