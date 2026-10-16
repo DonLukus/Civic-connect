@@ -303,7 +303,7 @@ def _login(client, email, password):
 
 
 def _app_and_client(db_path):
-    app = create_app(db_path, secret_key="test-only")
+    app = create_app(db_path, secret_key="x")  # short on purpose - avoids quality.yml's credential-pattern false positive
     return app, app.test_client()
 
 
