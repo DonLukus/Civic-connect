@@ -79,3 +79,13 @@ Once all seven hold, the final Document Control row and this section both get a 
 ## M3 review update - 16 October 2026
 
 Section 22 and `docs/release/m3-release-evidence-summary.md` index the integrated local verification candidate. Export: `docs/PED/exports/PED_v3.0-review.pdf`. This is a review copy, with final SHA/signatures/independent approvals pending. Historical M1/M2 statuses above remain unchanged. Current M3 responsibilities: Don - architecture/core/configuration; Masego - verification/traceability; Emile - staging/performance/release/PED.
+
+## M3 document-control update - 17 October 2026
+
+The preceding dated entries remain the historical record. PR #85 merged the supervised M3 implementation slice into `main` at `c7e92de8f818b66ca1ecc0faf88b0987c4b17b40`. Don and Masego approved PR #85 head `e76b96e74515e5cc813c6fba4cd1805362e5c020` before that merge; their approvals were not signatures on this later full-document export. PR #88 recorded DEC-013 through DEC-018, and PR #89 regenerated the earlier export. The decision-log gap is therefore closed; ADR-001/007 remain Proposed and DEC-008 remains Deferred. No M2 baseline promotion is inferred.
+
+The earlier four-page PDF rendered section 22 alone. The corrected builder includes all existing numbered PED sources from 00 through 22, including M1/M2, a contents page and readable register records. Section 18 has no source and remains an explicit gap. This correction preserves historical signatures and baseline extracts. Current implementation/test evidence is linked from section 22 and the live controlled registers, not substituted into the historical M1 extracts.
+
+PED version: **v3.0**. Team: **Emile, Don and Masego**. Repository: <https://github.com/DonLukus/Civic-connect>. Application implementation reference: the PR #85 merge above. RTM: `docs/requirements/RTM.csv`. Test/CI locations and simulated staging demonstration instructions: section 22 and `docs/deployment/m3-staging.md`. Record the actual submission date and final documentation commit/tag when submitting; this document does not claim a submission has occurred.
+
+This full export and its wording corrections require their own normal PR review. Prior implementation approvals are not reused as approvals of new content. Public production release remains NOT READY; the reviewed M3 evaluation slice and public production are separate scopes.

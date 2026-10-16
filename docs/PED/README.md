@@ -16,4 +16,14 @@ through `docs/change/change-request-template.md`.
 
 ## M3 review export
 
-Current review index: `22-m3-construction-verification-release.md`; existing M1/M2 section sources remain authoritative. Regenerate from repository root with `python -m pip install -r requirements-docs.txt` then `python tools/build_m3_review_pdf.py`. The builder writes `exports/PED_v3.0-review.pdf` and ignored local page previews. The review export must be regenerated with actual final release identity and approvals before it is called the signed M3 baseline.
+The full export includes **every numbered source file currently present here**, beginning with `00-document-control.md`, retaining the M1/M2 sections, and continuing through `22-m3-construction-verification-release.md`. It is not a standalone section-22 report. Historical content and signatures retain their original dates and scope. No section 18 source currently exists; the builder preserves that gap rather than inventing or renumbering a section.
+
+Install the documentation dependencies with `python -m pip install -r requirements-docs.txt`, then run:
+
+```text
+python tools/build_m3_review_pdf.py --build-date 2026-10-17 --render-dir .m3-local/pdf-review/pages
+```
+
+The output is `docs/PED/exports/PED_v3.0-review.pdf`. The builder works from any current directory, includes a linked contents page and bookmarks, renders Markdown strikethrough, and presents registers with six or more columns as labelled records so their fields remain readable. All original rows/fields remain included. Use `--output PATH` for a separate review copy and set `--build-date` to the actual export date.
+
+After writing the PDF, the builder checks for body content from every source section and rejects literal unrendered strikethrough. It writes a source/hash manifest and optional page previews under ignored `.m3-local/`. Inspect those previews and review the exact exported revision before submission. A clean build is not a new team approval, signature, production-readiness claim or proof that a missing source section exists.

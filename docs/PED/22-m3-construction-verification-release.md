@@ -4,9 +4,9 @@
 
 ## 22.1 Candidate and construction
 
-**Merged into `main` at commit `c7e92de8f818b66ca1ecc0faf88b0987c4b17b40` via PR #85**, with real, independently-confirmed approvals from both Don and Masego against that exact commit. PR #85 folded together the backend routes, route tests, UI templates and dependency-check changes originally opened as PRs #80-84, plus PR #86 (the full role x operation authorisation matrix across all four roles, and the RTM scope-wording corrections both Don and Emile made after independent AI-assisted review). PRs #80, #82, #83 and #84 were closed as superseded once their content was verified present on `main` - not merged separately, to avoid duplicate/conflicting code. PR #81 (dependency-audit workflow) was independent of this chain and merged separately. Source revisions and file hashes are indexed in `docs/release/evidence/2026-10-16/source-manifest.json`. The registration addition is identified separately by `registration-source-manifest.json`.
+**Merged into `main` at commit `c7e92de8f818b66ca1ecc0faf88b0987c4b17b40` via PR #85**, after Don and Masego approved PR head `e76b96e74515e5cc813c6fba4cd1805362e5c020`. The merge commit and the reviewed PR head are distinct identifiers. PR #85 folded together the backend routes, route tests, UI templates and dependency-check changes originally opened as PRs #80-84, plus PR #86 (the full role x operation authorisation matrix across all four roles, and the RTM scope-wording corrections both Don and Emile made after independent AI-assisted review). PRs #80, #82, #83 and #84 were closed as superseded once their content was verified present on `main` - not merged separately, to avoid duplicate/conflicting code. PR #81 (dependency-audit workflow) was independent of this chain and merged separately. Source revisions and file hashes are indexed in `docs/release/evidence/2026-10-16/source-manifest.json`. The registration addition is identified separately by `registration-source-manifest.json`.
 
-Implemented slice: public Requester registration, login, submission, own list/detail/status; Staff login, queue/status filter/detail/acceptance; acceptance notification through in-app and SMTP; Manager/Administrator login with a safe landing page. `docs/deployment/m3-interface-agreement.md` records actual routes, forms, roles and error behaviour. `CHG-002` records the proposed release-slice exclusions and impact without rewriting baselined priorities.
+Implemented slice: public Requester registration, login, submission, own list/detail/status; Staff login, queue/status filter/detail/acceptance; acceptance notification through in-app and SMTP; Manager/Administrator login with a safe landing page. `docs/deployment/m3-interface-agreement.md` records actual routes, forms, roles and error behaviour. `CHG-002` records the release-slice exclusions and impact; Don and Masego recorded acceptance for the supervised M3 evaluation. Baselined priorities and excluded obligations remain unchanged.
 
 Two integration defects were corrected: missing CSRF tokens in shared logout forms on list/landing pages (DEF-004), and a mismatched audit-actor field in the detail template (DEF-005). Both have regression checks.
 
@@ -41,9 +41,9 @@ GitHub workflows provide automated tests, static analysis, dependency audit and 
 
 ## 22.5 Residual risk and release decision
 
-**NOT READY for final baseline/public production release.** The scoped local demonstration candidate has passing evidence, while independent reviews, formal scope/decision reconciliation and the final committed revision remain pending. See the full release summary for conditions and owners.
+**Public production release: NOT READY.** Don and Masego reviewed and approved the supervised M3 evaluation slice before PR #85 merged. Their CHG-002 decisions and the decision-register reconciliation are recorded; those completed steps are no longer pending. This corrected full PED export requires its own review and final documentation identifier. No new production-readiness classification, signature or M2 baseline acceptance is inferred. See the dated update in the release summary for the remaining conditions and owners.
 
-Unresolved claims include durable hosted storage, external SMTP/TLS, dormant legacy-hash disposition, complete role x operation coverage, stuck/duplicate outbox recovery, reversible schema/code rollback, sustained availability, cold-start, capacity and accessibility. A local backup drill does not prove daily backup scheduling or retention. Local restart success does not close the M2 Render redeploy failure.
+Unresolved claims include durable hosted storage, external SMTP/TLS, dormant legacy-hash disposition, inactive-user/session edge cases beyond the documented role matrix, stuck/duplicate outbox recovery, reversible schema/code rollback, sustained availability, cold-start, capacity and accessibility. A local backup drill does not prove daily backup scheduling or retention. Local restart success does not close the M2 Render redeploy failure.
 
 Render documents that free-service local files disappear on restart/redeploy/spindown, which is consistent with the observed M2 failure. The historical instance configuration was not independently recovered. Avoiding redeploy alone cannot ensure durability. PostgreSQL remains a candidate, not an adopted platform.
 
@@ -67,13 +67,13 @@ Each student should be able to demonstrate: FR-014/AC-014 -> service version gua
 
 ## 22.7 Final review actions - status as of 17 October 2026
 
-1. ~~Emile inspects this candidate~~ - done, repeatedly, across each corrected commit, with real re-execution each time (not just re-reading commit messages).
-2. ~~Don reviews backend/migration/outbox, existing ADR statuses and the six draft register rows~~ - done. Don's AI-assisted review found real gaps across two rounds (stale test counts, a coverage overclaim, inaccurate test-layer history, a scope-approval wording overclaim, then a second stale claim after the first fix); all were corrected and re-verified.
-3. ~~Masego's own CHG-002 decision/date~~ - done, recorded as a PR #86 comment, confirmed via the GitHub API.
-4. ~~Branch-protection ruleset requiring an unconfigured Copilot review~~ - done. Don removed the `copilot_code_review` condition from `main-protection-basic-02` directly (confirmed via the GitHub API before and after) rather than leaving the rule in place and relying on a bypass.
-5. ~~2 real non-author approvals on the final commit~~ - done. Don and Masego both approved PR #85 against commit `e76b96e74515e5cc813c6fba4cd1805362e5c020`, with all 7 CI checks green and no conflicts.
-6. ~~Merge~~ - done. PR #85 merged to `main` at `c7e92de8f818b66ca1ecc0faf88b0987c4b17b40`. PR #81 merged separately. PRs #80/82/83/84 closed as superseded, each verified present on `main` first.
-7. ~~Six Issue #65 decisions logged~~ - done, as DEC-013..018 in `decision-log.csv` and PED §10.4. Issue #65 closed.
+1. ~~Emile inspects the candidate~~ - Reviews and test executions are recorded in PRs #85/#86, with AI assistance declared in the register.
+2. ~~Don reviews backend, migration, outbox and decisions~~ - His AI-assisted reviews identified and corrected test-count, coverage, test-layer and scope-status claims. The operational limitations remain recorded.
+3. ~~Masego records her CHG-002 decision/date~~ - Her acceptance is recorded under her account in PR #86, separately from Don's decision.
+4. ~~Resolve the unconfigured Copilot review requirement~~ - The recorded resolution removed `copilot_code_review` from `main-protection-basic-02`; it did not rely on a merge bypass.
+5. ~~Obtain two non-author approvals~~ - Don and Masego approved PR #85 head `e76b96e74515e5cc813c6fba4cd1805362e5c020`. The recorded seven CI checks passed.
+6. ~~Merge the implementation~~ - PR #85 merged at `c7e92de8f818b66ca1ecc0faf88b0987c4b17b40`. PR #81 merged separately; PRs #80/82/83/84 closed as superseded after content checks.
+7. ~~Log the six Issue #65 decisions~~ - DEC-013..018 appear in `decision-log.csv` and PED section 10.4; Issue #65 is closed.
 
 **Still genuinely open, not closed by any of the above:** ADR-001 and ADR-007 remain Proposed - merging to `main` logs the decisions, it does not accept them. Durable hosted storage, external SMTP/TLS, dormant legacy password hashes, sustained availability, capacity and accessibility all remain unverified - see `docs/release/m3-release-evidence-summary.md`'s residual-risk table. This milestone's evaluation slice is complete and merged; a production release is a separate, later decision.
 
