@@ -2,6 +2,12 @@
 
 Owner: Emile. Prepared 16 October 2026 with Codex execution assistance. **Release status: NOT READY for final baseline or public production release.** The scoped local demonstration candidate has passing evidence; required independent reviews, decisions and final commit verification remain open.
 
+## Status update - 17 October 2026
+
+The opening paragraph and the dated measurements below describe the 16 October review candidate. Since then, PR #85 merged the supervised M3 slice at `c7e92de8f818b66ca1ecc0faf88b0987c4b17b40`, after Don and Masego approved PR head `e76b96e74515e5cc813c6fba4cd1805362e5c020`. The role-matrix additions brought the automated suite to 60 cases; the recorded 39/50-case runs remain historical evidence, not failed or relabelled runs. Don and Masego recorded CHG-002 decisions, and PR #88 added DEC-013 through DEC-018. The earlier statements that those implementation reviews and register reconciliation are pending are superseded by this update.
+
+The corrected full PED export preserves M1/M2 and continues through section 22; it requires its own normal review. Public production remains NOT READY. Durable hosted storage, external email, dormant hashes, outbox recovery, migration rollback and other stated operational limits remain open. This update does not rerun or extend the earlier load/recovery evidence, accept ADR-001/007, resolve DEC-008, or treat an approved demo slice as the whole product baseline.
+
 ## Candidate identity
 
 Integration branch: `m3/emile-release-verification`. Local source assembled from:
