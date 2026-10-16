@@ -1,10 +1,10 @@
 # 22. M3 construction, verification and release review
 
-**CivicConnect - PED v3.0 review candidate, updated 17 October 2026.** Prepared by Emile with AI assistance recorded in AI-036 and AI-038/039. Continues the existing M1/M2 PED sources; no historical signature or baseline status is changed.
+**CivicConnect - PED v3.0, merged 16-17 October 2026.** Prepared by Emile with AI assistance recorded in AI-036 and AI-038/042. Continues the existing M1/M2 PED sources; no historical signature or baseline status is changed.
 
 ## 22.1 Candidate and construction
 
-The integration candidate combines the current main snapshot with the proposed backend, route tests, UI and dependency-check changes in PRs #80-84, plus PR #86 (the full role x operation authorisation matrix across all four roles, and the RTM scope-wording corrections both Don and Emile made after independent AI-assisted review). Source revisions and file hashes are indexed in `docs/release/evidence/2026-10-16/source-manifest.json`. The registration addition is identified separately by `registration-source-manifest.json`. A final signed release SHA/tag is pending.
+**Merged into `main` at commit `c7e92de8f818b66ca1ecc0faf88b0987c4b17b40` via PR #85**, with real, independently-confirmed approvals from both Don and Masego against that exact commit. PR #85 folded together the backend routes, route tests, UI templates and dependency-check changes originally opened as PRs #80-84, plus PR #86 (the full role x operation authorisation matrix across all four roles, and the RTM scope-wording corrections both Don and Emile made after independent AI-assisted review). PRs #80, #82, #83 and #84 were closed as superseded once their content was verified present on `main` - not merged separately, to avoid duplicate/conflicting code. PR #81 (dependency-audit workflow) was independent of this chain and merged separately. Source revisions and file hashes are indexed in `docs/release/evidence/2026-10-16/source-manifest.json`. The registration addition is identified separately by `registration-source-manifest.json`.
 
 Implemented slice: public Requester registration, login, submission, own list/detail/status; Staff login, queue/status filter/detail/acceptance; acceptance notification through in-app and SMTP; Manager/Administrator login with a safe landing page. `docs/deployment/m3-interface-agreement.md` records actual routes, forms, roles and error behaviour. `CHG-002` records the proposed release-slice exclusions and impact without rewriting baselined priorities.
 
@@ -12,7 +12,7 @@ Two integration defects were corrected: missing CSRF tokens in shared logout for
 
 ## 22.2 Architecture and configuration conformance
 
-The candidate follows layered server-rendered Flask, service-level rules, SQLite persistence, transactional state/audit/outbox changes and an in-process notification worker. ADR-002/003/004/006 remain Accepted in the source; ADR-001/007 remain Proposed. DEC-008 remains Deferred. The six Issue #65 register rows are draft proposals awaiting team reconciliation, not accepted decisions.
+The candidate follows layered server-rendered Flask, service-level rules, SQLite persistence, transactional state/audit/outbox changes and an in-process notification worker. ADR-002/003/004/006 remain Accepted in the source; ADR-001/007 remain Proposed. DEC-008 remains Deferred. **The six Issue #65 decisions are now logged in `docs/decisions/decision-log.csv` as DEC-013 through DEC-018** (§10.4), reconciled directly against each ADR's actual current status - Deferred for DEC-013/018 (ADR-001/007, still Proposed), Decided for DEC-014/015/016/017 (ADR-002/003/004/006, Accepted). Logging them does not itself move ADR-001 or ADR-007 to Accepted; that is a separate, still-open team decision. Issue #65 is closed - the gap it raised (ADRs existing without a corresponding register entry) is fixed, not the underlying architecture/auth placement decisions themselves.
 
 Staging is a distinct loopback Waitress process with a generated synthetic database, separate credentials and local STARTTLS SMTP sink. Config/secrets and the database stay Git-ignored. This simulates staging and does not establish public HTTPS, availability or production durability. See `docs/deployment/m3-staging.md`.
 
@@ -60,7 +60,7 @@ Render documents that free-service local files disappear on restart/redeploy/spi
 | Live journeys and restart evidence | scripts/m3_verify_live.py; live-system-journeys.json; process-restart.json |
 | Traceability and defects | docs/requirements/RTM.csv; docs/quality/defect-register.csv |
 | Debt and residual risks | docs/quality/technical-debt-register.md; docs/release/m3-release-evidence-summary.md |
-| Decisions/scope requiring review | docs/release/team-decision-review.md; docs/decisions/issue-65-draft-rows.csv; CHG-002 |
+| Decisions/scope requiring review | docs/release/team-decision-review.md; docs/decisions/decision-log.csv (DEC-013..018); CHG-002 |
 | AI accountability and progressive history | docs/governance/ai-usage-register.csv; PROJECT_HISTORY.md; final PR/commit |
 
 Each student should be able to demonstrate: FR-014/AC-014 -> service version guard -> acceptance regression -> live journey #501 -> audit/outbox/notification evidence -> residual outbox recovery risk -> release condition. Emile should also explain NFR-001's dataset, concurrency, warm-up, duration, p95 method and local-only limits.
@@ -68,9 +68,13 @@ Each student should be able to demonstrate: FR-014/AC-014 -> service version gua
 ## 22.7 Final review actions - status as of 17 October 2026
 
 1. ~~Emile inspects this candidate~~ - done, repeatedly, across each corrected commit, with real re-execution each time (not just re-reading commit messages).
-2. ~~Don reviews backend/migration/outbox, existing ADR statuses and the six draft register rows~~ - done. Don's AI-assisted review of the first integration commit (9d10b11) found real gaps (stale test counts, a coverage overclaim, inaccurate test-layer history, a scope-approval wording overclaim); all were corrected, re-verified, and **Don approved PR #86 against the corrected commit (f060d41)**.
-3. ~~Masego's own CHG-002 decision/date~~ - done. Masego independently verified test classification, role/privacy coverage and RTM, fixed everything Don's review flagged on her side (PR #86, commit 6eebb3c), and separately recorded her own CHG-002 acceptance decision as a PR #86 comment, dated 17 October 2026 - distinct from her technical fix, since she is the PR's author and cannot approve it herself. **Both Don's and Masego's CHG-002 decisions are now recorded, each under their own account, each independently confirmed via the GitHub API** (`gh api repos/DonLukus/Civic-connect/issues/86/comments`), not just reported.
-4. PR #86: 2 real non-author approvals in (Don, Emile), both against the final corrected commit, both with documented re-verification. PR #85 (the broader integration candidate) still needs the same from both reviewers once #86 is folded into it.
-5. Record the final SHA/tag, actual approvals and residual-risk acceptance; regenerate the controlled PED v3 PDF once #85/#86 are consolidated and merged. This review export is still not the final signed baseline.
+2. ~~Don reviews backend/migration/outbox, existing ADR statuses and the six draft register rows~~ - done. Don's AI-assisted review found real gaps across two rounds (stale test counts, a coverage overclaim, inaccurate test-layer history, a scope-approval wording overclaim, then a second stale claim after the first fix); all were corrected and re-verified.
+3. ~~Masego's own CHG-002 decision/date~~ - done, recorded as a PR #86 comment, confirmed via the GitHub API.
+4. ~~Branch-protection ruleset requiring an unconfigured Copilot review~~ - done. Don removed the `copilot_code_review` condition from `main-protection-basic-02` directly (confirmed via the GitHub API before and after) rather than leaving the rule in place and relying on a bypass.
+5. ~~2 real non-author approvals on the final commit~~ - done. Don and Masego both approved PR #85 against commit `e76b96e74515e5cc813c6fba4cd1805362e5c020`, with all 7 CI checks green and no conflicts.
+6. ~~Merge~~ - done. PR #85 merged to `main` at `c7e92de8f818b66ca1ecc0faf88b0987c4b17b40`. PR #81 merged separately. PRs #80/82/83/84 closed as superseded, each verified present on `main` first.
+7. ~~Six Issue #65 decisions logged~~ - done, as DEC-013..018 in `decision-log.csv` and PED §10.4. Issue #65 closed.
+
+**Still genuinely open, not closed by any of the above:** ADR-001 and ADR-007 remain Proposed - merging to `main` logs the decisions, it does not accept them. Durable hosted storage, external SMTP/TLS, dormant legacy password hashes, sustained availability, capacity and accessibility all remain unverified - see `docs/release/m3-release-evidence-summary.md`'s residual-risk table. This milestone's evaluation slice is complete and merged; a production release is a separate, later decision.
 
 Sources checked 16 October 2026: https://flask.palletsprojects.com/en/stable/testing/ and https://render.com/docs/free. Repository artefacts above supply implementation and execution evidence.
