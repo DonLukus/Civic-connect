@@ -21,10 +21,11 @@
         {% if current_user.role == 'Requester' %}
           <a href="{{ url_for('new_request_form') }}">Submit a request</a>
           <a href="/requests">My requests</a>
+          <a href="/notifications">Notifications</a>
         {% elif current_user.role == 'Staff' %}
           <a href="/staff/queue">Staff queue</a>
         {% elif current_user.role in ('Manager', 'Administrator') %}
-          <a href="/">Home</a>
+          <a href="/landing">Home</a>
         {% endif %}
         <form method="post" action="{{ url_for('logout') }}" class="nav__logout">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Welcome — CivicConnect{% endblock %}
 {% block content %}
-  <h1>Welcome, {{ current_user.role }}</h1>
+  <h1>Welcome, {{ role }}</h1>
   <p>
     Milestone 3 implements the Requester and Staff journeys end to end
     (submitting a request, tracking status, and the Staff accept flow).
@@ -10,8 +10,8 @@
     in the project's decision log; they are not built yet, not hidden.
   </p>
   <p>
-    If you need to verify the system as a {{ current_user.role }}, the
-    traced Requester and Staff journeys above are the available evidence
-    for this milestone.
+    If you need to verify the system as a {{ role }}, the traced
+    Requester and Staff journeys above are the available evidence for
+    this milestone.
   </p>
 {% endblock %}

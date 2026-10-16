@@ -3,19 +3,19 @@
 {% block content %}
   <h1>Staff queue</h1>
 
-  {# FR-011: expects `requests` - unassigned requests plus requests already
-     assigned to the signed-in Staff user; never another staff member's.
-     Partial FR-012 (status filter only, full search/sort/filter deferred
-     per the agreed M3 scope). Expects `status_options` and `current_status`
-     for the filter form. #}
+  {# Per docs/forward-engineering/m3-release-evidence-summary.md's Route Contract
+     (GET /staff/queue): `requests` rows carry reference, title, category,
+     submitted_at, status, assignee_id, last_status_changed_at. `statuses`
+     and `selected_status` drive the filter form. Detail/accept both live
+     at the unified GET /requests/<request_id>, not a separate staff path. #}
 
   <form method="get" action="/staff/queue" class="filter-bar">
     <div>
       <label for="status">Filter by status</label>
       <select id="status" name="status">
-        <option value="" {% if not current_status %}selected{% endif %}>All</option>
-        {% for s in status_options %}
-          <option value="{{ s }}" {% if current_status == s %}selected{% endif %}>{{ s }}</option>
+        <option value="" {% if not selected_status %}selected{% endif %}>All</option>
+        {% for s in statuses %}
+          <option value="{{ s }}" {% if selected_status == s %}selected{% endif %}>{{ s }}</option>
         {% endfor %}
       </select>
     </div>
@@ -28,20 +28,26 @@
       <thead>
         <tr>
           <th scope="col">Reference</th>
+          <th scope="col">Title</th>
           <th scope="col">Category</th>
+          <th scope="col">Submitted</th>
           <th scope="col">Status</th>
           <th scope="col">Assignee</th>
+          <th scope="col">Last updated</th>
           <th scope="col"></th>
         </tr>
       </thead>
       <tbody>
         {% for r in requests %}
           <tr>
-            <td>#{{ r.id }}</td>
-            <td>{{ r.category_name }}</td>
+            <td>#{{ r.reference }}</td>
+            <td>{{ r.title }}</td>
+            <td>{{ r.category }}</td>
+            <td>{{ r.submitted_at }}</td>
             <td>{{ r.status }}</td>
-            <td>{{ r.assignee_name or "Unassigned" }}</td>
-            <td><a href="/staff/requests/{{ r.id }}">View</a></td>
+            <td>{{ r.assignee_id or "Unassigned" }}</td>
+            <td>{{ r.last_status_changed_at }}</td>
+            <td><a href="/requests/{{ r.reference }}">View</a></td>
           </tr>
         {% endfor %}
       </tbody>

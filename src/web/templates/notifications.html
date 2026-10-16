@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Notifications — CivicConnect{% endblock %}
+{% block content %}
+  <h1>Notifications</h1>
+
+  {# Per docs/forward-engineering/m3-release-evidence-summary.md's Route Contract
+     (GET /notifications, Requester only): `notifications` rows carry id,
+     request_id, event_type, message, created_at, read_at. #}
+
+  {% if notifications %}
+    <ul>
+      {% for n in notifications %}
+        <li class="{{ 'flash flash--success' if not n.read_at else '' }}">
+          <a href="/requests/{{ n.request_id }}">#{{ n.request_id }}</a> —
+          {{ n.message }}
+          <span class="nav__user">({{ n.created_at }})</span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="empty-state">No notifications yet.</p>
+  {% endif %}
+{% endblock %}

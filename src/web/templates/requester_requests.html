@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}My requests — CivicConnect{% endblock %}
+{% block content %}
+  <h1>My requests</h1>
+
+  {# Per docs/forward-engineering/m3-release-evidence-summary.md's Route Contract
+     (GET /requests): `requests` rows carry reference, title, category,
+     submitted_at, status, last_status_changed_at. `statuses` and
+     `selected_status` drive the filter form. Field names match that
+     contract exactly - do not rename locally. #}
+
+  <form method="get" action="/requests" class="filter-bar">
+    <div>
+      <label for="status">Filter by status</label>
+      <select id="status" name="status">
+        <option value="" {% if not selected_status %}selected{% endif %}>All</option>
+        {% for s in statuses %}
+          <option value="{{ s }}" {% if selected_status == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit">Apply filter</button>
+  </form>
+
+  {% if requests %}
+    <table>
+      <caption class="visually-hidden">Your submitted service requests</caption>
+      <thead>
+        <tr>
+          <th scope="col">Reference</th>
+          <th scope="col">Title</th>
+          <th scope="col">Category</th>
+          <th scope="col">Submitted</th>
+          <th scope="col">Status</th>
+          <th scope="col">Last updated</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in requests %}
+          <tr>
+            <td>#{{ r.reference }}</td>
+            <td>{{ r.title }}</td>
+            <td>{{ r.category }}</td>
+            <td>{{ r.submitted_at }}</td>
+            <td>{{ r.status }}</td>
+            <td>{{ r.last_status_changed_at }}</td>
+            <td><a href="/requests/{{ r.reference }}">View status</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="empty-state">You haven't submitted any requests yet. <a href="/requests/new">Submit one</a>.</p>
+  {% endif %}
+{% endblock %}
