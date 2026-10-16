@@ -6,7 +6,7 @@ Requested by: Emile, recording the scope discussion reported in the team convers
 
 Demonstrate login for all four roles, Requester submission and own request/status, Staff queue/detail/self-acceptance, and acceptance notification. Limit FR-012 to status filtering and FR-015 to New-to-Accepted. This produces two verifiable journeys within the M3 schedule while exposing the remaining baseline gaps.
 
-Defer Manager reporting/dashboard (FR-019?022), operational Administrator account/category management (FR-023/024), later transitions (FR-016?018), password reset (FR-004), comments (FR-010) and duplicate prompting (FR-026). FR-001 is only bootstrap provisioning in this slice; it does not meet the baselined administration/self-registration criteria.
+Defer Manager reporting/dashboard (FR-019?022), operational Administrator account/category management (FR-023/024), later transitions (FR-016?018), password reset (FR-004), comments (FR-010) and duplicate prompting (FR-026). Update requested by Emile on 16 October: public self-registration is now included, creating Requesters only. FR-001 Administrator provisioning and its audit criteria remain incomplete; bootstrap accounts continue to support privileged-role demos. Public registration is an explicit exception to the sign-in guard, requiring team reconciliation with FR-002/AC-002 wording.
 
 ## Impact
 

@@ -6,10 +6,21 @@ import secrets
 import sqlite3
 
 import bcrypt
-from flask import Flask, abort, g, redirect, render_template, request, session, url_for
+from flask import (
+    Flask,
+    abort,
+    flash,
+    g,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 from werkzeug.security import check_password_hash
 
 from src.persistence.request_service import RequestService
+from src.persistence.user_service import DuplicateEmailError, UserService
 
 
 def create_app(db_path: str, secret_key: str | None = None) -> Flask:
@@ -28,6 +39,7 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
     password_cost = int(os.environ.get("PASSWORD_HASH_COST", "12"))
     if not 10 <= password_cost <= 16:
         raise RuntimeError("PASSWORD_HASH_COST must be between 10 and 16")
+    users = UserService(db_path, password_cost)
 
     def hash_password(password: str) -> str:
         if len(password.encode("utf-8")) > 72:
@@ -63,7 +75,7 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
 
     @app.before_request
     def require_login():
-        if request.endpoint in ("login", "static"):
+        if request.endpoint in ("login", "register", "static"):
             return None
         user_id = session.get("user_id")
         g.current_user = query_one(
@@ -134,6 +146,30 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
                 return redirect(url_for("role_landing"))
             error = "Invalid email or password"
         return render_template("login.html", error=error, csrf_token=csrf_token())
+
+    @app.route("/register", methods=["GET", "POST"])
+    def register():
+        error, email, status = None, "", 200
+        if request.method == "POST":
+            if not valid_csrf():
+                abort(400)
+            email = request.form.get("email", "").strip()
+            password = request.form.get("password", "")
+            if password != request.form.get("confirm_password", ""):
+                error, status = "Passwords do not match.", 400
+            else:
+                try:
+                    users.register_requester(email, password)
+                except DuplicateEmailError as exc:
+                    error, status = str(exc), 409
+                except ValueError as exc:
+                    error, status = str(exc), 400
+                else:
+                    session.clear()
+                    flash("Your account is ready. Sign in to submit a request.", "success")
+                    return redirect(url_for("login"))
+        return render_template("register.html", error=error, email=email,
+                               csrf_token=csrf_token()), status
 
     @app.route("/logout", methods=["POST"])
     def logout():

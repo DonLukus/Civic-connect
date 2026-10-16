@@ -55,6 +55,9 @@ unaffected (docs-only change).
 ---
 
 
+### 2026-10-16 - Add public Requester registration (review pending)
+**Who:** Emile, with Codex assistance (AI-037). **What:** User-requested self-registration page/service; valid accounts are always Requesters, passwords use bcrypt, duplicate emails and invalid/CSRF submissions are rejected. No privileged role can be selected. **Evidence:** tests/test_registration.py and registration-live.json; full regression result recorded separately. **Scope:** FR-001 self-registration only; Administrator provisioning/audit, email verification and rate limiting remain outstanding. Existing load/recovery reports predate this addition.
+
 ### 2026-10-16 - Integrated M3 candidate and local release evidence (review pending)
 **Who:** Emile, with Codex assistance. **Type:** change, verification, artefact.
 **What:** Combined main with PR #80/#81/#82/#83/#84 sources in an isolated branch; corrected shared logout CSRF and audit actor display, retained all colliding AI records under unique unbaselined IDs, and prepared staging, traceability, decision proposals and release evidence. No student review or approval is inferred.

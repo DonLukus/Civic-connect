@@ -13,5 +13,10 @@
 1. Reproduce the exact candidate revision; confirm 39 collected and passed, plus the two live HTTP journeys. Assign stable inventory IDs to the new named cases without changing TST-001?018.
 2. Complete a role x operation table for Requester, Staff, Manager and Administrator, including own/other records, direct service calls, missing CSRF and stale acceptance. Mark gaps rather than infer full NFR-004 compliance.
 3. Verify bcrypt cost and legacy migration disposition; the 14 fresh staged accounts are evidence for fresh data only.
-4. Check RTM's added execution-evidence column and all partial scope claims. FR-012 is filter-only, FR-015 covers New-to-Accepted, FR-001 provisioning UI is not implemented, and FR-009 covers acceptance/local transport only.
+4. Check RTM's added execution-evidence column and all partial scope claims. FR-012 is filter-only, FR-015 covers New-to-Accepted, FR-001 Administrator provisioning UI is not implemented, and FR-009 covers acceptance/local transport only.
 5. Review independently with Don and Emile before approving the final revision. Neither another Don account nor AI execution supplies an additional human review.
+
+
+## Registration addition - 16 October
+
+User-requested self-registration now supplies 11 additional cases in `test_registration.py`: successful bcrypt-backed Requester creation/login (submitted privileged role ignored), invalid email/password/UTF-8 limits, case-insensitive duplicates, CSRF rejection and confirmation mismatch. FR-001 remains partial because Administrator provisioning/audit are not implemented. Inspect `registration-live.json` and the latest `registration-regression.xml`; the original 39-case result is the earlier integration snapshot. Review the new public route and the proposed 8-character registration minimum before final approval.

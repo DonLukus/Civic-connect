@@ -4,9 +4,9 @@
 
 ## 22.1 Candidate and construction
 
-The integration candidate combines the current main snapshot with the proposed backend, route tests, UI and dependency-check changes in PRs #80-84. Source revisions and file hashes are indexed in `docs/release/evidence/2026-10-16/source-manifest.json`. A final signed release SHA/tag is pending.
+The integration candidate combines the current main snapshot with the proposed backend, route tests, UI and dependency-check changes in PRs #80-84. Source revisions and file hashes are indexed in `docs/release/evidence/2026-10-16/source-manifest.json`. The registration addition is identified separately by `registration-source-manifest.json`. A final signed release SHA/tag is pending.
 
-Implemented slice: Requester login, submission, own list/detail/status; Staff login, queue/status filter/detail/acceptance; acceptance notification through in-app and SMTP; Manager/Administrator login with a safe landing page. `docs/deployment/m3-interface-agreement.md` records actual routes, forms, roles and error behaviour. `CHG-002` records the proposed release-slice exclusions and impact without rewriting baselined priorities.
+Implemented slice: public Requester registration, login, submission, own list/detail/status; Staff login, queue/status filter/detail/acceptance; acceptance notification through in-app and SMTP; Manager/Administrator login with a safe landing page. `docs/deployment/m3-interface-agreement.md` records actual routes, forms, roles and error behaviour. `CHG-002` records the proposed release-slice exclusions and impact without rewriting baselined priorities.
 
 Two integration defects were corrected: missing CSRF tokens in shared logout forms on list/landing pages (DEF-004), and a mismatched audit-actor field in the detail template (DEF-005). Both have regression checks.
 
@@ -20,7 +20,7 @@ Staging is a distinct loopback Waitress process with a generated synthetic datab
 
 | Evidence | Result | Scope |
 |---|---|---|
-| pytest automated suite | 39 passed in 80.56s | Unit/component and in-process functional/integration; five parameterised logout combinations included |
+| pytest automated suite | 50 passed in 75.07s | registration-regression.xml; 11 new registration cases; earlier 39-case snapshot retained |
 | Backend regression follow-up | 16 passed | Includes corrected rendered audit actor assertion |
 | Ruff / Bandit / dependency audit | Clean / no medium-high findings / no known application dependency findings | Tool results at check time, not complete security proof |
 | Live HTTP system journey 1 | Passed | Requester login, submit #501, receipt, list/detail, logout and cross-requester denial |
@@ -30,7 +30,7 @@ Staging is a distinct loopback Waitress process with a generated synthetic datab
 | Local process restart | Passed | Accepted #501 retrieved after stop/start of same-file staging |
 | Online backup/separate restore | Passed | Integrity check OK; request/audit/outbox counts preserved |
 
-`docs/release/evidence/2026-10-16/` holds execution reports. The five-second smoke run is explicitly insufficient for NFR-001. The subsequent 300-second run supplies the stated measurement. No browser rendering benchmark or production-capacity claim is made.
+`docs/release/evidence/2026-10-16/` holds execution reports. The five-second smoke run is explicitly insufficient for NFR-001. The subsequent 300-second run supplies the stated measurement. The load/restart/backup evidence predates registration and was not rerun. Registration-live.json separately confirms public signup and login; email verification and signup rate limiting remain outstanding. No browser rendering benchmark or production-capacity claim is made.
 
 ## 22.4 Traceability and quality controls
 

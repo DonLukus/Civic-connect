@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Create an account - CivicConnect{% endblock %}
+{% block content %}
+  <h1>Create an account</h1>
+  <p>Register to submit service requests and track their progress.</p>
+  {% if error %}<p class="error-text" role="alert">{{ error }}</p>{% endif %}
+  <form method="post" action="{{ url_for('register') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <p><label for="email">Email</label>
+      <input id="email" name="email" type="email" maxlength="254"
+             autocomplete="email" value="{{ email }}" required></p>
+    <p><label for="password">Password</label>
+      <input id="password" name="password" type="password" minlength="8"
+             autocomplete="new-password" aria-describedby="password-help" required></p>
+    <p id="password-help">Use at least 8 characters, up to 72 UTF-8 bytes.</p>
+    <p><label for="confirm_password">Confirm password</label>
+      <input id="confirm_password" name="confirm_password" type="password"
+             autocomplete="new-password" required></p>
+    <p><button type="submit">Create account</button></p>
+  </form>
+  <p>Already registered? <a href="{{ url_for('login') }}">Sign in</a></p>
+{% endblock %}
