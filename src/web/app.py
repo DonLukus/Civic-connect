@@ -63,11 +63,11 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
 
     @app.before_request
     def require_login():
-        if request.endpoint == "login":
+        if request.endpoint in ("login", "static"):
             return None
         user_id = session.get("user_id")
         g.current_user = query_one(
-            "SELECT id, role FROM users WHERE id = ? AND is_active = 1", (user_id,)
+            "SELECT id, role, email FROM users WHERE id = ? AND is_active = 1", (user_id,)
         ) if isinstance(user_id, int) else None
         if g.current_user is None:
             # Keep an anonymous login form's CSRF token. Browsers request /favicon.ico
@@ -75,6 +75,17 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
             if user_id is not None:
                 session.clear()
             return redirect(url_for("login"))
+
+    @app.context_processor
+    def inject_current_user():
+        # Makes current_user available to every template (base.html's nav
+        # depends on it) without touching every individual render_template
+        # call. g.current_user is (id, role, email) when signed in, per
+        # require_login() above.
+        user = g.get("current_user")
+        if user is None:
+            return {"current_user": None}
+        return {"current_user": {"id": user[0], "role": user[1], "email": user[2]}}
 
     @app.route("/login", methods=["GET", "POST"])
     def login():
