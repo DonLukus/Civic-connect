@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Welcome — CivicConnect{% endblock %}
+{% block content %}
+  <h1>Welcome, {{ role }}</h1>
+  <p>
+    Milestone 3 implements the Requester and Staff journeys end to end
+    (submitting a request, tracking status, and the Staff accept flow).
+    Manager and Administrator screens — the activity dashboard, category
+    and user administration — are deferred past M3 and recorded as such
+    in the project's decision log; they are not built yet, not hidden.
+  </p>
+  <p>
+    If you need to verify the system as a {{ role }}, the traced
+    Requester and Staff journeys above are the available evidence for
+    this milestone.
+  </p>
+{% endblock %}

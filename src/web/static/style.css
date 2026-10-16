@@ -1,0 +1,184 @@
+/* CivicConnect M3 shared layout. Plain CSS, no build step, matches the
+   existing Flask/Jinja approach - no framework introduced. */
+
+:root {
+  --color-text: #1a1a1a;
+  --color-bg: #ffffff;
+  --color-border: #c9c9c9;
+  --color-accent: #0b5fff;
+  --color-error-bg: #fdecea;
+  --color-error-text: #8a1f11;
+  --color-success-bg: #e9f7ef;
+  --color-success-text: #1e5631;
+  --focus-outline: 3px solid #0b5fff;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.5;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: auto;
+}
+.skip-link:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+  z-index: 10;
+  background: var(--color-bg);
+  padding: 0.5rem 1rem;
+  border: var(--focus-outline);
+}
+
+a:focus, button:focus, input:focus, select:focus, textarea:focus {
+  outline: var(--focus-outline);
+  outline-offset: 2px;
+}
+
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+.site-header__brand {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+.site-header nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+.nav__user {
+  color: #555;
+  font-size: 0.9rem;
+}
+.nav__logout {
+  margin: 0;
+  display: inline;
+}
+.nav__logout button {
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font-size: 1rem;
+}
+
+.flash-region {
+  padding: 0 1rem;
+}
+.flash {
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  margin: 0.5rem 0;
+}
+.flash--error {
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+}
+.flash--success {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.site-main {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.site-footer {
+  padding: 1rem;
+  text-align: center;
+  color: #777;
+  font-size: 0.85rem;
+}
+
+h1 { font-size: 1.5rem; }
+
+form p { margin: 0.9rem 0; }
+label { display: block; font-weight: 600; margin-bottom: 0.25rem; }
+input[type="text"], input[type="email"], input[type="password"], textarea, select {
+  width: 100%;
+  max-width: 28rem;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 1rem;
+}
+textarea { min-height: 5rem; }
+
+button, .button {
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.1rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+button[disabled] {
+  background: #999;
+  cursor: not-allowed;
+}
+
+.error-text {
+  color: var(--color-error-text);
+  font-weight: 600;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  text-align: left;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: end;
+  margin-bottom: 1rem;
+}
+
+.empty-state {
+  padding: 1.5rem;
+  border: 1px dashed var(--color-border);
+  border-radius: 6px;
+  color: #555;
+}
+
+@media (max-width: 480px) {
+  .site-main { padding: 0.75rem; }
+  input[type="text"], input[type="email"], input[type="password"], textarea, select {
+    max-width: 100%;
+  }
+}

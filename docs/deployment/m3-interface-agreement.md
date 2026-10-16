@@ -1,7 +1,11 @@
 # CivicConnect M3 Interface Agreement
 
 **Owner:** Don (backend contract)  
-**Status:** Backend routes implemented; template contract awaits Emile's implementation and team review.  
+**Status:** Backend routes implemented. Templates implemented against this exact contract
+(2026-10-16) and verified end-to-end against the real backend (`tests/test_m3_backend_routes.py`
+- 16/16 passing, including the full login → detail → accept → notification path through the
+actual Flask app, not just each side in isolation). Still awaiting team review and Masego's
+independent journey verification.  
 **Purpose:** Shared route, data, form, validation, and traceability contract for Emile (templates) and Masego (verification).
 ## Route Contract
 

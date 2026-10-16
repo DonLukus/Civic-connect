@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}CivicConnect{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="site-header__brand">CivicConnect</div>
+    {# Expects `current_user` in template context: None when signed out,
+       or a dict/object with at least `email` and `role` when signed in.
+       Don confirms the real shape when the route is wired - this is the
+       contract the nav below is written against. #}
+    <nav aria-label="Primary">
+      {% if current_user %}
+        <span class="nav__user">{{ current_user.email }} ({{ current_user.role }})</span>
+        {% if current_user.role == 'Requester' %}
+          <a href="{{ url_for('new_request_form') }}">Submit a request</a>
+          <a href="/requests">My requests</a>
+          <a href="/notifications">Notifications</a>
+        {% elif current_user.role == 'Staff' %}
+          <a href="/staff/queue">Staff queue</a>
+        {% elif current_user.role in ('Manager', 'Administrator') %}
+          <a href="/landing">Home</a>
+        {% endif %}
+        <form method="post" action="{{ url_for('logout') }}" class="nav__logout">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button type="submit">Sign out</button>
+        </form>
+      {% else %}
+        <a href="{{ url_for('login') }}">Sign in</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-region" role="status">
+        {% for category, message in messages %}
+          <p class="flash flash--{{ category }}">{{ message }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <main id="main-content" class="site-main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <p>CivicConnect — Milestone 3 candidate.</p>
+  </footer>
+</body>
+</html>
