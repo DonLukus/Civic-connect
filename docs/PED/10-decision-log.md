@@ -65,3 +65,19 @@ Formal changes to baselined requirements go through `docs/change/`, using the CH
 | ID | Date | Requirements affected | Summary |
 |---|---|---|---|
 | CHG-001 | 2026-09-30 | FR-009 (AC-009), FR-014 (AC-014) | Closes two acceptance-criteria gaps the team had already agreed on informally in Assignment 2 (§5.1) but never written back into the baseline: FR-009's AC now covers the comment-added notification trigger the requirement text already names; FR-014's AC now states explicitly that both a Staff self-accept and a Manager's initial assignment move a request from New to Accepted, while a Manager reassigning an already-assigned request only changes the assignee. See `docs/change/CHG-001-fr009-fr014-notification-and-acceptance-trigger.md`. |
+| CHG-002 | 2026-10-17 | FR-001 (scope expansion) | Adds public Requester self-registration to the M3 delivery slice, beyond the original bootstrap-accounts-only plan. Formally agreed - Don's and Masego's decisions are each recorded as PR #86 comments, confirmed independently against the GitHub API, not just reported. FR-001 Administrator provisioning remains incomplete regardless. See `docs/change/CHG-002-m3-delivery-slice.md`. |
+
+## 10.4 M3 ADRs logged to the register
+
+Six M2/M3 architecture and design decisions existed as ADRs for weeks before being formally logged here - a real gap, caught during M3 review (Issue #65). Logged 2026-10-17, reconciled directly against each ADR's actual current status rather than assumed:
+
+| ID | ADR | Status logged |
+|---|---|---|
+| DEC-013 | ADR-001 (architecture style and stack) | Deferred - ADR-001 itself is still Proposed, not Accepted |
+| DEC-014 | ADR-002 (persistence and transaction boundary) | Decided - ADR-002 is Accepted |
+| DEC-015 | ADR-003 (lifecycle validation design pattern) | Decided - ADR-003 is Accepted |
+| DEC-016 | ADR-004 (notification fan-out design pattern) | Decided - ADR-004 is Accepted |
+| DEC-017 | ADR-006 (integration and worker placement) | Decided - ADR-006 is Accepted |
+| DEC-018 | ADR-007 (authentication/authorisation placement) | Deferred - ADR-007 itself is still Proposed, not Accepted |
+
+Logging DEC-013 and DEC-018 as Deferred records the register entry, not a status change - it does not move ADR-001 or ADR-007 to Accepted. That remains a separate team decision, undecided as of this entry.
