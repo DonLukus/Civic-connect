@@ -1,14 +1,32 @@
 {
   "candidate_branch": "m3/emile-release-verification",
-  "base_and_source_refs": {
-    "origin/main": "87deed23e07f99bbcac7b084163599a0d730dd7c",
-    "origin/m3/emile-ui-layout": "e375f0cd5a5218913a42ae9fea1a79c78035254d",
-    "origin/m3/dep-audit-and-lint-fixes": "0f20cdf3814741fb257aba1e2981b08993d6f05b",
-    "origin/feature/m3-backend-interface-handoff": "101f4e7dbf977834b3145e2d2ec5dcbbbb30af0b",
-    "origin/fix/emile-auth-context-for-don": "ba3ae95986527cd688ed4edfc6d5bf562c1e8171",
-    "origin/feat/emile-backend-tests-for-don": "546effea827113a6956e4900961d26e985ecc40a"
-  },
-  "identity": "Integration working tree with changes; no claim that it equals HEAD. Commit SHA recorded after signing.",
+  "base_and_source_refs": [
+    {
+      "source_ref": "origin/main",
+      "commit_sha": "87deed23e07f99bbcac7b084163599a0d730dd7c"
+    },
+    {
+      "source_ref": "origin/m3/emile-ui-layout",
+      "commit_sha": "e375f0cd5a5218913a42ae9fea1a79c78035254d"
+    },
+    {
+      "source_ref": "origin/m3/dep-audit-and-lint-fixes",
+      "commit_sha": "0f20cdf3814741fb257aba1e2981b08993d6f05b"
+    },
+    {
+      "source_ref": "origin/feature/m3-backend-interface-handoff",
+      "commit_sha": "101f4e7dbf977834b3145e2d2ec5dcbbbb30af0b"
+    },
+    {
+      "source_ref": "origin/fix/emile-auth-context-for-don",
+      "commit_sha": "ba3ae95986527cd688ed4edfc6d5bf562c1e8171"
+    },
+    {
+      "source_ref": "origin/feat/emile-backend-tests-for-don",
+      "commit_sha": "546effea827113a6956e4900961d26e985ecc40a"
+    }
+  ],
+  "identity": "Verified application/test/staging code at signed candidate d83c5af; manifest refreshed for the final performance README wording. Subsequent metadata-only commits do not imply a new code test run.",
   "files": [
     {
       "path": "src/__init__.py",
@@ -132,7 +150,7 @@
     },
     {
       "path": "performance/README.md",
-      "sha256_lf": "947ca250da97f9b22d89c491bb54463efa3f02fb9f4a54bfa6c88812950b33ab"
+      "sha256_lf": "a9befabb3e1a10a16277d5b768b801fe3f6310511061477024b33297cba2e64b"
     },
     {
       "path": ".github/workflows/dependency-audit.yml",
@@ -187,5 +205,7 @@
       "sha256_lf": "cbd4af74666d2504df1000f8da56b1abf4a215fc036cd0942f99e407a3fe7c92"
     }
   ],
-  "observed_at_utc": "2026-10-16T16:14:06.254645+00:00"
+  "observed_at_utc": "2026-10-16T16:14:06.254645+00:00",
+  "code_candidate_commit": "d83c5af4c2c0b36ca9006091a8026850268a4e7e",
+  "secret_scan_disposition": "Initial Gitleaks generic-api-key finding was the public PR #83 commit SHA under an auth-named source reference. Exact historical fingerprint retained in .gitleaksignore; source refs restructured to avoid repeating the false positive. No scanner rule disabled."
 }

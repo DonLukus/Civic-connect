@@ -1,0 +1,3 @@
+# Public PR #83 commit SHA in provenance was misclassified as an API key.
+# Exact historical finding only; future findings and other files remain scanned.
+d83c5af4c2c0b36ca9006091a8026850268a4e7e:docs/release/evidence/2026-10-16/source-manifest.json:generic-api-key:8
