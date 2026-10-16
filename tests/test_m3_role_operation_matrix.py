@@ -25,6 +25,7 @@ from src.persistence.request_service import RequestService
 from src.web.app import create_app
 
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "..", "src", "persistence", "schema.sql")
+TEST_SESSION_KEY = "test-secret"  # deliberately non-secret fixture; not a real credential
 
 
 def setup_db(db_path: str):
@@ -87,7 +88,7 @@ CREDENTIALS = {
 
 
 def _client(db_path):
-    return create_app(db_path, secret_key="test-secret").test_client()
+    return create_app(db_path, secret_key=TEST_SESSION_KEY).test_client()
 
 
 # ---------------------------------------------------------------------------
