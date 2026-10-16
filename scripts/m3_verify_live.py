@@ -141,7 +141,7 @@ def journeys():
         "journey_1": "Requester real HTTP login -> submit -> receipt -> list -> logout -> login -> own detail; other requester refused",
         "journey_2": "Staff real HTTP login -> status-filtered queue -> detail -> accept -> requester status + in-app + local SMTP-captured email",
         "notification_seconds": time.monotonic() - accepted_at, "audit_rows": audit_count,
-        "credential_storage": "All 14 staged accounts bcrypt cost >=10, inspected without disclosing hashes/passwords",
+        "credential_storage": f"All {len(hashes)} staged accounts bcrypt cost >=10, inspected without disclosing hashes/passwords",
         "limits": "Live HTTP system tests, not browser automation. Email transported to local STARTTLS sink, not an external inbox. Audit inserts checked, not DBA-proof immutability.",
     })
 

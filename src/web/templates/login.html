@@ -2,6 +2,9 @@
 {% block title %}Sign in — CivicConnect{% endblock %}
 {% block content %}
   <h1>Sign in</h1>
+  {% for message in get_flashed_messages(category_filter=["success"]) %}
+    <p class="success-message" role="status">{{ message }}</p>
+  {% endfor %}
   {% if error %}<p class="error-text" role="alert">{{ error }}</p>{% endif %}
   <form method="post" action="/login">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
@@ -9,4 +12,5 @@
     <p><label for="password">Password</label><input id="password" name="password" type="password" required></p>
     <p><button type="submit">Sign in</button></p>
   </form>
+  <p>New to CivicConnect? <a href="{{ url_for('register') }}">Create an account</a></p>
 {% endblock %}

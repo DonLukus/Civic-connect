@@ -12,6 +12,7 @@ independent journey verification.
 | Capability | Method and URL | Allowed roles | Template and data supplied | Form/query fields and CSRF | Validation, error behavior, service | Traceability |
 |---|---|---|---|---|---|---|
 | Login | GET/POST `/login` | Public | `login.html`: `error`, `csrf_token` | POST: `email`, `password`, `csrf_token`; CSRF required | Invalid credentials return the same message with HTTP 200; invalid CSRF returns 400. Bcrypt verification; a valid legacy Werkzeug hash is upgraded. | FR-002 / AC-002; NFR-003 / AC-N003; NFR-004 / AC-N004 |
+| Registration | GET/POST `/register` | Public; always creates Requester | `register.html`: email, error, csrf_token | email, password, confirm_password, csrf_token; role fields ignored | Service validates email, minimum 8 characters/maximum 72 UTF-8 bytes, bcrypt cost >=10; bad input/CSRF 400, duplicate email 409; success redirects to login. | FR-001 self-registration subset; NFR-003 |
 | Logout | POST `/logout` | Any authenticated role | No response template; redirects to login | `csrf_token`; required | Invalid CSRF returns 400; otherwise clear session and redirect. No service method. | FR-002 / AC-002; FR-003 / AC-003 |
 | Request submission form | GET `/requests/new` | Requester | Existing `new_request.html`: `categories` as `(id, name)` rows, `error`, `values`, `csrf_token` | No submission fields on GET | Other roles receive 403. Active categories loaded by the route. | FR-005 / AC-005; FR-006 / AC-006 |
 | Submit request | POST `/requests` | Requester | Success redirects to confirmation; validation failure re-renders `new_request.html` with `categories`, `error`, `values`, `csrf_token` | `title`, `description`, `category_id`, `location`, `csrf_token`; CSRF required | Invalid CSRF: 400; wrong role: 403; service `ValueError`: 400 with entered values retained. Calls `RequestService.create_request`. | FR-005 / AC-005; FR-006 / AC-006; NFR-014 / AC-N014 |
@@ -25,7 +26,7 @@ independent journey verification.
 
 ## Shared Rules
 
-- All application routes other than `/login` and static assets require an active session. Identity comes from the session, never a submitted user ID.
+- All application routes other than `/login`, `/register` and static assets require an active session. Identity comes from the session, never a submitted user ID.
 - Every state-changing form includes `csrf_token`; the backend validates it before acting.
 - Service-layer checks remain authoritative even when the route also checks a role.
 - Valid status values: `New`, `Accepted`, `In Progress`, `On Hold`, `Resolved`, `Closed`, `Rejected`. Unknown filters are rejected, not interpolated into SQL.

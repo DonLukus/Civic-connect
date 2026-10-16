@@ -23,7 +23,7 @@ All paths below are relative to `docs/release/evidence/2026-10-16/`.
 
 | Check | Observed result | Evidence and boundary |
 |---|---|---|
-| Automated suite | 39 passed in 80.56 seconds | pytest.xml; Python 3.12.14, Windows; includes five logout page/role combinations |
+| Automated suite (registration revision) | 50 passed in 75.07 seconds | registration-regression.xml; original 39-case snapshot remains in pytest.xml |
 | Audit actor regression follow-up | 16 backend cases passed after adding the rendered-actor assertion | verification-checks.json; closes candidate DEF-005 regression check |
 | Ruff | Clean after corrections | verification-checks.json; src, tests, wsgi.py, scripts, performance |
 | Bandit | No medium/high findings in source scan | bandit.json; automated scanner scope only |
@@ -67,3 +67,7 @@ Flask test-client cases remain labelled in-process functional/integration covera
 4. Run required GitHub checks; merge through the protected PR workflow. Emile records the final release SHA/tag and regenerates the PED export with actual approvals and any agreed residual risk acceptance.
 
 No student approval or signature has been added by this work.
+
+## Requested registration addition - 16 October 2026
+
+Public `/register` creates Requester accounts only; email/password validation, bcrypt, confirmation and CSRF are enforced. Case-insensitive duplicates are rejected under a write transaction. All 11 registration tests and the full 50-case suite passed; `registration-live.json` confirms creation/login over real HTTP with bcrypt cost 12 and a submitted Administrator role ignored. This implements the self-registration part of FR-001; Administrator provisioning/audit remain incomplete. Email verification and signup rate limiting are not implemented. `registration-source-manifest.json` identifies this revision; earlier performance/restart/backup reports predate it and have not been rerun or relabelled. New team review and CI are required after this addition.
