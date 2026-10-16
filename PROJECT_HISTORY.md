@@ -8,6 +8,23 @@ AI assistant reads to get up to speed without asking anyone.
 
 **Rule.** Every pull request adds an entry here. Newest at the top.
 
+### 2026-10-17 — M3 role x operation matrix: fixes from Don's review (overclaim, missing positive case, stale IDs)
+**Who:** Masego · **Type:** test, artefact
+**What:** Closed three specific gaps Don's AI-assisted review found in PR #86: (1) added the
+missing positive test case to `test_m3_role_operation_matrix.py` — an assigned Staff member
+viewing their own already-accepted request through the route, not just a different, unassigned
+Staff member correctly getting 404; (2) corrected an overclaim in both
+`docs/quality/role-operation-matrix.md` and `docs/quality/test-inventory.md` that said
+TST-019–030 were all tested at the service layer only — TST-029/030/032/033 were already
+route-level; (3) assigned TST-046–050 to the 5 registration test functions that landed with
+PR #85, updated TR-017 and TR-026 in `docs/requirements/RTM.csv`, and kept the 49-passed figure
+as a dated historical note rather than silently overwriting it with the current 60.
+**Evidence:** `python -m pytest tests/ -v` — 60/60 passing, zero regressions.
+**Why it matters:** NFR-004 and the role×operation matrix claim now rest on an accurate account
+of what was already route-level versus what this work actually added — the distinction matters
+for anyone reviewing the evidence later, not just for getting the count right.
+**AI usage:** AI-039 (Claude Code).
+
 ### 2026-10-15 — M3 verification kickoff: test inventory, gap analysis, isolation tests, defect register
 **Who:** Masego · **Type:** artefact, governance
 **What:** First M3 deliverable per the team's verification/testing/traceability role brief:

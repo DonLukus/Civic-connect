@@ -1,18 +1,29 @@
 """M3 verification: role x operation authorisation matrix, exercised through the actual
-HTTP routes (not the service layer directly).
+HTTP routes.
 
-Why this file exists: every route-level authorisation check up to this point was either
-untested, or tested at the RequestService layer only (e.g. test_request_detail_owner_can_view_
-non_owner_cannot calls service.get_request_detail directly). A service-layer pass does not
-prove the route actually calls the service, with the right actor id, before rendering - a
-wiring mistake in app.py would not be caught by a service-only test. NFR-004 ("100% of
-role-restricted operations reject unauthorised access") cannot be claimed from service tests
-alone; this file closes that by hitting every route as every role that should be rejected,
-through the real Flask test client.
+Correction (16 Oct 2026): an earlier version of this docstring claimed every route-level
+authorisation check was previously untested or service-layer-only. That overclaimed it -
+tests/test_m3_backend_routes.py's test_route_request_list_allows_requester_blocks_staff,
+test_route_staff_queue_allows_staff_blocks_requester, test_route_accept_rejects_bad_csrf_and_
+wrong_role and test_route_notifications_and_landing (TST-029/030/032/033) already exercised
+real HTTP routes, not the service layer, for Requester-vs-Staff blocking. What this file
+actually closes:
 
-Administrator is included here for the first time outside the shared-navigation logout test
-(tests/test_m3_logout.py, which only exercises GET /landing positively for that role) - no
-prior test checked that Administrator is blocked from any Requester/Staff-only route.
+1. GET /requests/<id> (request_detail) role/ownership enforcement was tested only at the
+   RequestService layer (test_request_detail_owner_can_view_non_owner_cannot,
+   test_request_detail_staff_visibility_follows_assignment call service.get_request_detail
+   directly) - never through the route. A route-wiring bug (wrong actor id passed, an exception
+   not mapped to the right HTTP status) would not have been caught.
+2. Manager and Administrator had no authorisation coverage against ANY route before this -
+   not blocked-from, not allowed-into. The one exception was GET /landing, tested positively for
+   Manager only (test_route_notifications_and_landing) and for Administrator only inside a
+   logout-mechanics test (test_m3_logout.py), which asserts session/CSRF behaviour, not
+   authorisation.
+3. Several routes had only one direction of their role check tested (e.g. /landing: Requester
+   blocked and Manager allowed, but Staff-blocked and Administrator-allowed were never asserted).
+
+NFR-004 ("100% of role-restricted operations reject unauthorised access") needed all of the
+above closed before it could honestly be claimed complete.
 """
 
 import os
@@ -261,8 +272,21 @@ def test_request_detail_route_enforces_role_and_ownership():
     login(client, *CREDENTIALS["Staff"])
     assert client.get(f"/requests/{req_id}").status_code == 200
 
-    # Accept with staff-1, then staff-2 (unassigned to it) must get 404.
+    # Accept with staff-1, then staff-1 must still be able to view their own accepted request
+    # through the route (positive case - the prior version of this test only checked that
+    # staff-2, who is NOT assigned, gets 404; it never asserted that staff-1, who IS assigned,
+    # still gets 200. A route-wiring bug that broke staff-1's own access specifically would not
+    # have been caught by any test before this).
     RequestService(db_path).accept_request(req_id, s1, 0)
+    client = _client(db_path)
+    login(client, *CREDENTIALS["Staff"])
+    own_accepted = client.get(f"/requests/{req_id}")
+    assert own_accepted.status_code == 200, (
+        "the Staff member actually assigned to an accepted request must still be able to view it"
+    )
+    assert "Pothole" in own_accepted.get_data(as_text=True)
+
+    # staff-2 (not assigned to it) must get 404.
     client = _client(db_path)
     login(client, *CREDENTIALS["Staff-2"])
     assert client.get(f"/requests/{req_id}").status_code == 404, (

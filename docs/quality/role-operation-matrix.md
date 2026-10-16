@@ -7,16 +7,28 @@ denials in existing tests do not prove every restricted operation for every role
 ("100% of role-restricted operations reject unauthorised access") cannot honestly be claimed
 without this.
 
-**Every cell below is now backed by a passing automated test that hits the real HTTP route**
-(`tests/test_m3_role_operation_matrix.py`), not the `RequestService` layer directly. Prior
-coverage of role/ownership checks (`test_m3_backend_routes.py`) called
-`service.get_request_detail(...)` etc. directly — a real result, but it does not prove the
-Flask route actually passes the right actor id to the service, maps its exceptions to the right
-HTTP status, or is wired up at all. That gap is why Administrator in particular had almost no
-coverage before this: it appeared in exactly one existing test
-(`test_m3_logout.py::test_logout_from_shared_navigation[Administrator-/landing]`), and that test
-checks logout/session mechanics, not authorisation — it never asserted Administrator is blocked
-from anything.
+**Every cell below is now backed by a passing automated test that hits the real HTTP route.**
+
+**Correction (16 Oct 2026):** an earlier version of this document claimed every prior
+role/ownership check ran at the `RequestService` layer only, never through the route. That
+overclaimed it — `test_m3_backend_routes.py`'s `test_route_request_list_allows_requester_
+blocks_staff`, `test_route_staff_queue_allows_staff_blocks_requester`,
+`test_route_accept_rejects_bad_csrf_and_wrong_role` and `test_route_notifications_and_landing`
+(TST-029/030/032/033) already hit real HTTP routes, not the service layer, for Requester-vs-Staff
+blocking. What was actually missing, and is what this file closes:
+
+1. `GET /requests/<id>` (request detail) role/ownership enforcement — `test_request_detail_
+   owner_can_view_non_owner_cannot` and `test_request_detail_staff_visibility_follows_assignment`
+   call `service.get_request_detail(...)` directly, never through the route. A route-wiring bug
+   (wrong actor id, an exception not mapped to the right HTTP status) would not have been caught.
+2. **Manager and Administrator had no authorisation coverage against any route before this** —
+   neither "correctly blocked from" nor "correctly allowed into." The one exception was
+   `GET /landing`, tested positively for Manager only, and for Administrator only inside
+   `test_m3_logout.py` — a logout/session-mechanics test, not an authorisation test; it never
+   asserted Administrator is blocked from anything, or allowed into `/landing` for authorisation
+   reasons rather than as a side effect of a login/logout sequence.
+3. Several routes had only one direction of their role check tested (e.g. `/landing`: Requester
+   blocked and Manager allowed were tested; Staff-blocked and Administrator-allowed were not).
 
 ## The matrix
 
@@ -76,7 +88,12 @@ about a specific record's existence.
 ## Result
 
 10/10 new route-level cases pass against the integration candidate, alongside the existing
-39 (service-level and prior route-level tests) — **49/49 passing**, zero regressions. This closes
+39 (service-level and prior route-level tests) — **49/49 passing** at the time this document and
+`tests/test_m3_role_operation_matrix.py` were first written (16 Oct 2026). Kept here as a
+historical note, not deleted: the suite has since grown further (public registration, PR #85) to
+**60/60 passing** as of the latest check — see `docs/quality/test-inventory.md` Part 6 for the
+current count and the registration tests' assigned IDs. Zero regressions either time. This closes
 the "Full role matrix" item in `docs/release/m3-release-evidence-summary.md`'s residual risk table
 as **addressed**, not merely reviewed: every cell in the matrix above now has a passing automated
-assertion behind it, run through the real HTTP route.
+assertion behind it, run through the real HTTP route, including the previously-untested positive
+case of a Staff member viewing their own already-accepted request.
