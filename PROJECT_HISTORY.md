@@ -8,6 +8,12 @@ AI assistant reads to get up to speed without asking anyone.
 
 **Rule.** Every pull request adds an entry here. Newest at the top.
 
+### 2026-10-17 - DEC-008 recommendation and consolidated ASR table (proposal only)
+**Who:** Don, with Claude Code assistance - **Type:** docs, decision proposal
+**What:** Added `docs/decisions/DEC-008-recommendation.md`: ASR table, weighted matrices for stack and platform, recommendation and the evidence still required. Corrected the record that the stack is Python/Flask (Node.js was only a scored alternative).
+**Evidence:** Matrix totals recomputed by script; test and coverage figures from a local run on `main` 6e99ae6 (60 passed, 83%). No provider free-tier terms were verified, and the doc says so.
+**Review:** DEC-008 stays Deferred and ADR-001/007 stay Proposed. Needs two non-author approvals; this is a recommendation, not approval.
+
 ### 2026-10-17 - Correct the incomplete PED v3.0 PDF export
 **Who:** Emile, with Codex assistance (AI-045) - **Type:** tooling, document correction
 **What:** The merged PR #89 PDF contained only section 22. The builder now includes every existing numbered PED source from 00 through 22, preserving M1/M2 history and signatures, with a contents page/bookmarks and readable register records. Section 18 remains explicitly absent; no missing narrative or acceptance was invented. Added a dated document-control/release update, corrected stale review-pending wording, and separated PR #85's approved head from its merge commit.
