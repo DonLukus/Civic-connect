@@ -8,6 +8,12 @@ AI assistant reads to get up to speed without asking anyone.
 
 **Rule.** Every pull request adds an entry here. Newest at the top.
 
+### 2026-10-17 - GitHub governance verification record
+**Who:** Don, with Claude Code assistance - **Type:** docs, evidence
+**What:** Added `docs/governance/github-governance-verification-2026-10-17.md` recording what the `main` rulesets actually enforce versus section 10 / DEC-001: stale-approval dismissal off, no required status checks, and merged PRs without two approvals (#22, #26, #28, #54-#56, #75).
+**Evidence:** Public GitHub API reads; bypass actors and secret-scanning settings could not be seen without admin access and are marked unverified. No settings were changed.
+**Review:** Needs two non-author approvals. The corrective settings changes are listed in the file and need team agreement.
+
 ### 2026-10-17 - Correct the incomplete PED v3.0 PDF export
 **Who:** Emile, with Codex assistance (AI-045) - **Type:** tooling, document correction
 **What:** The merged PR #89 PDF contained only section 22. The builder now includes every existing numbered PED source from 00 through 22, preserving M1/M2 history and signatures, with a contents page/bookmarks and readable register records. Section 18 remains explicitly absent; no missing narrative or acceptance was invented. Added a dated document-control/release update, corrected stale review-pending wording, and separated PR #85's approved head from its merge commit.
