@@ -2,6 +2,7 @@
 {% block title %}My requests — CivicConnect{% endblock %}
 {% block content %}
   <h1>My requests</h1>
+  <p class="page-intro">Everything you have reported, and where it stands.</p>
 
   {# Per docs/deployment/m3-interface-agreement.md's Route Contract
      (GET /requests): `requests` rows carry reference, title, category,
@@ -23,6 +24,7 @@
   </form>
 
   {% if requests %}
+    <div class="table-wrap">
     <table>
       <caption class="visually-hidden">Your submitted service requests</caption>
       <thead>
@@ -43,14 +45,15 @@
             <td>{{ r.title }}</td>
             <td>{{ r.category }}</td>
             <td>{{ r.submitted_at }}</td>
-            <td>{{ r.status }}</td>
+            <td><span class="badge badge--{{ r.status|lower|replace(' ', '-') }}">{{ r.status }}</span></td>
             <td>{{ r.last_status_changed_at }}</td>
-            <td><a href="/requests/{{ r.reference }}">View status</a></td>
+            <td><a href="/requests/{{ r.reference }}">View status &rarr;</a></td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
+    </div>
   {% else %}
-    <p class="empty-state">You haven't submitted any requests yet. <a href="/requests/new">Submit one</a>.</p>
+    <div class="empty-state"><p><strong>No requests yet.</strong></p><p>Spotted a problem in your community? <a class="button" href="/requests/new">Submit a request</a></p></div>
   {% endif %}
 {% endblock %}

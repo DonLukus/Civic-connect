@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Create an account - CivicConnect{% endblock %}
 {% block content %}
+<div class="auth-card card">
   <h1>Create an account</h1>
-  <p>Register to submit service requests and track their progress.</p>
+  <p class="page-intro">Register to submit service requests and track their progress.</p>
   {% if error %}<p class="error-text" role="alert">{{ error }}</p>{% endif %}
   <form method="post" action="{{ url_for('register') }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
@@ -18,5 +19,6 @@
              autocomplete="new-password" required></p>
     <p><button type="submit">Create account</button></p>
   </form>
-  <p>Already registered? <a href="{{ url_for('login') }}">Sign in</a></p>
+  <p class="auth-alt">Already registered? <a href="{{ url_for('login') }}">Sign in</a></p>
+</div>
 {% endblock %}

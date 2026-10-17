@@ -8,6 +8,12 @@ AI assistant reads to get up to speed without asking anyone.
 
 **Rule.** Every pull request adds an entry here. Newest at the top.
 
+### 2026-10-17 - UI polish: calmer civic look, status badges, progress tracker
+**Who:** Don, with Claude Code assistance (AI-048) - **Type:** UI, presentation only
+**What:** Rewrote `src/web/static/style.css` and restyled the 10 templates: branded header, card layouts, centred auth forms, status badges, a New-to-Closed progress tracker on request detail, a receipt-style confirmation page, friendlier empty states and landing text. No routes, form fields, validation or backend code changed; no external fonts, scripts or CDN assets (NFR-005, NFR-010).
+**Evidence:** All 60 tests pass; pages screenshotted in headless Chrome against a local staging instance. Contrast was chosen for the NFR-008 4.5:1 target but no automated accessibility scan was run, so NFR-008 is not claimed as met.
+**Review:** Needs two non-author approvals. Masego should check the templates against the interface agreement and NFR-008.
+
 ### 2026-10-17 - GitHub governance verification record
 **Who:** Don, with Claude Code assistance - **Type:** docs, evidence
 **What:** Added `docs/governance/github-governance-verification-2026-10-17.md` recording what the `main` rulesets actually enforce versus section 10 / DEC-001: stale-approval dismissal off, no required status checks, and merged PRs without two approvals (#22, #26, #28, #54-#56, #75).

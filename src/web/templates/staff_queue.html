@@ -2,6 +2,7 @@
 {% block title %}Staff queue — CivicConnect{% endblock %}
 {% block content %}
   <h1>Staff queue</h1>
+  <p class="page-intro">Unassigned requests and the ones assigned to you.</p>
 
   {# Per docs/deployment/m3-interface-agreement.md's Route Contract
      (GET /staff/queue): `requests` rows carry reference, title, category,
@@ -23,6 +24,7 @@
   </form>
 
   {% if requests %}
+    <div class="table-wrap">
     <table>
       <caption class="visually-hidden">Service requests in your queue</caption>
       <thead>
@@ -44,15 +46,16 @@
             <td>{{ r.title }}</td>
             <td>{{ r.category }}</td>
             <td>{{ r.submitted_at }}</td>
-            <td>{{ r.status }}</td>
+            <td><span class="badge badge--{{ r.status|lower|replace(' ', '-') }}">{{ r.status }}</span></td>
             <td>{{ r.assignee_id or "Unassigned" }}</td>
             <td>{{ r.last_status_changed_at }}</td>
-            <td><a href="/requests/{{ r.reference }}">View</a></td>
+            <td><a href="/requests/{{ r.reference }}">View &rarr;</a></td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
+    </div>
   {% else %}
-    <p class="empty-state">No requests match this filter.</p>
+    <div class="empty-state"><p><strong>Nothing to show.</strong></p><p>No requests match this filter.</p></div>
   {% endif %}
 {% endblock %}
