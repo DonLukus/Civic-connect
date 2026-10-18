@@ -28,7 +28,7 @@
           <td data-label="Status">{{ 'Active' if c.is_active else 'Inactive' }}</td>
           <td data-label="Requests">{{ c.request_count }}</td>
           <td data-label="Actions">
-            <form method="post" action="{{ url_for('admin_update_category', category_id=c.id) }}" class="filter-bar">
+            <form method="post" action="{{ url_for('admin_update_category', category_id=c.id) }}" class="inline-form">
               <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
               <label class="visually-hidden" for="name-{{ c.id }}">Name</label>
               <input type="text" id="name-{{ c.id }}" name="name" value="{{ c.name }}" maxlength="80" required>

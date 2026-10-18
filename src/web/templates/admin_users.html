@@ -37,7 +37,7 @@
           <td data-label="Status">{{ 'Active' if u.is_active else 'Inactive' }}</td>
           <td data-label="Open assigned">{{ u.open_assigned }}</td>
           <td data-label="Actions">
-            <form method="post" action="{{ url_for('admin_change_role', user_id=u.id) }}" class="filter-bar">
+            <form method="post" action="{{ url_for('admin_change_role', user_id=u.id) }}" class="inline-form">
               <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
               <label class="visually-hidden" for="role-{{ u.id }}">Role for {{ u.email }}</label>
               <select id="role-{{ u.id }}" name="role">
