@@ -6,13 +6,16 @@ Running record of every significant change, decision and milestone event on Civi
 date order, with who and why. Together with `PROJECT_RULES.md` they are the files any team member or
 AI assistant reads to get up to speed without asking anyone.
 
-**Rule.** Every pull request adds an entry here. Newest at the top.
+**Rule.** This file is a frozen archive of the entries merged before `docs/history/` was introduced. Every
+new pull request adds its own entry as a separate file in [docs/history/](docs/history/README.md), so pull
+requests no longer conflict on this file. Read everything newest first with `python tools/history.py`.
 
-### 2026-10-18 - README rewritten to match the code
-**Who:** Don, with Claude Code assistance (AI-054) - **Type:** docs
-**What:** Rewrote `README.md` and `.env.example`. Removed claims the code does not support (a `.env` file is not loaded, `PASSWORD_HASH_ROUNDS` does not exist, "15 tests", M2 status, Render deployment steps, rate limiting listed as a fix in progress). Added a two-command demo, an accurate configuration table, what works per role, what is not built, CI and governance caveats, and the missing LICENSE file.
-**Evidence:** Option B quick start run and checked (login returns 200; app refuses to start without `SECRET_KEY`); every variable and default checked against `wsgi.py`, `app.py` and `outbox.py`; all README links resolve; 60 tests counted on `main`.
-**Review:** Needs two non-author approvals. No code changed. **ID note:** drafted as AI-049, which collided with Emile's AI-049 (PR #96); renumbered AI-054 before merge. This PR is superseded by #92; its verified corrections are listed in the PR comment for consolidation.
+### 2026-10-18 - Correct active repository provenance and README status
+**Who:** Emile, with Codex assistance (AI-048) - **Type:** documentation, correction
+**What:** Reconciled the README against DonLukus/Civic-connect main af2f545 and its actual M3/PED/release evidence. Replaced stale M2, 15-test, single-account and unimplemented-queue statements, direct-main deployment commands and unsupported licence/production assertions. Added the canonical repository, actual scoped journeys, 60-case test boundary, local setup, continuing PED, pending decisions and the precise governance gaps. Earlier work prepared against Don-Sanvura/Civic-connect was a repository mismatch; its PRs #7/#8 were closed and labelled withdrawn, preserving their history. Its Node.js diagnostics and conclusions were not imported into this Flask implementation. After Emile requested preserving useful README guidance, restored the project tree, stack table, environment reference, Bash/PowerShell setup, security/CSRF notes, targeted/coverage commands, deployment boundaries, contribution/support steps and team table while retaining corrected facts.
+**Affects:** README; AI-048. No requirement/AC wording, RTM acceptance status, scope, source, tests, historical signature or branch setting changed. RTM changes are not needed for this documentation correction.
+**Evidence:** PED section 22; release-summary 17 October update; PRs #85/#86/#88-#91; GitHub main/ruleset/CI reads; README reference checks; Flask CLI startup/schema check against a fresh synthetic database; automated suite 60 passed in 178.13s on Python 3.12.14. The 60-pass result belongs to the earlier documentation revision on unchanged application code. For the expansion, local links/anchors, tree paths, dependency pins and target test name were checked; Bash and PowerShell snippets passed syntax parsing. No new Linux/macOS walkthrough or coverage measurement is claimed. These are automated checks, not a claim of personal student execution.
+**Review:** Two non-author reviews required. Public production remains NOT READY; this correction does not reopen completed M3 reviews or infer new acceptance.
 
 ### 2026-10-17 - GitHub governance verification record
 **Who:** Don, with Claude Code assistance - **Type:** docs, evidence

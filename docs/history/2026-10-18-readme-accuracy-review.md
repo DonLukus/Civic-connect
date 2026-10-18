@@ -1,0 +1,5 @@
+### 2026-10-18 - README accuracy review (superseded by #92); `.env.example` header corrected
+**Who:** Don, with Claude Code assistance (AI-054) - **Type:** documentation
+**What:** An independent rewrite of `README.md` (PR #93) was superseded by Emile's merged #92, whose expanded guide was kept. Its verified corrections were carried into #92's README through `docs/readme-consolidation`. The only change this PR now makes is the `.env.example` header: it said to copy the file to `.env`, but the application never reads a `.env` file (no dotenv package is installed), so it now says to set the variables in the shell or host secret store.
+**Evidence:** Checked against `wsgi.py` and `requirements.txt` (no dotenv); `FLASK_ENV` is kept in the template so it stays consistent with the merged README's environment table. No code changed.
+**Review:** Needs two non-author approvals. Earlier drafting was recorded as AI-049 and renumbered AI-054 after an ID collision with Emile's AI-049.

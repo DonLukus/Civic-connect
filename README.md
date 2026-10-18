@@ -1,166 +1,270 @@
 # CivicConnect
 
-A small web application for community service requests. Residents report a problem, staff pick it up,
-and every change is recorded, so nothing gets lost between email, phone calls and spreadsheets.
+Community service request management platform for SEN381, Belgium Campus ITversity, 2026.
 
-**Status:** Milestone 3 candidate. **Not production ready.** The Requester and Staff journeys work end
-to end; Manager and Administrator tools are not built yet (see [What works today](#what-works-today)).
+**Team repository: [DonLukus/Civic-connect](https://github.com/DonLukus/Civic-connect).** Check `git remote -v` before using a checkout or reporting its status; similarly named repositories are not interchangeable.
 
----
+Quick links: [Status](#current-status) | [Features](#purpose-and-implemented-scope) | [Stack](#technology-stack) | [Setup](#local-setup) | [Configuration](#environment-configuration) | [Security](#security-controls-and-limits) | [Tests](#tests-and-evidence) | [Deployment](#staging-and-deployment) | [Structure](#project-structure) | [Contributing](#contributing-and-support) | [Team](#team-responsibilities)
 
-## Quick start
+## Current status
 
-You need Python 3.11 or newer and Git.
+| Area | Position |
+|---|---|
+| M3 evaluation slice | Implemented, reviewed and merged through PR #85, including the role-matrix/RTM work from #86 |
+| PED | Continuing M1/M2 document through M3 section 22; corrected full export merged through #89/#90 |
+| Decisions | #88 recorded DEC-013 through DEC-018; ADR-001/007 remain Proposed and DEC-008 remains Deferred |
+| Automated suite | 60 pytest cases; service, in-process web/integration and role/registration regressions, not 60 browser tests |
+| Staging | Isolated local Waitress/SQLite environment with synthetic users and a local SMTP sink |
+| Public production | **NOT READY** |
+
+Status reconciled 18 October 2026 against main `af2f5456a9a940f6c9a020db5cd5fe5e4889219d` (PR #91). This README correction does not create a new release approval, milestone signature or requirement acceptance. See [PED section 22](docs/PED/22-m3-construction-verification-release.md) and the dated update in the [release evidence summary](docs/release/m3-release-evidence-summary.md).
+
+## Purpose and implemented scope
+
+CivicConnect aims to replace fragmented requests across email, telephone, WhatsApp, spreadsheets and paper with a controlled request record, clear ownership and attributable changes.
+
+The merged supervised M3 slice provides:
+
+- Public Requester registration and session-based login. Self-registration always creates a Requester.
+- Requester submission with controlled categories, confirmation, own request list/detail and current status.
+- Staff login, role-scoped queue, status filtering, detail and self-acceptance with version/conflict checks.
+- Acceptance audit/outbox records and Requester in-app notification; SMTP transport was exercised against a local sink.
+- Manager and Administrator login with safe landing pages. Operational dashboards and administration are not implemented by those pages.
+
+The current lifecycle implements **New to Accepted**, not the entire baseline lifecycle. FR-012 supplies status filtering, not the full search/filter/sort requirement. Registration does not complete Administrator provisioning or audit under FR-001. Acceptance notification does not complete every FR-009 notification trigger.
+
+[CHG-002](docs/change/CHG-002-m3-delivery-slice.md) records the scoped evaluation proposal; its dated pending wording is followed by the recorded decisions in PED section 22 and the release-summary update. Deferred baseline obligations remain visible and are not marked fulfilled by narrowing the demonstration. [Requirements and original acceptance criteria](docs/requirements/) and the [RTM](docs/requirements/RTM.csv) remain the controlled references.
+
+## Runtime and data
+
+The implementation uses Python, server-rendered Flask, SQLite, bcrypt and a transactional request/audit/outbox design. Pinned application dependencies are in [requirements.txt](requirements.txt); CI uses Python 3.11. Gunicorn is for Unix hosting and does not run on Windows. Local simulated staging uses the separate [staging requirements](requirements-staging.txt) and Waitress.
+
+SQLite records persist in the configured local file across process restarts; that is not proof of hosted durability. No PostgreSQL implementation or final production-platform acceptance is claimed. Fresh accounts use bcrypt; successful login upgrades supported legacy hashes, but dormant legacy accounts still need an explicit migration/reset disposition.
+
+## Technology stack
+
+| Component | Current implementation | Version/source |
+|---|---|---|
+| Language | Python | 3.11 used by CI; earlier project checks also recorded 3.12/3.14 environments |
+| Web framework and UI | Flask, Jinja templates, CSS | Flask 3.1.3 in `requirements.txt` |
+| Database | SQLite through Python's `sqlite3` | SQLite library supplied with the installed Python; PostgreSQL remains a candidate |
+| Password hashing | bcrypt; Werkzeug for checking supported legacy hashes before upgrade | bcrypt 5.0.0 in `requirements.txt` |
+| Automated tests | pytest | 9.1.1 in `requirements.txt` |
+| Local simulated staging | Waitress and aiosmtpd | 3.0.2 and 1.4.6 in `requirements-staging.txt` |
+| Unix WSGI server candidate | Gunicorn | 26.2.0 in `requirements.txt`; not usable on Windows |
+| CI and analysis | GitHub Actions, pytest, Ruff, Bandit, pip-audit and Gitleaks | Configuration in `.github/workflows/`; tool results apply to their recorded run |
+
+Dependency pins describe the checkout, not final platform acceptance. See [ADRs](docs/decisions/adr/) and the [decision log](docs/decisions/decision-log.csv) for decision status.
+
+## Local setup
+
+Use only synthetic data. Do not expose this demonstration to real users or put credentials in Git.
+
+Prerequisites: Git and Python 3.11 or later with pip. Use an unused checkout folder and a separate local database.
+
+### Windows (PowerShell)
+
+```powershell
+git clone https://github.com/DonLukus/Civic-connect.git
+cd Civic-connect
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+
+$env:SECRET_KEY = python -c "import secrets; print(secrets.token_urlsafe(32))"
+$env:DATABASE_URL = Join-Path (Get-Location) "civicconnect-local.sqlite"
+$env:SESSION_COOKIE_SECURE = "false"
+$env:PASSWORD_HASH_COST = "12"
+$env:OUTBOX_WORKER_ENABLED = "false"
+
+python -m flask --app wsgi:app run --host 127.0.0.1 --port 5000
+```
+
+### Linux and macOS (Bash)
+
+Use a `python3` installation satisfying the same prerequisite:
 
 ```bash
 git clone https://github.com/DonLukus/Civic-connect.git
 cd Civic-connect
-python -m venv venv
-source venv/bin/activate          # Windows: venv\Scripts\activate
-```
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
 
-### Option A: full demo in two commands (recommended)
-
-Creates an isolated local database with 14 synthetic accounts and 500 sample requests. Nothing leaves
-your machine and no email is sent. Needs OpenSSL, which Git for Windows includes.
-
-```bash
-pip install -r requirements-staging.txt
-python -m scripts.m3_staging prepare     # once
-python -m scripts.m3_staging serve       # then open http://127.0.0.1:5083/login
-```
-
-Log in with any account listed in `.m3-local/config.json` (for example `requester-0@example.test` or
-`staff-0@example.test`). That file holds generated passwords and is git-ignored. Never commit it.
-
-### Option B: run the app yourself
-
-```bash
-pip install -r requirements.txt
 export SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
-export BOOTSTRAP_REQUESTER_EMAIL=you@example.test
-export BOOTSTRAP_REQUESTER_PASSWORD='choose-a-password'
-python -m flask --app wsgi:app run       # http://127.0.0.1:5000/login
+export DATABASE_URL="$PWD/civicconnect-local.sqlite"
+export SESSION_COOKIE_SECURE=false
+export PASSWORD_HASH_COST=12
+export OUTBOX_WORKER_ENABLED=false
+
+python -m flask --app wsgi:app run --host 127.0.0.1 --port 5000
 ```
 
-On PowerShell use `$env:SECRET_KEY = "..."` instead of `export`. The app does **not** read a `.env`
-file; set variables in your shell. `.env.example` only lists the names.
+These Bash instructions express the same environment and application startup as the Windows path. They are not evidence of a fresh Linux/macOS walkthrough; use the project's recorded platform checks and verify your actual environment.
 
-The database is created on first start. Without `SECRET_KEY` the app refuses to start.
+Open `http://127.0.0.1:5000/register` to create a synthetic Requester, then sign in at `/login`. `wsgi.py` initialises the schema and default Utilities category. These commands set the environment directly: copying [.env.example](.env.example) alone does not populate the required values or guarantee a dotenv loader is installed. Keep the generated signing key stable for the local session; a new key invalidates old sessions.
 
----
+Privileged demo users can be provisioned through the optional bootstrap environment variables named in `.env.example`. For the complete Staff/notification demonstration, follow the isolated [M3 staging runbook](docs/deployment/m3-staging.md), which generates synthetic fixtures and a local STARTTLS mail sink. Do not run its fixture generator against an existing database. Public HTTPS and external mail delivery require separate verification.
 
-## What works today
+## Environment configuration
 
-| Role | Can do |
+`.env.example` is the controlled list of variable names; actual values belong in the process environment or an explicitly configured local loader. Keep secrets, databases and `.m3-local/` out of Git. The examples above disable mail delivery and use loopback HTTP.
+
+| Variable | Meaning and current behaviour |
 |---|---|
-| Anyone | Register as a Requester, sign in, sign out |
-| Requester | Submit a request (title, description, category, location), get a reference number, see only their own requests with status and history, filter by status, read in-app notifications |
-| Staff | See unassigned requests and their own, filter by status, open full detail, accept a request |
-| Manager, Administrator | Sign in only. Dashboard, category admin and user admin are **not built**. |
+| `SECRET_KEY` | Required Flask session-signing secret; use a random private value per environment. Do not print or commit it. |
+| `DATABASE_URL` | SQLite **file path** consumed by the current code; defaults to `civicconnect.sqlite` in `wsgi.py`. Setting a PostgreSQL URL does not implement a PostgreSQL adapter. |
+| `SESSION_COOKIE_SECURE` | `false` for loopback HTTP; `true` requires HTTPS. HttpOnly and SameSite=Lax are configured in the app. |
+| `PASSWORD_HASH_COST` | bcrypt cost, default 12; code accepts 10 through 16. |
+| `BOOTSTRAP_REQUESTER_EMAIL`, `BOOTSTRAP_REQUESTER_PASSWORD` | Optional pair to create a synthetic Requester if absent. Omit both when using public registration. |
+| `BOOTSTRAP_STAFF_EMAIL`, `BOOTSTRAP_STAFF_PASSWORD` | Optional pair to provision a Staff demo account. |
+| `BOOTSTRAP_MANAGER_EMAIL`, `BOOTSTRAP_MANAGER_PASSWORD` | Optional pair to provision a Manager demo account. |
+| `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD` | Optional pair to provision an Administrator demo account. |
+| `OUTBOX_WORKER_ENABLED` | Default `false`; `true` starts the in-process notification loop and requires SMTP host/sender settings. |
+| `OUTBOX_WORKER_POLL_SECONDS` | Default 60; positive integer interval between processing passes. |
+| `EMAIL_SMTP_HOST`, `EMAIL_SMTP_PORT` | SMTP host and port; port defaults to 587. The implementation calls STARTTLS. |
+| `EMAIL_SMTP_USERNAME`, `EMAIL_SMTP_PASSWORD` | Optional SMTP login; a username requires a password. Local staging uses its separate synthetic sink configuration. |
+| `EMAIL_FROM_ADDRESS` | Sender address required for delivery. |
+| `FLASK_ENV` | Present in the template; the setup instructions configure the launch explicitly with Flask CLI. It is not a substitute for reviewing deployment/security settings. |
 
-Also in place: every status change writes an audit row in the same transaction, accepting is protected
-against two people taking the same request, and an in-process outbox sends the "accepted" email.
+Each bootstrap email/password must be supplied together. Startup does not reset an existing account's password, and it refuses a matching email with a different role. This is demo provisioning, not the missing Administrator user-management screen. Check [wsgi.py](wsgi.py) and the [interface agreement](docs/deployment/m3-interface-agreement.md) for the actual contract.
 
-**Not built yet** (deferred by [CHG-002](docs/change/CHG-002-m3-delivery-slice.md), still owed against the
-baseline): assignment by Manager, statuses after Accepted, comments, password reset, search and sort, CSV
-export, dashboard and overdue flags, category and user administration. Only one category ("Utilities") is
-seeded. Full list: [docs/requirements/](docs/requirements/).
+## Security controls and limits
 
----
+- Authenticated sessions are checked against an active stored user; route and service checks enforce role/record boundaries for the implemented operations.
+- State-changing forms require a session-bound CSRF token. Missing/invalid tokens are rejected; logout is a POST operation. See the CSRF and logout regressions in `tests/`.
+- Fresh registered/bootstrap passwords are bcrypt hashes, never plaintext database values. Registration enforces an eight-character minimum and bcrypt's 72-byte UTF-8 limit. Dormant legacy hashes still need a migration/reset decision.
+- Request acceptance uses a version check and transactional state/audit/outbox writes. The current audit records do not establish every later lifecycle or production tamper-resistance requirement.
+- Keep signing keys and bootstrap/SMTP credentials private. Inspect the exact CI secret/static/dependency scan result rather than interpreting a green run as a complete security assessment.
 
-## Configuration
+Login/signup rate limiting, email verification, production SMTP/TLS assurance and outbox crash recovery remain outstanding. The local SMTP sink is controlled test transport, not proof of delivery to an external inbox. See the [release risks](docs/release/m3-release-evidence-summary.md) and [technical debt](docs/quality/technical-debt-register.md).
 
-All settings are environment variables.
+## Tests and evidence
 
-| Variable | Required | Default | Purpose |
-|---|---|---|---|
-| `SECRET_KEY` | yes | none | Signs session cookies. Random and unique per environment. |
-| `DATABASE_URL` | no | `civicconnect.sqlite` | Path of the SQLite file. |
-| `SESSION_COOKIE_SECURE` | no | `false` | Set `true` whenever served over HTTPS. |
-| `PASSWORD_HASH_COST` | no | `12` | bcrypt cost, must be 10 to 16. |
-| `BOOTSTRAP_<ROLE>_EMAIL` / `_PASSWORD` | no | none | Creates a first account for `REQUESTER`, `STAFF`, `MANAGER` or `ADMIN`. Both must be set together; password at most 72 bytes. Existing accounts are never changed. |
-| `OUTBOX_WORKER_ENABLED` | no | `false` | Turns on email sending. |
-| `EMAIL_SMTP_HOST`, `EMAIL_FROM_ADDRESS` | if worker on | none | SMTP server and sender. |
-| `EMAIL_SMTP_PORT` | no | `587` | SMTP port. |
-| `EMAIL_SMTP_USERNAME`, `EMAIL_SMTP_PASSWORD` | no | none | SMTP login. |
-| `OUTBOX_WORKER_POLL_SECONDS` | no | `60` | How often pending email is sent. |
-
-Never commit real values. Use your host's secret store.
-
----
-
-## Tests and quality checks
-
-```bash
-python -m pytest tests/ -q                                   # 60 tests
-pip install pytest-cov && python -m pytest tests/ --cov=src  # about 83% line coverage
+```powershell
+python -m pytest tests/ -q
 ```
 
-GitHub Actions runs on every pull request: tests, `pip-audit`, Bandit, a full-history Gitleaks scan, a
-requirements-traceability check, a pattern secret scan, Ruff (report only) and a weekly dependency audit.
+Run one area or case while investigating:
 
-Be aware: at the last check the `main` ruleset required two approvals but did **not** list these checks as
-required, so a red build could still be merged. See
-[docs/governance/github-governance-verification-2026-10-17.md](docs/governance/github-governance-verification-2026-10-17.md).
-
----
-
-## How it is built
-
-One Flask application, server-rendered pages, SQLite, no JavaScript framework. This is the simplest design
-that meets the zero-cost constraint; the reasoning and the options considered are in
-[ADR-001](docs/decisions/adr/ADR-001-architecture-and-stack-options.md) (proposed, not yet
-approved; the hosting decision DEC-008 is still open).
-
-```
-src/web/            Flask routes, templates, stylesheet
-src/persistence/    schema.sql, request and user services, status rules, email outbox
-tests/              pytest suite
-scripts/            local staging, live journey, load and recovery checks
-performance/        NFR-001 load test
-wsgi.py             entry point: creates the database, seeds accounts, starts the app
-docs/               requirements, decisions, risks, governance, release evidence
+```sh
+python -m pytest tests/test_request_acceptance.py -v
+python -m pytest tests/test_request_submission.py::test_create_request_succeeds_with_valid_data -v
 ```
 
-## Security notes
+For an optional local coverage report, install the coverage plugin in the development environment:
 
-- Passwords are hashed with bcrypt (cost 10 to 16). Sessions are HttpOnly, SameSite=Lax cookies; every form
-  carries a CSRF token. Roles are checked on the server, and requesters can only read their own requests.
-- Known gaps: no login rate limiting, no password reset, no email verification, and accounts created before
-  the bcrypt change may still hold older hashes until their owner next signs in.
+```sh
+python -m pip install pytest-cov
+python -m pytest tests/ --cov=src --cov-report=html
+```
 
-## Deploying
+Inspect `htmlcov/index.html` and the measured service-layer coverage before claiming NFR-009. The report is ignored by Git; these commands do not assert that coverage has already met its threshold.
 
-There is **no approved hosting yet**. Free hosts that reset their local disk on restart (Render's free tier
-did in our test) lose SQLite data, so do not deploy publicly until durable storage is chosen. Use Option A
-for demos. Current evidence and the open decision: [docs/release/m3-release-evidence-summary.md](docs/release/m3-release-evidence-summary.md),
-[docs/deployment/m3-staging.md](docs/deployment/m3-staging.md). `gunicorn` does not run on Windows; the
-staging launcher uses Waitress.
+The current suite contains 60 cases. The earlier 15-, 18-, 39- and 50-case reports are historical snapshots. Flask test-client cases are in-process functional/integration tests. Separate live HTTP journeys and supplementary browser walkthrough evidence are recorded; no persistent browser automation suite is claimed.
 
----
+The recorded NFR-001 local warm-instance measurement used 10 Staff users, 500 filtered records and 300 seconds: 8,503 successful requests, zero failures, p95 0.422 seconds. Load/restart/backup evidence predates registration and was not silently relabelled as a rerun on later revisions. It is not hosted availability, cold-start, browser-rendering or production-capacity evidence.
 
-## Project documents
+- [Release evidence and residual risks](docs/release/m3-release-evidence-summary.md)
+- [Test inventory](docs/quality/test-inventory.md), [role-operation matrix](docs/quality/role-operation-matrix.md) and [verification handoff](docs/quality/m3-verification-handoff.md)
+- [Route/UI contract](docs/deployment/m3-interface-agreement.md)
+- [Quality, secret-scan and traceability workflows](.github/workflows/)
 
-| Question | Where |
+Evaluate the exact commit and run, not only a test count or green badge. Passing CI does not establish all 40 requirements or production readiness.
+
+## Staging and deployment
+
+For the reproducible supervised demonstration, use [M3 isolated staging](docs/deployment/m3-staging.md). It documents fixture preparation, separate server/mail processes, live journeys, the five-minute load run and restart checks. Preserve later results in a new evidence directory instead of overwriting historical reports.
+
+Render remains historical proof-of-concept/platform evidence under DEC-008, not an approved production deployment recipe. Follow [deployment direction](docs/deployment/deployment-direction.md) as a dated proposal and the [release summary](docs/release/m3-release-evidence-summary.md) for current limits. Verify durable storage across restart/redeploy, external SMTP/TLS, host compatibility, cost and recovery before selecting a hosted release configuration. An absolute SQLite path alone does not provide persistence.
+
+Deploy only an explicitly reviewed commit through the agreed process. Do not bypass the PR workflow with a direct push to main. Gunicorn is a Unix server option; the local Windows staging guide uses Waitress. The Flask development server in quick start is for loopback development.
+
+## Project structure
+
+```text
+Civic-connect/
+|-- src/
+|   |-- persistence/
+|   |   |-- schema.sql              # SQLite schema
+|   |   |-- request_service.py      # Request rules, queries and acceptance
+|   |   |-- request_repository.py   # Earlier repository implementation
+|   |   |-- user_service.py         # Requester registration
+|   |   |-- lifecycle.py            # Implemented transition validation
+|   |   `-- outbox.py               # Notification claiming and delivery
+|   `-- web/
+|       |-- app.py                  # Flask routes, sessions and CSRF
+|       |-- templates/              # Login, registration and scoped role pages
+|       `-- static/                 # Styles
+|-- tests/                          # pytest service/web/regression cases
+|-- scripts/                        # Local staging, live and recovery harnesses
+|-- performance/                    # Staff queue load scenario
+|-- tools/                          # Continuing PED PDF builder
+|-- docs/
+|   |-- PED/                        # Numbered sources and compiled review exports
+|   |-- requirements/               # Baseline requirements, scope and RTM
+|   |-- decisions/                  # Decision log and ADRs
+|   |-- deployment/                 # Interface and staging runbooks
+|   |-- quality/                    # Inventory, role matrix, defects and debt
+|   |-- release/                    # Release summary and dated evidence
+|   |-- governance/                 # AI register and governance records
+|   `-- risk/                       # Risk and assumption registers
+|-- .github/                        # Workflows and contribution templates
+|-- wsgi.py                         # Schema/bootstrap and WSGI entrypoint
+|-- requirements.txt                # Pinned application/test dependencies
+|-- requirements-staging.txt        # Optional Waitress/local SMTP dependencies
+|-- requirements-docs.txt           # Optional PED build dependencies
+|-- .env.example                    # Configuration names, no secret values
+|-- PROJECT_RULES.md
+|-- PROJECT_HISTORY.md
+`-- README.md
+```
+
+## Remaining work
+
+Public production remains NOT READY. Outstanding behaviour and assurance include:
+
+- Full lifecycle/resolution/rejection, comments, password reset, broader search/filter/sort, Manager reporting and operational Administrator functions.
+- Durable hosted storage, external SMTP/TLS, outbox recovery/idempotency, dormant legacy hashes and schema-compatible rollback.
+- Sustained availability, cold-start, capacity and accessibility evidence; daily backup scheduling/retention beyond the recorded local restore drill.
+- Final technology/hosting decisions and evidence-backed disposition of remaining acceptance criteria.
+
+Use the release summary, RTM, [defect register](docs/quality/defect-register.csv) and [technical-debt register](docs/quality/technical-debt-register.md) for the authoritative details and owners. A successful scoped demonstration is not acceptance of the whole product baseline.
+
+## Governance and contributions
+
+Work on a branch and open a PR. Substantive changes require two approvals from different non-author people, resolved review discussions, updated affected records and an AI-assistance declaration. Two accounts owned by one person are not two independent reviewers. Follow [PROJECT_RULES.md](PROJECT_RULES.md); do not push feature changes directly to main or stage temporary review files indiscriminately.
+
+Main has active protection rulesets requiring a PR and two approvals. The [17 October governance verification](docs/governance/github-governance-verification-2026-10-17.md) records narrower gaps: stale-approval dismissal is off and required-status-check lists are empty. Last-push approval and conversation resolution are on. Bypass actors and platform secret-scanning settings remain unverified without administrator evidence. The verification PR records discrepancies; it does not fix settings or prove every historical approval was independent.
+
+## Contributing and support
+
+1. Read the rules, history, PED and affected requirement/acceptance records. For a defect, include reproduction, expected/actual behaviour, impact and related IDs in the project issue or PR; use the existing templates.
+2. Work on a small branch following project conventions: `docs/<area>`, `feat/FR-nnn-<description>`, `fix/<issue>-<description>` or `chore/<description>`. Preserve existing identifiers.
+3. Make focused commits such as `docs(readme): clarify local setup` or `fix(<area>): describe the correction`, referencing the real issue/artefact where applicable. Inspect `git status` and stage named project files rather than temporary review downloads or credentials.
+4. Run checks appropriate to the change. Update affected RTM/register entries, declare material AI assistance and add the history entry. Do not change acceptance status merely because code or text changed.
+5. Open a PR using the template. Don and Masego independently review Emile-authored changes; the other two non-author people review changes authored by a different member. Record actual findings, resolve discussions and inspect CI on the final revision before merging.
+
+For help, start with the [interface contract](docs/deployment/m3-interface-agreement.md), [staging guide](docs/deployment/m3-staging.md) and the relevant defect/debt record. Raise remaining questions through the repository's [issues](https://github.com/DonLukus/Civic-connect/issues) or the associated PR, with synthetic reproduction data and no credentials.
+
+## Project records and responsibilities
+
+| Topic | Source |
 |---|---|
-| What are we building and why? | [docs/PED/](docs/PED/) |
-| What did we promise? | [docs/requirements/](docs/requirements/) |
-| Why these technical choices? | [docs/decisions/](docs/decisions/) |
-| What could go wrong? | [docs/risk/risk-register.csv](docs/risk/risk-register.csv) |
-| How do we work? | [PROJECT_RULES.md](PROJECT_RULES.md), [PROJECT_HISTORY.md](PROJECT_HISTORY.md) |
+| Rules, ownership and progressive history | [Project rules](PROJECT_RULES.md), [history](PROJECT_HISTORY.md) |
+| Continuing PED and reproducible PDF build | [PED index](docs/PED/README.md), [full review PDF](docs/PED/exports/PED_v3.0-review.pdf) |
+| Original scope and requirements | [Controlled requirements](docs/requirements/), [RTM](docs/requirements/RTM.csv) |
+| Architecture and decisions | [ADRs](docs/decisions/adr/), [decision log](docs/decisions/decision-log.csv) |
+| Risk and AI accountability | [Risk register](docs/risk/risk-register.csv), [AI register](docs/governance/ai-usage-register.csv) |
 
-## Contributing
+## Team responsibilities
 
-University project with enforced governance: work on a branch, open a pull request, get two approvals
-from members other than the author, update the RTM and `PROJECT_HISTORY.md`. Details in
-[PROJECT_RULES.md](PROJECT_RULES.md).
+| Member | Current M3 responsibility recorded in document control |
+|---|---|
+| Don (Workstream B) | Architecture, core implementation and configuration |
+| Masego (Workstream A) | Verification and traceability |
+| Emile (Workstream C) | Staging, performance, release evidence and PED assembly |
 
-## Team
+These describe the M3 allocation; the historical M1 ownership in PROJECT_RULES is retained. Authorship and actual review evidence remain in PRs, history and the AI register. All three remain accountable for the whole project.
 
-Don (requirements, repository, backend), Masego (problem, scope, verification), Emile (risk, deployment,
-documents).
-
-## Licence
-
-No licence has been chosen and no `LICENSE` file is committed, so all rights are reserved by default. The team (and the university, if it has a claim on coursework) must decide before anyone reuses the code.
+The full PED export includes all existing numbered sources and preserves historical signatures and dates. Section 18 has no source and remains an explicit gap. Record the actual submission date and final documentation identifier when submitting; this README supplies neither a signature nor a submission claim.
