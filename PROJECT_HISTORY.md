@@ -8,6 +8,12 @@ AI assistant reads to get up to speed without asking anyone.
 
 **Rule.** Every pull request adds an entry here. Newest at the top.
 
+### 2026-10-18 - README rewritten to match the code
+**Who:** Don, with Claude Code assistance (AI-049) - **Type:** docs
+**What:** Rewrote `README.md` and `.env.example`. Removed claims the code does not support (a `.env` file is not loaded, `PASSWORD_HASH_ROUNDS` does not exist, "15 tests", M2 status, Render deployment steps, rate limiting listed as a fix in progress). Added a two-command demo, an accurate configuration table, what works per role, what is not built, CI and governance caveats, and the missing LICENSE file.
+**Evidence:** Option B quick start run and checked (login returns 200; app refuses to start without `SECRET_KEY`); every variable and default checked against `wsgi.py`, `app.py` and `outbox.py`; all README links resolve; 60 tests counted on `main`.
+**Review:** Needs two non-author approvals. No code changed.
+
 ### 2026-10-17 - GitHub governance verification record
 **Who:** Don, with Claude Code assistance - **Type:** docs, evidence
 **What:** Added `docs/governance/github-governance-verification-2026-10-17.md` recording what the `main` rulesets actually enforce versus section 10 / DEC-001: stale-approval dismissal off, no required status checks, and merged PRs without two approvals (#22, #26, #28, #54-#56, #75).
