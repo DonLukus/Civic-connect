@@ -163,4 +163,4 @@ documents).
 
 ## Licence
 
-Intended as MIT, but no `LICENSE` file is committed yet. One must be added before anyone reuses the code.
+No licence has been chosen and no `LICENSE` file is committed, so all rights are reserved by default. The team (and the university, if it has a claim on coursework) must decide before anyone reuses the code.
