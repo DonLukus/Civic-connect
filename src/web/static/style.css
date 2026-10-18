@@ -120,6 +120,11 @@ a:hover { color: var(--brand-900); }
 }
 
 h1 { font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.25; color: var(--brand-900); margin: 0 0 .35rem; }
+
+/* User-entered text (titles, descriptions, locations) can contain long unbroken strings; let it wrap
+   anywhere instead of stretching the page. min-width: 0 lets flex and grid children shrink. */
+h1, .page-intro, dd, td, .notice-list li, .flash { overflow-wrap: anywhere; }
+.card, .site-main, .detail-head > div { min-width: 0; }
 h2 { font-size: 1.25rem; color: var(--brand-900); margin: 2rem 0 .75rem; }
 .page-intro { color: var(--ink-soft); margin: 0 0 1.5rem; }
 
@@ -227,13 +232,14 @@ td a { font-weight: 600; white-space: nowrap; }
 .tracker li.is-done::after, .tracker li.is-current::after { background: var(--brand-700); }
 .tracker li.is-current { color: var(--brand-900); font-weight: 700; }
 .tracker li.is-current::before { box-shadow: 0 0 0 4px rgba(13, 98, 168, .25); }
+.tracker-note { margin: .75rem 0 0; font-size: .85rem; color: var(--ink-soft); text-align: center; }
 
 /* ---------- Detail ---------- */
 .detail-head {
   display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: .75rem;
 }
 dl.detail-list {
-  display: grid; grid-template-columns: minmax(8rem, 12rem) 1fr; gap: .1rem 1.25rem; margin: 1.25rem 0 0;
+  display: grid; grid-template-columns: minmax(8rem, 12rem) minmax(0, 1fr); gap: .1rem 1.25rem; margin: 1.25rem 0 0;
 }
 dl.detail-list dt { color: var(--ink-soft); font-weight: 600; padding: .55rem 0; border-top: 1px solid var(--line); }
 dl.detail-list dd { margin: 0; padding: .55rem 0; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
@@ -299,7 +305,7 @@ dl.detail-list dt:first-of-type, dl.detail-list dt:first-of-type + dd { border-t
     box-shadow: var(--shadow); margin-bottom: .85rem; padding: .35rem 0;
   }
   table.responsive td {
-    display: flex; justify-content: space-between; gap: 1rem; text-align: right;
+    display: flex; justify-content: space-between; gap: 1rem; text-align: right; min-width: 0;
     border-top: none; padding: .45rem 1rem;
   }
   table.responsive td::before {

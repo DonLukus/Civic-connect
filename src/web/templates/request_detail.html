@@ -18,6 +18,7 @@
             {% if loop.index0 == idx %}aria-current="step"{% endif %}>{{ step }}</li>
       {% endfor %}
     </ol>
+    <p class="tracker-note">Only New and Accepted are available in this release. In Progress, Resolved and Closed are not built yet.</p>
   {% endif %}
 
   {# Per docs/deployment/m3-interface-agreement.md's Route Contract
