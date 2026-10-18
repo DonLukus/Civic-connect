@@ -1,0 +1,1 @@
+AI-058,2026-10-18,Don,Claude (Claude Code),Added coverage reporting and a 70% floor to quality.yml and re-verified main.,"Edited the workflow; ran tests, Ruff, Bandit and pip-audit.","Ran the full suite with coverage (60 passed, 83%); confirmed the gate fails on a low-coverage run; CI run itself not yet observed.",CI change only.,"Gate is overall src/, not service layer only."

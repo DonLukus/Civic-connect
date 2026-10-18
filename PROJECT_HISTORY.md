@@ -8,11 +8,12 @@ AI assistant reads to get up to speed without asking anyone.
 
 **Rule.** Every pull request adds an entry here. Newest at the top.
 
-### 2026-10-18 - CI coverage report and gate (NFR-009); full verification of main
-**Who:** Don, with Claude Code assistance (AI-050) - **Type:** CI, verification
-**What:** `quality.yml` now runs pytest with `pytest-cov`, prints per-file missing lines and fails below 70% of `src/`. Re-verified `main` (af2f545): 60 tests pass, 83% coverage (`request_service.py` 91%, `user_service.py` 90%, `app.py` 91%, `outbox.py` 64%), Ruff clean, Bandit no medium/high findings, `pip-audit` no known vulnerabilities.
-**Evidence:** Local run on Python 3.14.3 (CI uses 3.11, not yet observed with this change). The gate was shown to fail when coverage is low. This does not make the check required to merge; that is a ruleset setting (see the governance record).
-**Review:** Needs two non-author approvals; `.github/` is owned by Don in CODEOWNERS.
+### 2026-10-18 - Correct active repository provenance and README status
+**Who:** Emile, with Codex assistance (AI-048) - **Type:** documentation, correction
+**What:** Reconciled the README against DonLukus/Civic-connect main af2f545 and its actual M3/PED/release evidence. Replaced stale M2, 15-test, single-account and unimplemented-queue statements, direct-main deployment commands and unsupported licence/production assertions. Added the canonical repository, actual scoped journeys, 60-case test boundary, local setup, continuing PED, pending decisions and the precise governance gaps. Earlier work prepared against Don-Sanvura/Civic-connect was a repository mismatch; its PRs #7/#8 were closed and labelled withdrawn, preserving their history. Its Node.js diagnostics and conclusions were not imported into this Flask implementation. After Emile requested preserving useful README guidance, restored the project tree, stack table, environment reference, Bash/PowerShell setup, security/CSRF notes, targeted/coverage commands, deployment boundaries, contribution/support steps and team table while retaining corrected facts.
+**Affects:** README; AI-048. No requirement/AC wording, RTM acceptance status, scope, source, tests, historical signature or branch setting changed. RTM changes are not needed for this documentation correction.
+**Evidence:** PED section 22; release-summary 17 October update; PRs #85/#86/#88-#91; GitHub main/ruleset/CI reads; README reference checks; Flask CLI startup/schema check against a fresh synthetic database; automated suite 60 passed in 178.13s on Python 3.12.14. The 60-pass result belongs to the earlier documentation revision on unchanged application code. For the expansion, local links/anchors, tree paths, dependency pins and target test name were checked; Bash and PowerShell snippets passed syntax parsing. No new Linux/macOS walkthrough or coverage measurement is claimed. These are automated checks, not a claim of personal student execution.
+**Review:** Two non-author reviews required. Public production remains NOT READY; this correction does not reopen completed M3 reviews or infer new acceptance.
 
 ### 2026-10-17 - GitHub governance verification record
 **Who:** Don, with Claude Code assistance - **Type:** docs, evidence
