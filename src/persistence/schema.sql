@@ -52,6 +52,20 @@ CREATE TABLE request_audit (
     FOREIGN KEY (actor_user_id) REFERENCES users(id)
 );
 
+-- FR-025 / NFR-006: audit rows can be added but never changed or removed, even by a bug or
+-- a hand-written query run through the application's connection.
+CREATE TRIGGER IF NOT EXISTS request_audit_no_update
+BEFORE UPDATE ON request_audit
+BEGIN
+    SELECT RAISE(ABORT, 'request_audit is append-only (FR-025, NFR-006)');
+END;
+
+CREATE TRIGGER IF NOT EXISTS request_audit_no_delete
+BEFORE DELETE ON request_audit
+BEGIN
+    SELECT RAISE(ABORT, 'request_audit is append-only (FR-025, NFR-006)');
+END;
+
 CREATE TABLE outbox_events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     aggregate_type TEXT NOT NULL,

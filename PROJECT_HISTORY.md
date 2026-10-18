@@ -8,6 +8,13 @@ AI assistant reads to get up to speed without asking anyone.
 
 **Rule.** Every pull request adds an entry here. Newest at the top.
 
+### 2026-10-18 - Audit trail made append-only in the database (FR-025, NFR-006)
+**Who:** Don, with Claude Code assistance (AI-051) - **Type:** persistence, tests
+**What:** Added two SQLite triggers that abort any UPDATE or DELETE on `request_audit`, in `schema.sql` for new databases and in the `wsgi.py` migration for existing ones. Previously nothing stopped application code or a stray query from rewriting history. No application code ever updated or deleted audit rows, so behaviour is unchanged.
+**Evidence:** `tests/test_audit_immutability.py` (5 cases: insert still works; update and delete refused with the row unchanged; an older database gains the triggers on startup). Full suite 65 passed, Ruff clean. RTM execution evidence for TR-007 and TR-008 updated; their statuses are unchanged because the lifecycle beyond acceptance is still unbuilt.
+**Limit:** Triggers protect against the application and its connection, not against someone with direct write access to the database file, who could drop them.
+**Review:** Needs two non-author approvals.
+
 ### 2026-10-17 - GitHub governance verification record
 **Who:** Don, with Claude Code assistance - **Type:** docs, evidence
 **What:** Added `docs/governance/github-governance-verification-2026-10-17.md` recording what the `main` rulesets actually enforce versus section 10 / DEC-001: stale-approval dismissal off, no required status checks, and merged PRs without two approvals (#22, #26, #28, #54-#56, #75).
