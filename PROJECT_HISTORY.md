@@ -15,11 +15,6 @@ AI assistant reads to get up to speed without asking anyone.
 **Evidence:** PED section 22; release-summary 17 October update; PRs #85/#86/#88-#91; GitHub main/ruleset/CI reads; README reference checks; Flask CLI startup/schema check against a fresh synthetic database; automated suite 60 passed in 178.13s on Python 3.12.14. The 60-pass result belongs to the earlier documentation revision on unchanged application code. For the expansion, local links/anchors, tree paths, dependency pins and target test name were checked; Bash and PowerShell snippets passed syntax parsing. No new Linux/macOS walkthrough or coverage measurement is claimed. These are automated checks, not a claim of personal student execution.
 **Review:** Two non-author reviews required. Public production remains NOT READY; this correction does not reopen completed M3 reviews or infer new acceptance.
 
-### 2026-10-17 - DEC-008 recommendation and consolidated ASR table (proposal only)
-**Who:** Don, with Claude Code assistance (AI-046) - **Type:** docs, decision proposal
-**What:** Added `docs/decisions/DEC-008-recommendation.md`: ASR table, weighted matrices for stack and platform, recommendation and the evidence still required. Corrected the record that the stack is Python/Flask (Node.js was only a scored alternative).
-**Evidence:** Matrix totals recomputed by script; test and coverage figures from a local run on `main` 6e99ae6 (60 passed, 83%). No provider free-tier terms were verified, and the doc says so.
-**Review:** DEC-008 stays Deferred and ADR-001/007 stay Proposed. Needs two non-author approvals; this is a recommendation, not approval.
 ### 2026-10-17 - GitHub governance verification record
 **Who:** Don, with Claude Code assistance - **Type:** docs, evidence
 **What:** Added `docs/governance/github-governance-verification-2026-10-17.md` recording what the `main` rulesets actually enforce versus section 10 / DEC-001: stale-approval dismissal off, no required status checks, and merged PRs without two approvals (#22, #26, #28, #54-#56, #75).
