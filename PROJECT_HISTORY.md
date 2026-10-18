@@ -9,10 +9,10 @@ AI assistant reads to get up to speed without asking anyone.
 **Rule.** Every pull request adds an entry here. Newest at the top.
 
 ### 2026-10-18 - README rewritten to match the code
-**Who:** Don, with Claude Code assistance (AI-049) - **Type:** docs
+**Who:** Don, with Claude Code assistance (AI-054) - **Type:** docs
 **What:** Rewrote `README.md` and `.env.example`. Removed claims the code does not support (a `.env` file is not loaded, `PASSWORD_HASH_ROUNDS` does not exist, "15 tests", M2 status, Render deployment steps, rate limiting listed as a fix in progress). Added a two-command demo, an accurate configuration table, what works per role, what is not built, CI and governance caveats, and the missing LICENSE file.
 **Evidence:** Option B quick start run and checked (login returns 200; app refuses to start without `SECRET_KEY`); every variable and default checked against `wsgi.py`, `app.py` and `outbox.py`; all README links resolve; 60 tests counted on `main`.
-**Review:** Needs two non-author approvals. No code changed.
+**Review:** Needs two non-author approvals. No code changed. **ID note:** drafted as AI-049, which collided with Emile's AI-049 (PR #96); renumbered AI-054 before merge. This PR is superseded by #92; its verified corrections are listed in the PR comment for consolidation.
 
 ### 2026-10-17 - GitHub governance verification record
 **Who:** Don, with Claude Code assistance - **Type:** docs, evidence
