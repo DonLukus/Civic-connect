@@ -1,9 +1,21 @@
 {% extends "base.html" %}
 {% block title %}Request submitted — CivicConnect{% endblock %}
 {% block content %}
-  <h1>Request received</h1>
-  <p class="flash flash--success">Your reference number is <strong>#{{ request_id }}</strong>. Keep it to check progress.</p>
-  <p><a href="/requests/new">Submit another request</a> &middot; <a href="/requests">View my requests</a></p>
+  <div class="card receipt">
+    <div class="receipt__tick" aria-hidden="true">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+    </div>
+    <h1>Request received</h1>
+    <p class="page-intro">Thank you. We will keep you updated as it progresses.</p>
+    <p>Your reference number is</p>
+    <p><strong class="receipt__ref">#{{ request_id }}</strong></p>
+    <p class="hint">Keep it to check progress.</p>
+    <div class="button-row">
+      <a class="button" href="/requests/{{ request_id }}">Track this request</a>
+      <a class="button button--secondary" href="/requests/new">Submit another request</a>
+      <a class="button button--secondary" href="/requests">View my requests</a>
+    </div>
+  </div>
   {# GET /requests is specified in Don's interface agreement (PR #82) - relinked now that
      a real route and template contract exist for it, even though that PR isn't merged yet. #}
 {% endblock %}

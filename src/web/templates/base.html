@@ -10,7 +10,13 @@
   <a class="skip-link" href="#main-content">Skip to main content</a>
 
   <header class="site-header">
-    <div class="site-header__brand">CivicConnect</div>
+    <div class="site-header__brand">
+      <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <rect width="32" height="32" rx="8" fill="#fff" opacity=".18"/>
+        <path d="M16 5 6 11v2h20v-2L16 5Zm-7 10v7h3v-7H9Zm5.5 0v7h3v-7h-3Zm5.5 0v7h3v-7h-3ZM6 24v3h20v-3H6Z" fill="#fff"/>
+      </svg>
+      CivicConnect
+    </div>
     {# Expects `current_user` in template context: None when signed out,
        or a dict/object with at least `email` and `role` when signed in.
        Don confirms the real shape when the route is wired - this is the
@@ -52,7 +58,7 @@
   </main>
 
   <footer class="site-footer">
-    <p>CivicConnect — Milestone 3 candidate.</p>
+    <p>CivicConnect &middot; Report it, track it, see it fixed.</p>
   </footer>
 </body>
 </html>
