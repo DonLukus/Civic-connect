@@ -1,0 +1,176 @@
+{
+  "date_sast": "2026-10-18",
+  "team": "Group U",
+  "application_commit": "98b1c55700d940f915d856119f581adee8044986",
+  "python": "3.12.14",
+  "tests": {
+    "passed": 62,
+    "failed": 0,
+    "duration_seconds": 128.48,
+    "before_privacy_fix": {
+      "failed": 1,
+      "passed": 1
+    }
+  },
+  "coverage": {
+    "scope": "all src.persistence modules, including earlier repository implementation",
+    "covered_lines": 230,
+    "statements": 293,
+    "percent": 78.49829351535836
+  },
+  "static": {
+    "ruff": "passed",
+    "bandit_findings": 0,
+    "bandit_errors": 0
+  },
+  "accessibility_partial": {
+    "passForChecksPerformed": true,
+    "renderedLabelChecks": {
+      "submission": {
+        "visibleInputs": 4,
+        "missingProgrammaticLabels": []
+      },
+      "detail": {
+        "visibleInputs": 0,
+        "missingProgrammaticLabels": []
+      }
+    },
+    "declaredCssContrastRatios": {
+      "body": 17.40432753274219,
+      "accentOnBackground": 5.128063549459489,
+      "error": 8.037144275380445,
+      "success": 7.823125516531924
+    },
+    "method": "HTMLParser checks for labelled visible form inputs on real HTTP submission/detail responses; WCAG relative-luminance calculation for four declared CSS colour pairs.",
+    "limits": "Not a computed-style browser accessibility audit. Keyboard-only walkthrough and full WCAG/submission acceptance remain unverified. No extra fixture requests were created."
+  },
+  "secret_scan_correction": {
+    "old_main_job": 117387258105,
+    "commits_scanned": 0,
+    "full_history": {
+      "status": "passed",
+      "application_commit": "98b1c55700d940f915d856119f581adee8044986",
+      "commits_scanned": 174,
+      "findings_after_existing_precise_ignore": 0,
+      "workflow_run": 39090851534,
+      "job": 117567103523,
+      "url": "https://github.com/DonLukus/Civic-connect/actions/runs/39090851534/job/117567103523",
+      "range": "manual event, no restricted log-opts; contrast old main job zero-commit scan"
+    }
+  },
+  "human_review": "pending; no new student execution, sign-off or acceptance claimed",
+  "source_manifest": {
+    "src/__init__.py": "44a90c63bc6f7197ef2bf95cb042185d426639e8c981f7db353f7f261784fb68",
+    "src/persistence/__init__.py": "c16714a22b75ec778968d8c2825cda2e3999f7b7b18817380533efcd3ee318d3",
+    "src/persistence/lifecycle.py": "4921691f2ba2f857092c454a29d60a4c34d3266e8806d1a95c557b197caf235a",
+    "src/persistence/outbox.py": "5a4fdcd0e931b21e36c1aab292b2f68356a43e1d1c2a08bb9f8dc86bfb91fcb1",
+    "src/persistence/request_repository.py": "1d3fe2aa168bf29256b249bdb0bd0abf892463fcdae1062ea2097a764cb6f0e7",
+    "src/persistence/request_service.py": "644bb9e627180aa3ab9d3d9e95f7e4087c38d6cea72b83339023854a6cd76ea8",
+    "src/persistence/schema.sql": "2ae9ef46a2b2a4dbd0644c6716f21164ed791124270655a46c27c41ad1b00617",
+    "src/persistence/user_service.py": "3209e2bd21add63fbcc2829ecfcab5cd576b085a5d444b51423efbc19e8e5291",
+    "src/web/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/web/app.py": "7f2e38e1d2ab9e4729493c68062aa15b8876162997c46e8c53ff72278a5739fb",
+    "src/web/static/style.css": "e525ec6245789d73f0dba318d6d1837711df3009b7e26be754d5fba501021c25",
+    "src/web/templates/base.html": "57c3bf92f537c89f35f8e8e6f3e334aebbf6a4a8c9d786ed8f60d52a9ca8bc22",
+    "src/web/templates/confirmation.html": "959d4deb13268d7caa798376fb3476d33f98485c43c3fad388e61d6e4f7bc196",
+    "src/web/templates/login.html": "fd0ad270cae52f61fe66c8b680b444cfe36a5d0281e75ac4167f57e0c4493651",
+    "src/web/templates/new_request.html": "4dcc4f6383feecaafdcb275c161e22a66ac32a63b1c8a4a65920b1682dd5b651",
+    "src/web/templates/notifications.html": "1083cbf66207f2d808e91ae1e620a3a63b1ed86e5658066b140d8ee5c8778c07",
+    "src/web/templates/register.html": "76e1e7d8b6b4bc43e33ecbcbc88d8cf2273151ad64232eec1cea23be614de0b3",
+    "src/web/templates/request_detail.html": "cebb3da6b62ee23db97c2045697d86c72c37eca340e443e5b430b50556335533",
+    "src/web/templates/requester_requests.html": "9a51a31d622a5def627aa4d46efbd1aa3de8db4116eb872e756dad050107439d",
+    "src/web/templates/role_landing.html": "950bc77ed779c3ddc33159319dea7604ef58154d92f4f8fd187294c018eafa9b",
+    "src/web/templates/staff_queue.html": "97c7b5524cf8541b8ce51c67683f831c5df8ab9ffb3c61e8545c5ccc71e310d7",
+    "tests/__init__.py": "96ef1d7374b189997691f6f01a0c8cfa9cd47ae024bfa081e04a882f36f364a3",
+    "tests/test_lifecycle_validator.py": "ba9b232d682a1d431a62f7338360d41800bdbeb4d30199568fa72c8a9fc1b532",
+    "tests/test_m3_backend_routes.py": "f21207e2ec5c00d2d4743a460cb737b7cefe55a667848a3f02888b23e7df7af2",
+    "tests/test_m3_logout.py": "43cb08b802dc4caf63b0be2ce1173014af28186bc4123e2e015329967d8de529",
+    "tests/test_m3_role_operation_matrix.py": "dc4db86ce9f6a9e33a941439296511a761df533a07c6b39b92dc7db905705243",
+    "tests/test_m4_final_regressions.py": "0ced3fbdb316210bc7f76789fd3f724797d9b0f7b1491824918b076d90e85193",
+    "tests/test_registration.py": "4dc6bfdd7587dc9f55d661c6af087c59582844be134739454ababefcca6a06b1",
+    "tests/test_request_acceptance.py": "9d09edc630a261eae8024062e1a2df224b362d7e685592aefae7a5395c084e61",
+    "tests/test_request_submission.py": "0381421bb9f364967fdec82b3e56414d3ba59504f94774118ccd7916f2ed8b7a",
+    "tests/test_requester_isolation.py": "cbefec53207b2947259a5b935bf53efc9e4e005d20e6c00818fe99d58a200bcb",
+    "tests/test_wsgi_bootstrap.py": "9110b28294656d56d8194b8b82496a6c007d8b44be14e64a7d7804ad6df6f7c2",
+    "scripts/m3_staging.py": "d307fb6e6b0cecc7c7ba363ef615c29c2371062e46aaa6fd3d732362ac1fe9d9",
+    "scripts/m3_verify_live.py": "6750c8736336c5709e44549420c5bcedd748c23f8c0374e1856c8cc63ef145e0",
+    "scripts/m3_verify_recovery.py": "0052568663d70d2de0ddbfad07e0a03f28a14560032e4f4c2bbcddab7dd4c897",
+    "performance/load_test_staff_queue.py": "1d55e4616f377163ab6c9de7cd5a262a14b2148faef61439d0d18fa44d9a06d7"
+  },
+  "limits": [
+    "No external email",
+    "No public host/availability/cold-start/capacity certification",
+    "No human keyboard/usability test",
+    "No actual Moodle submission",
+    "No new team release approval"
+  ],
+  "load": {
+    "scenario": "NFR-001 filtered Staff queue",
+    "distinct_staff_accounts": 10,
+    "dataset_size": 500,
+    "expected_filtered_rows": 500,
+    "status_filter": "New",
+    "duration_seconds": 300,
+    "total_wall_seconds_including_login": 301.29700000000594,
+    "total_requests": 13212,
+    "successful_requests": 13212,
+    "failed_requests": 0,
+    "p95_seconds_nearest_rank": 0.28100000000267755,
+    "target_seconds": 2.0,
+    "qualifies_as_nfr001_run": true,
+    "pass": true,
+    "limits": "Client-observed HTTP elapsed time includes server template generation and transfer, but not browser rendering; local machine only; no production-scale or uptime claim.",
+    "observed_at_utc": "2026-10-18T02:34:54.692746+00:00",
+    "environment": "Windows local simulated staging; Waitress, loopback HTTP, SQLite; local SMTP STARTTLS sink"
+  },
+  "live_journeys": {
+    "pass": true,
+    "request_id": 501,
+    "journey_1": "Requester real HTTP login -> submit -> receipt -> list -> logout -> login -> own detail; other requester refused",
+    "journey_2": "Staff real HTTP login -> status-filtered queue -> detail -> accept -> requester status + in-app + local SMTP-captured email",
+    "notification_seconds": 1.125,
+    "audit_rows": 2,
+    "credential_storage": "All 14 staged accounts bcrypt cost >=10, inspected without disclosing hashes/passwords",
+    "limits": "Live HTTP system tests, not browser automation. Email transported to local STARTTLS sink, not an external inbox. Audit inserts checked, not DBA-proof immutability.",
+    "observed_at_utc": "2026-10-18T02:37:34.792698+00:00",
+    "environment": "Windows local simulated staging; Waitress, loopback HTTP, SQLite; local SMTP STARTTLS sink"
+  },
+  "restart": {
+    "pass": true,
+    "request_id": 501,
+    "claim": "Previously accepted request retrievable after local staging process stop/start using same SQLite file",
+    "limits": "Does not verify Render redeploy persistence or code/schema rollback.",
+    "observed_at_utc": "2026-10-18T02:38:37.537038+00:00",
+    "environment": "Windows local simulated staging; Waitress, loopback HTTP, SQLite; local SMTP STARTTLS sink"
+  },
+  "backup_restore": {
+    "pass": true,
+    "tables": [
+      "requests",
+      "request_audit",
+      "outbox_events"
+    ],
+    "source_and_restored_counts": [
+      501,
+      502,
+      1
+    ],
+    "request_id": 501,
+    "method": "SQLite online Connection.backup to backup file, then separate restored database; integrity_check and counts",
+    "limits": "One local recovery drill. No daily schedule, retention, cloud recovery or schema/code rollback claim.",
+    "observed_at_utc": "2026-10-18T02:38:37.563961+00:00",
+    "environment": "Windows local simulated staging; Waitress, loopback HTTP, SQLite; local SMTP STARTTLS sink",
+    "backup_and_restore_elapsed_seconds": 0.031000000002677552
+  },
+  "dependencies": {
+    "direct_application_packages": [
+      "Flask 3.1.3",
+      "pytest 9.1.1",
+      "bcrypt 5.0.0",
+      "gunicorn 26.2.0"
+    ],
+    "packages_audited": 14,
+    "known_findings": 0,
+    "boundary": "Public advisory check at run time, not a guarantee of no vulnerabilities."
+  }
+}

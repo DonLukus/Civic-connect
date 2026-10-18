@@ -77,3 +77,9 @@ No student approval or signature has been added by this work.
 ## Requested registration addition - 16 October 2026
 
 Public `/register` creates Requester accounts only; email/password validation, bcrypt, confirmation and CSRF are enforced. Case-insensitive duplicates are rejected under a write transaction. All 11 registration tests and the full 50-case suite passed; `registration-live.json` confirms creation/login over real HTTP with bcrypt cost 12 and a submitted Administrator role ignored. This implements the self-registration part of FR-001; Administrator provisioning/audit remain incomplete. Email verification and signup rate limiting are not implemented. `registration-source-manifest.json` identifies this revision; earlier performance/restart/backup reports predate it and have not been rerun or relabelled. New team review and CI are required after this addition.
+
+## Finalisation review update - 18 October 2026
+
+The earlier candidate-pending text retains its date; #85/#86/#88-#91 already merged. Current application review candidate `98b1c55700d940f915d856119f581adee8044986` fixes DEF-006 nested service contact disclosure and adds TST-051/052. Full run: 62 passed; persistence line coverage 230/293 (78.4983%); Ruff clean; source Bandit no findings. The source/harness hashes and fresh live/local results are indexed in `evidence/2026-10-18/verification-summary.json` as actually obtained. No browser or student verification is invented.
+
+The existing RTM now has dated M4 QA outcomes and original-scope completion is proposed at 40.00% (16/40), not 80%. The complete implemented-operation matrix is addressed, while missing features and remaining NFR evidence stay visible. PED section 23 recommends staging no-go for production, with specific consequences/remediation. **Actual team decision, independent reviews, final documentation freeze and Moodle submission remain pending.** Older votes/approvals do not approve this revision.

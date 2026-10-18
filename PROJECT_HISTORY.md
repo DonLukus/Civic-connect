@@ -8,6 +8,13 @@ AI assistant reads to get up to speed without asking anyone.
 
 **Rule.** Every pull request adds an entry here. Newest at the top.
 
+### 2026-10-18 - M4 scope and evidence closure prepared for Group U review
+**Who:** Emile, with Codex assistance (AI-050) - **Type:** requirements QA, closure, document tooling
+**What:** Reconciled all 40 original AC references and controlled CHG-001 wording, retaining the full denominator. Proposed QA scope completion is 40.00% (9 Met, 14 Partially Met, 17 Not Met), not the 80% target. Updated existing RTM/registers with dated current observations, corrected stale missing-list/matrix/decision claims and continued the PED through section 23 with a reasoned staging no-go recommendation and Group U submission information. Extended the existing builder for a full v4 review continuation, preserving historical signatures and the explicit missing section 18.
+**Evidence:** Application candidate 98b1c55700d940f915d856119f581adee8044986: 62 tests pass, persistence coverage 78.4983%, Ruff/Bandit and dependency audit clean; five-minute local load 13,212 successes/zero errors/p95 0.281s; two live HTTP journeys and local restart/backup/restore pass. Explicit manual Gitleaks scan covers 174 commits with no leaks after the existing precise false-positive ignore; old main scan actually covered zero commits. Raw credentials/logs/databases remain ignored. PDF validation is recorded separately after execution.
+**Affects:** Original TR-001..040/FR/NFR/AC identifiers preserved; no criterion removed, no historical student approval changed. AI-050; existing risk/debt/defect/decision/change records. The draft is based on README PR #92 so its restored guidance is preserved; #92 needs its own real reviews/merge.
+**Review:** Independent reviews, proposed AC scores, final team go/no-go decision, final assessed documentation reference and actual Moodle submission remain pending. Deadline supplied by Emile: 18 October 2026. Machine verification is not student sign-off.
+
 ### 2026-10-18 - Finalisation privacy regression and inactive-session verification
 **Who:** Emile, with Codex assistance (AI-049) - **Type:** defect fix, verification
 **What:** DEF-006: unassigned Staff service detail withheld top-level contact but exposed the Requester email in history.actor_email. Removed that unused projection; current templates retain actor IDs and authorised top-level contact. Added TST-051 (nested contact privacy) and TST-052 (deactivation invalidates an existing session and direct service access).

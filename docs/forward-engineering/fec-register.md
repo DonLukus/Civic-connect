@@ -115,3 +115,14 @@ not assumed here.
 
 ---
 
+## Finalisation conclusion - 18 October 2026 (review pending)
+
+| Existing consideration | Current consequence |
+|---|---|
+| FEC-01 deployment | Local environment verified; real host persistence/cold-start/capacity unresolved; no-go recommendation retained. |
+| FEC-02 testability | Service/route tests and two real HTTP journeys exist; full lifecycle remains unimplemented. |
+| FEC-03 quality gates | Required-check lists remain empty. Old main Gitleaks scan covered zero commits; explicit candidate history scan now covers 174 commits with no findings after the existing precise false-positive ignore. |
+| FEC-04 security | Role/ownership checks and privacy fix verified; historical credential migration and production assurance remain bounded. |
+| FEC-05 data/recovery | Local online backup/restore evidenced; daily schedule and reversible schema/code rollback not established. |
+| FEC-06 operations | No production uptime/cold-start/monitoring claim; do not create infrastructure just to disguise the no-go. |
+| FEC-07 maintainability | Coverage measured and knowledge/defence notes prepared; actual student understanding/review remains human work. |

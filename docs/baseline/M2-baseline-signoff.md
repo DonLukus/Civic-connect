@@ -92,3 +92,8 @@ review/sign-off process.
 | Masego | Technology and delivery | [ ✓ ] | 2026-09-30 |
 | Don | Data and design patterns | [ ✓ ] | 2026-09-30 |
 | Emile | Architecture and requirements | [ ✓ ] | 2026-09-30 |
+
+
+## Dated finalisation clarification - 18 October 2026
+
+The preceding Proposed outcome and signatures retain their historical scope. The decision-register reconciliation gap was addressed in PR #88 (DEC-013..018); that reason is no longer outstanding. ADR-001/007 remain Proposed and DEC-008 Deferred, so no new M2 acceptance or signature is inferred. Current product/scope consequences and the evidence-backed no-go recommendation are in PED section 23.
