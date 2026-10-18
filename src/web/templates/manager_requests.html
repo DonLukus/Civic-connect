@@ -7,6 +7,8 @@
   {% set action = "/manager/requests" %}{% set mode = "manager" %}{% set export_url = "/manager/requests.csv" %}
   {% include "_filters.html" %}
 
+  <p><strong>{{ requests|length }}</strong> matching request{{ '' if requests|length == 1 else 's' }}.</p>
+
   {% if requests %}
     <div class="table-wrap">
     <table class="responsive">

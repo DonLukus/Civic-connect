@@ -1,16 +1,16 @@
 {
   "export": "docs/PED/exports/PED_v4.0-review.pdf",
   "build_date": "2026-10-18",
-  "pages": 80,
+  "pages": 81,
   "implementation_baseline": "c7e92de8f818b66ca1ecc0faf88b0987c4b17b40",
   "ped_version": "4.0",
   "review_status": "Review candidate; no new signatures or final acceptance",
-  "source_base_commit": "5dd8e848e370a703f463818d8c60a5b5e1f9fcbf",
+  "source_base_commit": "45bcdf6df077e6dea588795112fdce06556e991f",
   "scope": "All numbered source files included; working-branch documentation fixes require review.",
   "sources": [
     {
       "path": "docs/PED/00-document-control.md",
-      "sha256": "35f285ec8b1c5f59114a109c1b3ec86383230539d7fd1e5d5ce9d91085a8ff19"
+      "sha256": "ced55cf91dabf2942be575d11a6132125eb4edb0d9c4376bcdabd115669f50f3"
     },
     {
       "path": "docs/PED/01-introduction.md",
@@ -98,7 +98,7 @@
     },
     {
       "path": "docs/PED/23-final-scope-and-project-conclusion.md",
-      "sha256": "45ef1bede0b7ece787bb8bef5311605da3c38626647faad56832b2f445ce43d1"
+      "sha256": "bdfe1883f686ef492a113083556498282f4fef4af09c0de2b88535e5d022b5ec"
     }
   ],
   "missing_source_numbers": [
@@ -106,19 +106,25 @@
   ],
   "wide_register_records": 102,
   "source_blocks_verified": 2227,
-  "pdf_sha256": "6fb04e9eb641224a6e338f62fed5be7afac530d6870225e578f71ad0fc21d188",
-  "assessed_application_candidate": "98b1c55700d940f915d856119f581adee8044986",
-  "implementation_baseline_note": "implementation_baseline is the historical merged M3 slice; assessed_application_candidate is the freshly verified M4 application.",
+  "pdf_sha256": "85fd4d098038fd44823f47eb194ec443ffae594d2c527c140b57095ca58729cb",
+  "assessed_application_candidate": null,
+  "candidate_branch": "m4/acceptance-quick-wins",
+  "candidate_base_commit": "2524a660ccadb6a72eb6645071494bdf2ef1973f",
+  "candidate_review_revision": "45bcdf6df077e6dea588795112fdce06556e991f",
+  "implementation_baseline_note": "implementation_baseline is the historical merged M3 slice; this review PDF assesses the unmerged acceptance-quick-wins candidate and does not assign a final commit.",
   "render_verification": {
-    "rendered_pages": 80,
+    "rendered_pages": 81,
     "overview_sheets_inspected": 5,
     "full_size_pages_inspected": [
       1,
-      74,
+      75,
       76,
+      77,
       78,
-      80
+      79,
+      80,
+      81
     ],
-    "result": "All pages reviewed in overview sheets and selected full-size pages; latest changed page 78 rechecked after restore-rationale clarification. No clipping or overlap observed. No student acceptance or signature claimed."
+    "result": "All pages reviewed in overview sheets, with the new final page inspected separately. The title, 47.50% score, NFR-007 5/5 evidence, final 96-case/81.28% coverage row and final submission block were inspected full size. No clipping, overlap, black squares or unreadable text observed. No student acceptance or signature claimed."
   }
 }

@@ -1,6 +1,7 @@
 import json
 import sqlite3
 import uuid
+from typing import ClassVar
 
 from src.persistence.lifecycle import LifecycleValidator
 from src.persistence.migrations import ensure_schema
@@ -11,8 +12,20 @@ from src.persistence.workflow import VersionConflict, WorkflowMixin
 __all__ = ["RequestService", "VersionConflict"]
 
 
+class SubmissionValidationError(ValueError):
+    """A submission validation failure that can be tied to one form control."""
+
+    def __init__(self, field: str, message: str):
+        super().__init__(message)
+        self.field = field
+
+
 class RequestService(WorkflowMixin, ReportingMixin):
     STATUSES = ("New", "Accepted", "In Progress", "On Hold", "Resolved", "Closed", "Rejected")
+    OPEN_STATUSES = ("New", "Accepted", "In Progress", "On Hold")
+    TEXT_LIMITS: ClassVar[dict[str, int]] = {
+        "title": 200, "description": 5000, "location": 300,
+    }
 
     def __init__(self, db_path: str):
         ensure_schema(db_path)
@@ -219,16 +232,9 @@ class RequestService(WorkflowMixin, ReportingMixin):
         Returns the new request id on success, or raises ValueError naming the first field that
         failed validation.
         """
-        title = (title or "").strip()
-        description = (description or "").strip()
-        location = (location or "").strip()
-
-        if not title:
-            raise ValueError("title is required")
-        if not description:
-            raise ValueError("description is required")
-        if not location:
-            raise ValueError("location is required")
+        category_id, title, description, location = self._validate_submission_values(
+            category_id, title, description, location
+        )
 
         correlation_id = str(uuid.uuid4())
 
@@ -249,7 +255,9 @@ class RequestService(WorkflowMixin, ReportingMixin):
             ).fetchone()
             if category is None:
                 conn.rollback()
-                raise ValueError("category must be selected from the active controlled list")
+                raise SubmissionValidationError(
+                    "category_id", "Select a category from the active controlled list."
+                )
 
             cursor = conn.execute(
                 """
@@ -284,6 +292,41 @@ class RequestService(WorkflowMixin, ReportingMixin):
             return request_id
         finally:
             conn.close()
+
+    @classmethod
+    def _validate_submission_values(cls, category_id, title, description, location):
+        values = {}
+        labels = {"title": "title", "description": "description", "location": "location"}
+        for field, value in (
+            ("title", title), ("description", description), ("location", location)
+        ):
+            if not isinstance(value, str):
+                raise SubmissionValidationError(field, f"{labels[field]} must be text.")
+            cleaned = value.strip()
+            if not cleaned:
+                raise SubmissionValidationError(field, f"{labels[field]} is required.")
+            if len(cleaned) > cls.TEXT_LIMITS[field]:
+                raise SubmissionValidationError(
+                    field,
+                    f"{labels[field]} must be {cls.TEXT_LIMITS[field]} characters or fewer.",
+                )
+            values[field] = cleaned
+
+        if isinstance(category_id, bool):
+            raise SubmissionValidationError(
+                "category_id", "Select a category from the active controlled list."
+            )
+        try:
+            category_id = int(category_id)
+        except (TypeError, ValueError) as exc:
+            raise SubmissionValidationError(
+                "category_id", "Select a category from the active controlled list."
+            ) from exc
+        if category_id <= 0:
+            raise SubmissionValidationError(
+                "category_id", "Select a category from the active controlled list."
+            )
+        return category_id, values["title"], values["description"], values["location"]
 
     def accept_request(self, request_id: int, staff_id: int, expected_version: int) -> bool:
         correlation_id = str(uuid.uuid4())

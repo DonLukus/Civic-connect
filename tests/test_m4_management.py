@@ -469,7 +469,7 @@ def test_duplicate_prompt_flow(svc, db, client_for):
     c = client_for(REQ_A)
     warned = submit(c)
     html = warned.get_data(as_text=True)
-    assert warned.status_code == 200 and "may already be reported" in html and f"#{first}" in html
+    assert warned.status_code == 409 and "Possible duplicate request" in html and f"#{first}" in html
     assert "Another pothole" in html  # what they typed is kept
     assert q(db, "SELECT COUNT(*) FROM requests") == [(1,)]                       # nothing created yet
     assert "Pothole</li>" not in html and "Private" not in html                    # no one else's title

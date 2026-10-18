@@ -10,41 +10,58 @@
 
   <!-- FR-005: title, description, category and location are mandatory.
        FR-006: category comes only from the controlled, active list below. -->
-  {% if duplicates %}
-    <div class="notice" role="alert">
-      <strong>This may already be reported.</strong> Open requests in the same category at the same location:
-      <ul>
-        {% for d in duplicates %}
-          <li>#{{ d.reference }} &ndash; {{ d.category }}, {{ d.status }}, submitted {{ d.submitted_at }}</li>
-        {% endfor %}
-      </ul>
-      Submit anyway only if yours is a different problem.
-    </div>
-  {% endif %}
   <form method="post" action="/requests" class="card">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-    {% if duplicates %}<input type="hidden" name="confirm_duplicate" value="1">{% endif %}
+
+  {% if duplicate_warning %}
+    <div class="notice" role="alert" aria-labelledby="duplicate-heading">
+      <strong id="duplicate-heading">Possible duplicate request{{ 's' if duplicate_warning|length != 1 }} found</strong>
+      <p>An open request already uses this category and location:</p>
+      <ul>
+        {% for duplicate in duplicate_warning %}
+          <li>Request #{{ duplicate.reference }} — {{ duplicate.category }}, {{ duplicate.location }} ({{ duplicate.status }})</li>
+        {% endfor %}
+      </ul>
+      <p>Confirm to submit another request, or cancel and review your requests.</p>
+      <div class="action-bar">
+        <button type="submit" name="confirm_duplicate" value="yes">Confirm submission</button>
+        <a class="button button--secondary" href="/requests">Cancel and view my requests</a>
+      </div>
+    </div>
+  {% endif %}
+
     <p>
       <label for="title">Title</label>
-      <input type="text" id="title" name="title" placeholder="e.g. Streetlight not working" value="{{ values.get('title', '') }}" required>
+      <input type="text" id="title" name="title" placeholder="e.g. Streetlight not working" value="{{ values.get('title', '') }}" maxlength="200" required{% if field_errors.get('title') %} aria-invalid="true" aria-describedby="title-error"{% endif %}>
+      {% if field_errors.get('title') %}<span id="title-error" class="field-error" role="alert">{{ field_errors.title }}</span>{% endif %}
     </p>
     <p>
       <label for="description">Description</label>
-      <textarea id="description" name="description" required>{{ values.get('description', '') }}</textarea>
+      <textarea id="description" name="description" maxlength="5000" required{% if field_errors.get('description') %} aria-invalid="true" aria-describedby="description-error"{% endif %}>{{ values.get('description', '') }}</textarea>
+      {% if field_errors.get('description') %}<span id="description-error" class="field-error" role="alert">{{ field_errors.description }}</span>{% endif %}
     </p>
     <p>
       <label for="category_id">Category</label>
-      <select id="category_id" name="category_id" required>
+      <select id="category_id" name="category_id" required{% if field_errors.get('category_id') %} aria-invalid="true" aria-describedby="category_id-error"{% endif %}>
         <option value="">Select a category</option>
         {% for cat_id, cat_name in categories %}
           <option value="{{ cat_id }}" {% if values.get('category_id')|string == cat_id|string %}selected{% endif %}>{{ cat_name }}</option>
         {% endfor %}
       </select>
+      {% if field_errors.get('category_id') %}<span id="category_id-error" class="field-error" role="alert">{{ field_errors.category_id }}</span>{% endif %}
     </p>
     <p>
       <label for="location">Location</label>
-      <input type="text" id="location" name="location" placeholder="Street, suburb or landmark" value="{{ values.get('location', '') }}" required>
+      <input type="text" id="location" name="location" placeholder="Street, suburb or landmark" value="{{ values.get('location', '') }}" maxlength="300" required{% if field_errors.get('location') %} aria-invalid="true" aria-describedby="location-error"{% endif %}>
+      {% if field_errors.get('location') %}<span id="location-error" class="field-error" role="alert">{{ field_errors.location }}</span>{% endif %}
     </p>
-    <p><button type="submit">{{ "Submit anyway" if duplicates else "Submit request" }}</button> <a class="button button--secondary" href="/requests">Cancel</a></p>
+    <p>
+      {% if duplicate_warning %}
+        <button type="submit">Check edited details</button>
+      {% else %}
+        <button type="submit">Submit request</button>
+        <a class="button button--secondary" href="/requests">Cancel</a>
+      {% endif %}
+    </p>
   </form>
 {% endblock %}

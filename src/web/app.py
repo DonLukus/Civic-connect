@@ -1,4 +1,4 @@
-"""Small authenticated M2 request-submission slice (FR-002, FR-005, FR-006)."""
+"""Small authenticated CivicConnect web application."""
 
 import hmac
 import os
@@ -24,8 +24,16 @@ from src.persistence import lifecycle
 from src.persistence.admin_service import ROLES, AdminService
 from src.persistence.password_reset import INVALID_LINK as INVALID_RESET_LINK
 from src.persistence.password_reset import PasswordResetService
-from src.persistence.reporting import parse_filters, requests_to_csv
-from src.persistence.request_service import RequestService, VersionConflict
+from src.persistence.reporting import (
+    DISPLAYED_CSV_COLUMNS,
+    parse_filters,
+    requests_to_csv,
+)
+from src.persistence.request_service import (
+    RequestService,
+    SubmissionValidationError,
+    VersionConflict,
+)
 from src.persistence.user_service import DuplicateEmailError, UserService
 
 # Which transitions need a written explanation (FR-016, FR-018, FR-015 reopen), for the action form.
@@ -194,7 +202,8 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
         if g.current_user[1] != "Requester":
             abort(403)
         return render_template(
-            "new_request.html", categories=active_categories(), error=None, values={},
+            "new_request.html", categories=active_categories(), error=None,
+            field_errors={}, duplicate_warning=[], values={},
             csrf_token=csrf_token(),
         )
 
@@ -209,25 +218,32 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
             category_id = int(form.get("category_id", 0) or 0)
         except ValueError:
             category_id = 0
-        if form.get("confirm_duplicate") != "1" and form.get("title", "").strip():
+        if form.get("confirm_duplicate") not in ("1", "yes") and form.get("title", "").strip():
             duplicates = service.find_possible_duplicates(category_id, form.get("location", ""))
             if duplicates:
                 return render_template(
-                    "new_request.html", categories=active_categories(), error=None, values=form,
-                    duplicates=duplicates, csrf_token=csrf_token(),
-                ), 200
+                    "new_request.html", categories=active_categories(), error=None,
+                    field_errors={}, duplicate_warning=duplicates, values=form,
+                    csrf_token=csrf_token(),
+                ), 409
         try:
             request_id = service.create_request(
                 requester_id=g.current_user[0],
-                category_id=int(form.get("category_id", 0) or 0),
+                category_id=form.get("category_id", ""),
                 title=form.get("title", ""),
                 description=form.get("description", ""),
                 location=form.get("location", ""),
             )
+        except SubmissionValidationError as exc:
+            return render_template(
+                "new_request.html", categories=active_categories(), error=None,
+                field_errors={exc.field: str(exc)}, duplicate_warning=[], values=form,
+                csrf_token=csrf_token(),
+            ), 400
         except ValueError as exc:
             return render_template(
                 "new_request.html", categories=active_categories(), error=str(exc),
-                values=form, csrf_token=csrf_token(),
+                field_errors={}, duplicate_warning=[], values=form, csrf_token=csrf_token(),
             ), 400
 
         return redirect(url_for("request_submitted", request_id=request_id))
@@ -275,13 +291,13 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
             query_string=request.query_string.decode("ascii", "ignore"), **(extra or {}),
         )
 
-    def csv_response(filename):
+    def csv_response(filename, columns=None):
         try:
             rows = service.search_requests(g.current_user[0], parse_filters(request.args))
         except ValueError as exc:
             return str(exc), 400
         return Response(
-            requests_to_csv(rows), mimetype="text/csv",
+            requests_to_csv(rows, columns), mimetype="text/csv",
             headers={"Content-Disposition": f"attachment; filename={filename}"})
 
     @app.route("/requests", methods=["GET"])
@@ -306,6 +322,10 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
     def manager_requests():
         if g.current_user[1] != "Manager":
             abort(403)
+        if request.args.get("format") == "csv":
+            return csv_response("civicconnect-requests.csv", columns=DISPLAYED_CSV_COLUMNS)
+        if request.args.get("format"):
+            return "format must be csv when supplied", 400
         return list_page("manager_requests.html", {"staff": service.list_active_staff()})
 
     @app.route("/manager/requests.csv", methods=["GET"])

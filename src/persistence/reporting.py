@@ -30,6 +30,8 @@ OVERDUE_SQL = (
 )
 CSV_COLUMNS = ["Reference", "Title", "Category", "Submitted", "Status", "Assignee",
                "Last status change", "Overdue"]
+# The Manager list as displayed; ?format=csv on /manager/requests exports exactly these columns.
+DISPLAYED_CSV_COLUMNS = ["Reference", "Title", "Category", "Submitted", "Status", "Assignee"]
 
 
 def _date(value, label):
@@ -52,7 +54,7 @@ def parse_filters(args) -> dict:
     status = args.get("status") or None
     if status is not None and status not in lifecycle.STATUSES:
         raise ValueError("status must be one of the supported request statuses")
-    category = args.get("category") or None
+    category = args.get("category") or args.get("category_id") or None
     if category is not None:
         if not category.isdigit():
             raise ValueError("category must be a category from the list")
@@ -262,16 +264,23 @@ def _safe_cell(value) -> str:
     return "'" + text if text[:1] in ("=", "+", "-", "@", "\t", "\r") else text
 
 
-def requests_to_csv(rows: list[dict]) -> str:
-    """Header plus exactly one row per request, with the same values the list shows."""
+def requests_to_csv(rows: list[dict], columns: list[str] | None = None) -> str:
+    """Header plus exactly one row per request, with the same values the list shows.
+
+    `columns` picks a subset (the Manager page's displayed columns); the default is all of them.
+    """
+    columns = columns or CSV_COLUMNS
     out = io.StringIO()
     writer = csv.writer(out, lineterminator="\r\n")
-    writer.writerow(CSV_COLUMNS)
+    writer.writerow(columns)
     for r in rows:
-        writer.writerow([
-            _safe_cell(r["reference"]), _safe_cell(r["title"]), _safe_cell(r["category"]),
-            _safe_cell(r["submitted_at"]), _safe_cell(r["status"]),
-            _safe_cell(r.get("assignee_email") or r["assignee_id"] or "Unassigned"),
-            _safe_cell(r["last_status_changed_at"]), "Yes" if r["overdue"] else "No",
-        ])
+        cells = {
+            "Reference": r["reference"] if columns is CSV_COLUMNS else f"#{r['reference']}",
+            "Title": r["title"], "Category": r["category"], "Submitted": r["submitted_at"],
+            "Status": r["status"],
+            "Assignee": r.get("assignee_email") or r["assignee_id"] or "Unassigned",
+            "Last status change": r["last_status_changed_at"],
+            "Overdue": "Yes" if r["overdue"] else "No",
+        }
+        writer.writerow([_safe_cell(cells[name]) for name in columns])
     return out.getvalue()
