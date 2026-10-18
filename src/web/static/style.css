@@ -288,6 +288,27 @@ dl.detail-list dt:first-of-type, dl.detail-list dt:first-of-type + dd { border-t
   .site-header { justify-content: center; }
 }
 
+/* Phones: turn table rows into stacked cards so nothing scrolls sideways. */
+@media (max-width: 640px) {
+  .table-wrap { background: none; border: none; box-shadow: none; overflow: visible; }
+  table.responsive { min-width: 0; }
+  table.responsive thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  table.responsive, table.responsive tbody, table.responsive tr, table.responsive td { display: block; width: 100%; }
+  table.responsive tr {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); margin-bottom: .85rem; padding: .35rem 0;
+  }
+  table.responsive td {
+    display: flex; justify-content: space-between; gap: 1rem; text-align: right;
+    border-top: none; padding: .45rem 1rem;
+  }
+  table.responsive td::before {
+    content: attr(data-label); font-weight: 600; color: var(--ink-soft); text-align: left; flex: none;
+  }
+  table.responsive td[data-label=""]::before { content: none; }
+  table.responsive td:last-child { justify-content: flex-end; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }
