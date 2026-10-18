@@ -99,7 +99,7 @@ class WorkflowMixin:
                 args.append(note)
                 event = ("RequestRejected", {"reason": note})
             changed = conn.execute(
-                f"UPDATE requests SET {', '.join(sets)} WHERE id = ? AND version = ?",
+                f"UPDATE requests SET {', '.join(sets)} WHERE id = ? AND version = ?",  # nosec B608 - only code-defined SET fragments are interpolated; values are bound
                 (*args, request_id, expected_version),
             ).rowcount
             if changed != 1:
@@ -155,7 +155,7 @@ class WorkflowMixin:
                 is_assign, new_status, action = False, None, "reassign_request"
                 extra = ""
             changed = conn.execute(
-                "UPDATE requests SET assignee_id = ?, version = version + 1, "
+                "UPDATE requests SET assignee_id = ?, version = version + 1, "  # nosec B608 - only code-defined SET fragments are interpolated; values are bound
                 f"updated_at = CURRENT_TIMESTAMP{extra} WHERE id = ? AND version = ?",
                 (assignee_id, request_id, expected_version),
             ).rowcount

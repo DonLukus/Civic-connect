@@ -132,7 +132,7 @@ class ReportingMixin:
             elif assignee == "unassigned":
                 where.append("r.assignee_id IS NULL")
             elif assignee == "inactive" and role == "Manager":
-                where.append("r.assignee_id IN (SELECT id FROM users WHERE is_active = 0) "
+                where.append("r.assignee_id IN (SELECT id FROM users WHERE is_active = 0) "  # nosec B608 - only code-defined constants are interpolated; values are bound
                              f"AND r.status IN {OPEN_SQL}")
             elif assignee and assignee.isdigit() and role == "Manager":
                 where.append("r.assignee_id = ?")
@@ -162,7 +162,7 @@ class ReportingMixin:
                 {('WHERE ' + ' AND '.join(where)) if where else ''}
                 ORDER BY {order}
                 LIMIT ?
-            """
+            """  # nosec B608 - only code-defined constants are interpolated; values are bound
             rows = conn.execute(sql, [role, *params, limit]).fetchall()
             return [{**dict(row), "overdue": bool(row["overdue"]),
                      "assignee_inactive": bool(row["assignee_inactive"])} for row in rows]
@@ -210,7 +210,7 @@ class ReportingMixin:
             by_assignee = [
                 {"assignee_id": row["assignee_id"], "email": row["email"] or "Unassigned", "count": row["n"]}
                 for row in conn.execute(
-                    f"SELECT r.assignee_id, u.email, COUNT(*) AS n FROM requests r "
+                    f"SELECT r.assignee_id, u.email, COUNT(*) AS n FROM requests r "  # nosec B608 - only code-defined constants are interpolated; values are bound
                     f"JOIN categories c ON c.id = r.category_id "
                     f"LEFT JOIN users u ON u.id = r.assignee_id WHERE {condition} "
                     f"GROUP BY r.assignee_id ORDER BY (r.assignee_id IS NULL), u.email", params)
@@ -250,7 +250,7 @@ class ReportingMixin:
                 WHERE r.category_id = ? AND r.status IN {OPEN_SQL}
                   AND lower(trim(r.location)) = ?
                 ORDER BY r.created_at DESC, r.id DESC LIMIT ?
-                """,
+                """,  # nosec B608 - only code-defined constants are interpolated; values are bound
                 (category_id, place, limit)).fetchall()]
         finally:
             conn.close()

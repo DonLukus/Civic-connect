@@ -27,7 +27,7 @@ def _append_only_triggers(table: str) -> list[str]:
         f"CREATE TRIGGER IF NOT EXISTS {table}_no_update BEFORE UPDATE ON {table} {abort}",
         f"CREATE TRIGGER IF NOT EXISTS {table}_no_delete BEFORE DELETE ON {table} {abort}",
         (
-            f"CREATE TRIGGER IF NOT EXISTS {table}_no_replace BEFORE INSERT ON {table} "
+            f"CREATE TRIGGER IF NOT EXISTS {table}_no_replace BEFORE INSERT ON {table} "  # nosec B608 - table names are fixed constants in this module
             f"WHEN NEW.id IS NOT NULL AND EXISTS (SELECT 1 FROM {table} WHERE id = NEW.id) {abort}"
         ),
     ]

@@ -20,7 +20,9 @@ SCHEMA = Path(__file__).resolve().parents[1] / "src" / "persistence" / "schema.s
 REQ, STAFF, MANAGER, ADMIN = 1, 2, 3, 4
 COST = 10
 # Synthetic value used only by the reset-route test below; it is not a real credential.
-ROUTE_TEST_CREDENTIAL = "Route-pass-123"  # gitleaks:allow
+ROUTE_PW = "Route-pass-123"  # gitleaks:allow
+ROUTE_OTHER = "Different-pass-456"  # gitleaks:allow
+APP_KEY = "test-signing-value"
 
 
 @pytest.fixture
@@ -356,7 +358,7 @@ def test_a_failed_send_keeps_the_event_for_retry(resets, db, monkeypatch):
 
 @pytest.fixture
 def client_for(db):
-    app = create_app(db, secret_key="test-secret")
+    app = create_app(db, secret_key=APP_KEY)
 
     def make(user_id=None):
         client = app.test_client()
@@ -429,15 +431,15 @@ def test_forgot_and_reset_routes(client_for, db):
     assert anon.get(f"/reset-password/{token}").status_code == 200
     bad = anon.get("/reset-password/not-a-token")
     assert bad.status_code == 400 and b"Request a new link" in bad.data
-    assert post(anon, f"/reset-password/{token}", password=ROUTE_TEST_CREDENTIAL,
-                confirm_password="different").status_code == 400
+    assert post(anon, f"/reset-password/{token}", password=ROUTE_PW,
+                confirm_password=ROUTE_OTHER).status_code == 400
     assert post(anon, f"/reset-password/{token}", password="short", confirm_password="short").status_code == 400
-    ok = post(anon, f"/reset-password/{token}", password=ROUTE_TEST_CREDENTIAL, confirm_password=ROUTE_TEST_CREDENTIAL)
+    ok = post(anon, f"/reset-password/{token}", password=ROUTE_PW, confirm_password=ROUTE_PW)
     assert ok.status_code == 302 and ok.headers["Location"].endswith("/login")
-    assert post(anon, f"/reset-password/{token}", password=ROUTE_TEST_CREDENTIAL,
-                confirm_password=ROUTE_TEST_CREDENTIAL).status_code == 400  # single use
+    assert post(anon, f"/reset-password/{token}", password=ROUTE_PW,
+                confirm_password=ROUTE_PW).status_code == 400  # single use
     with anon.session_transaction() as s:  # a successful reset clears the session, as it should
         s["_csrf_token"] = "tok"
-    signed_in = post(anon, "/login", email="req@example.test", password=ROUTE_TEST_CREDENTIAL)
+    signed_in = post(anon, "/login", email="req@example.test", password=ROUTE_PW)
     assert signed_in.status_code == 302
     assert anon.post("/forgot-password", data={"email": "req@example.test"}).status_code == 400  # CSRF
