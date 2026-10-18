@@ -32,10 +32,23 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
-          python -m pip install pip-audit bandit
+          python -m pip install pip-audit bandit pytest-cov==7.1.0
 
       - name: Run tests
-        run: python -m pytest tests/ -q
+        run: >-
+          python -m pytest tests/ -q --cov=src.persistence
+          --cov-report=term-missing --cov-report=xml:coverage.xml
+          --cov-report=json:coverage.json --cov-fail-under=70
+
+      - name: Retain persistence coverage evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: persistence-coverage-${{ github.sha }}
+          path: |
+            coverage.xml
+            coverage.json
+          if-no-files-found: error
 
       - name: Audit Python dependencies
         run: python -m pip_audit -r requirements.txt
