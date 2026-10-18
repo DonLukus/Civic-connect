@@ -8,6 +8,12 @@ AI assistant reads to get up to speed without asking anyone.
 
 **Rule.** Every pull request adds an entry here. Newest at the top.
 
+### 2026-10-18 - CI coverage report and gate (NFR-009); full verification of main
+**Who:** Don, with Claude Code assistance (AI-050) - **Type:** CI, verification
+**What:** `quality.yml` now runs pytest with `pytest-cov`, prints per-file missing lines and fails below 70% of `src/`. Re-verified `main` (af2f545): 60 tests pass, 83% coverage (`request_service.py` 91%, `user_service.py` 90%, `app.py` 91%, `outbox.py` 64%), Ruff clean, Bandit no medium/high findings, `pip-audit` no known vulnerabilities.
+**Evidence:** Local run on Python 3.14.3 (CI uses 3.11, not yet observed with this change). The gate was shown to fail when coverage is low. This does not make the check required to merge; that is a ruleset setting (see the governance record).
+**Review:** Needs two non-author approvals; `.github/` is owned by Don in CODEOWNERS.
+
 ### 2026-10-17 - GitHub governance verification record
 **Who:** Don, with Claude Code assistance - **Type:** docs, evidence
 **What:** Added `docs/governance/github-governance-verification-2026-10-17.md` recording what the `main` rulesets actually enforce versus section 10 / DEC-001: stale-approval dismissal off, no required status checks, and merged PRs without two approvals (#22, #26, #28, #54-#56, #75).
