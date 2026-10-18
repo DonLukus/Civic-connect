@@ -362,15 +362,14 @@ class RequestService:
                 raise SubmissionValidationError(
                     "category_id", "Select a category from the active controlled list."
                 )
-            placeholders = ", ".join("?" for _ in self.OPEN_STATUSES)
             rows = conn.execute(
-                f"""
+                """
                 SELECT r.id AS reference, c.name AS category, r.location, r.status
                 FROM requests AS r
                 JOIN categories AS c ON c.id = r.category_id
                 WHERE r.category_id = ?
                   AND lower(trim(r.location)) = lower(?)
-                  AND r.status IN ({placeholders})
+                  AND r.status IN (?, ?, ?, ?)
                 ORDER BY r.created_at DESC, r.id DESC
                 """,
                 (category_id, location, *self.OPEN_STATUSES),
