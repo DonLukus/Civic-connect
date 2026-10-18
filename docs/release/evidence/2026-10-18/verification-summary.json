@@ -172,5 +172,31 @@
     "packages_audited": 14,
     "known_findings": 0,
     "boundary": "Public advisory check at run time, not a guarantee of no vulnerabilities."
+  },
+  "ci_verification": {
+    "commit": "52e175ba33d09b742f9bd8a2f445ef86b4a862cb",
+    "run_id": 39091537311,
+    "url": "https://github.com/DonLukus/Civic-connect/actions/runs/39091537311",
+    "tests_job": 117569157881,
+    "status": "success",
+    "python": "3.11",
+    "tests_passed": 62,
+    "duration_seconds": 38.81,
+    "persistence_statements": 293,
+    "persistence_missed": 63,
+    "persistence_percent_displayed": 78.5,
+    "coverage_threshold": 70,
+    "coverage_artifact_id": 12122139293,
+    "coverage_formats": [
+      "xml",
+      "json"
+    ],
+    "bandit_findings": 0,
+    "dependency_findings": 0,
+    "secrets_job": 117569157717,
+    "commits_scanned": 179,
+    "leaks_found": 0,
+    "secret_scan_ignore": "existing exact historical false-positive fingerprint only",
+    "boundary": "Candidate workflow result; not merged main or proof of required-check branch settings. Application unchanged from 98b1c557."
   }
 }

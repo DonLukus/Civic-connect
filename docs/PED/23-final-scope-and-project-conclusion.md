@@ -13,13 +13,14 @@ The two live HTTP journeys and local load/recovery reports are indexed in [docs/
 | Check | Actual observed result | Boundary |
 |---|---|---|
 | Automated suite | 62 passed in 128.48 seconds | Includes 60 prior cases and two risk-driven final regressions; no browser-automation claim |
+| CI suite and retained coverage | 62 passed in 38.81 seconds; 78.50%, 70% threshold passed | [Run 39091537311](https://github.com/DonLukus/Civic-connect/actions/runs/39091537311) on 52e175ba, Python 3.11; XML/JSON artifact 12122139293. Required-check settings remain separate. |
 | Persistence line coverage | 230/293 lines, 78.4983% | Includes lifecycle, outbox, earlier repository and both service modules |
 | Five-minute warm list load | 13,212/13,212 successes; zero failures; p95 0.281 seconds | 10 Staff users, exactly 500 filtered records, 300 seconds, local Waitress; no cold-start/hosted-capacity claim |
 | Two existing live HTTP journeys | Passed; notification observed in 1.125 seconds | Real loopback HTTP and local STARTTLS sink, not an external inbox or human browser session |
 | Local stop/start | Accepted request 501 retained | Same isolated SQLite file; not cloud redeploy |
 | Online backup/separate restore | Integrity OK; 501 requests, 502 audit rows, 1 outbox row preserved | Timed local drill; no daily schedule, retention or schema rollback claim |
 | Static/dependency checks | Ruff clean; Bandit no findings; no known dependency findings | Tool/advisory scope at check time |
-| Explicit history scan | 174 commits scanned, no leaks found | Manual run 39090851534; existing exact false-positive ignore retained; separate from old zero-commit range run |
+| Explicit history scan | Latest run: 179 commits scanned, no leaks found | Manual run 39091537311 on 52e175ba; earlier application run scanned 174. Existing exact false-positive ignore retained; separate from old zero-commit range run. |
 | Accessibility subset | Four submission fields labelled; four declared colour pairs >=4.5:1 | No computed-style browser audit or human keyboard/usability acceptance |
 
 ## 23.2 Original baseline, controlled changes and scope result
@@ -85,11 +86,11 @@ The existing RTM owns the detailed final QA fields; this table is its generated 
 | NFR-002 / AC-N002 | Should | NOT MET / 0 | Weekday 07:00-18:00 SAST, >=95% staging availability over the M3 evaluation period and observed cold-start evidence are not established. State the real boundary; do not fabricate an elapsed-period uptime log. |
 | NFR-003 / AC-N003 | Must | PARTIALLY MET / 0.5 | Fresh bcrypt accounts verified; legacy-hash fixture/login migration exists but dormant historical account storage has no accepted migration/reset disposition. |
 | NFR-004 / AC-N004 | Must | MET / 1 | Existing-operation role matrix and new mid-session deactivation control pass. Missing operations are not counted as tested. |
-| NFR-005 / AC-N005 | Must | MET / 1 | Manual quality run 39090851534 on application commit 98b1c55 ran Gitleaks without the PR/push range: 174 commits scanned, no leaks found with the existing exact false-positive fingerprint ignore. This supplies explicit history evidence; platform push protection/bypass and final review remain separate. |
+| NFR-005 / AC-N005 | Must | MET / 1 | Manual quality run 39091537311 on 52e175ba scanned 179 commits with no leaks found, using the existing exact false-positive fingerprint ignore and no restricted log range. Earlier application-only run 39090851534 scanned 174 commits. Platform push protection/bypass and final review remain separate. |
 | NFR-006 / AC-N006 | Must | PARTIALLY MET / 0.5 | Audit evidence covers the constructed slice. Confirm exact change sequence, actor/UTC/prior/new values and denied modification on final operations; later transitions/reassignments remain unavailable. |
 | NFR-007 / AC-N007 | Should | NOT MET / 0 | No completed moderated 5-participant usability evidence was identified. The original criterion is >=4 unaided valid submissions within 3 minutes; do not substitute AI execution or a single rehearsed demonstration. |
 | NFR-008 / AC-N008 | Should | PARTIALLY MET / 0.5 | Four labelled visible submission controls and four declared CSS contrast pairs pass a bounded automated check. No computed-style browser scan or human keyboard walkthrough; partial only. |
-| NFR-009 / AC-N009 | Should | MET / 1 | All src.persistence modules included: 230/293 executable lines covered, 78.4983%; source Bandit scan has no findings and Ruff is clean. Local result, not a claim of an enforced CI coverage gate. |
+| NFR-009 / AC-N009 | Should | MET / 1 | CI run 39091537311 on 52e175ba reports 62 passing tests and 230/293 persistence lines covered (78.4983%); the 70% threshold passes and XML/JSON coverage artifacts are retained. Source Bandit has no findings and dependency audit passes; local Ruff is clean. This candidate result is not a claim that branch-protection required-check settings are enabled or that it has merged to main. |
 | NFR-010 / AC-N010 | Must | NOT MET / 0 | Conclude R0 recurring-cost evidence, every service/free-tier limit/consumption and projection at 100 active users / 1,000 monthly requests. Resolve any storage/hosting-cost conflict without silently adopting a paid service. |
 | NFR-011 / AC-N011 | Should | PARTIALLY MET / 0.5 | A local backup/separate restore exists. Daily schedule/retention and a timed clean restore against RPO 24h/RTO 4h need final disposition. Hosted durability and reversible migration are not proved by a local drill. |
 | NFR-012 / AC-N012 | Must | MET / 1 | DEF-006 nested email projection removed. Existing cross-requester/role checks plus TST-051 nested privacy and TST-052 inactive-session denial pass for the implemented interfaces. |
