@@ -22,7 +22,7 @@ Individual check runs attached to the commit: ai-register (success), lint (succe
 
 ## Release tag
 
-Tag `v4.0.0` does not exist (GitHub returned 404). No tag has been created; one should be created only after the team decides which exact commit is assessed, and verified to point at that full SHA.
+Tag `v4.0.0` was created on 2026-10-18 as an annotated tag on `73603845b0f48ccc2c65f7d13c594e0ebf1e3462` and pushed. It was verified through the GitHub API: `refs/tags/v4.0.0` is a tag object whose target commit is exactly that full SHA. Before it was created, GitHub returned 404 for the tag.
 
 ## Limits
 
