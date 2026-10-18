@@ -1,0 +1,12 @@
+{
+  "pass": true,
+  "request_id": 501,
+  "journey_1": "Requester real HTTP login -> submit -> receipt -> list -> logout -> login -> own detail; other requester refused",
+  "journey_2": "Staff real HTTP login -> status-filtered queue -> detail -> accept -> requester status + in-app + local SMTP-captured email",
+  "notification_seconds": 1.246846199996071,
+  "audit_rows": 2,
+  "credential_storage": "All 14 staged accounts bcrypt cost >=10, inspected without disclosing hashes/passwords",
+  "limits": "Live HTTP system tests, not browser automation. Email transported to local STARTTLS sink, not an external inbox. Audit inserts checked, not DBA-proof immutability.",
+  "observed_at_utc": "2026-10-18T05:58:14.500527+00:00",
+  "environment": "Windows local simulated staging; Waitress, loopback HTTP, SQLite; local SMTP STARTTLS sink"
+}

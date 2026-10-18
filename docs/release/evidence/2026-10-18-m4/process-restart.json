@@ -1,0 +1,8 @@
+{
+  "pass": true,
+  "request_id": 501,
+  "claim": "Previously accepted request retrievable after local staging process stop/start using same SQLite file",
+  "limits": "Does not verify Render redeploy persistence or code/schema rollback.",
+  "observed_at_utc": "2026-10-18T05:58:47.914855+00:00",
+  "environment": "Windows local simulated staging; Waitress, loopback HTTP, SQLite; local SMTP STARTTLS sink"
+}

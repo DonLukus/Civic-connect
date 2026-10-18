@@ -1,0 +1,32 @@
+{
+  "pass": true,
+  "tables": [
+    "users",
+    "categories",
+    "requests",
+    "request_audit",
+    "outbox_events",
+    "request_notifications",
+    "request_comments",
+    "admin_audit",
+    "password_resets",
+    "schema_migrations"
+  ],
+  "source_and_restored_counts": {
+    "users": 15,
+    "categories": 2,
+    "requests": 502,
+    "request_audit": 507,
+    "outbox_events": 5,
+    "request_notifications": 4,
+    "request_comments": 1,
+    "admin_audit": 3,
+    "password_resets": 2,
+    "schema_migrations": 2
+  },
+  "request_id": 501,
+  "method": "SQLite online Connection.backup to backup file, then separate restored database; integrity_check and counts",
+  "limits": "One local recovery drill. No daily schedule, retention, cloud recovery or schema/code rollback claim.",
+  "observed_at_utc": "2026-10-18T05:59:13.401374+00:00",
+  "environment": "Windows local simulated staging; Waitress, loopback HTTP, SQLite; local SMTP STARTTLS sink"
+}
