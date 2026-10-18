@@ -19,7 +19,6 @@
             {% if loop.index0 == idx %}aria-current="step"{% endif %}>{{ step }}</li>
       {% endfor %}
     </ol>
-    <p class="tracker-note">Only New and Accepted are available in this release. In Progress, Resolved and Closed are not built yet.</p>
   {% endif %}
 
   {# One template serves the owning Requester, Staff, Manager and Administrator. The backend decides what
