@@ -108,11 +108,14 @@ a:hover { color: var(--brand-900); }
   background: var(--danger-bg); color: var(--danger-ink); border-left: 5px solid var(--danger-ink);
   padding: .8rem 1rem; border-radius: 10px; font-weight: 600;
 }
+.field-error { display: block; color: var(--danger-ink); font-weight: 600; margin-top: .3rem; }
+[aria-invalid="true"] { border-color: var(--danger-ink) !important; }
 
 /* ---------- Layout ---------- */
 .site-main {
   flex: 1; width: 100%; max-width: 60rem; margin: 0 auto;
   padding: clamp(1rem, 3vw, 2rem) clamp(1rem, 4vw, 2rem) 3rem;
+  min-width: 0;
 }
 .site-footer {
   text-align: center; color: var(--ink-soft); font-size: .85rem;
@@ -121,11 +124,11 @@ a:hover { color: var(--brand-900); }
 
 h1 { font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.25; color: var(--brand-900); margin: 0 0 .35rem; }
 h2 { font-size: 1.25rem; color: var(--brand-900); margin: 2rem 0 .75rem; }
-.page-intro { color: var(--ink-soft); margin: 0 0 1.5rem; }
+.page-intro { color: var(--ink-soft); margin: 0 0 1.5rem; overflow-wrap: anywhere; }
 
 .card {
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
-  box-shadow: var(--shadow); padding: clamp(1rem, 3vw, 1.75rem);
+  box-shadow: var(--shadow); padding: clamp(1rem, 3vw, 1.75rem); min-width: 0;
 }
 
 /* ---------- Forms ---------- */
@@ -186,7 +189,7 @@ th {
   text-transform: uppercase; letter-spacing: .04em; text-align: left;
   padding: .75rem 1rem; white-space: nowrap;
 }
-td { padding: .8rem 1rem; border-top: 1px solid var(--line); vertical-align: middle; }
+td { padding: .8rem 1rem; border-top: 1px solid var(--line); vertical-align: middle; overflow-wrap: anywhere; }
 tbody tr:hover { background: #f8fbfe; }
 td a { font-weight: 600; white-space: nowrap; }
 
@@ -232,6 +235,7 @@ td a { font-weight: 600; white-space: nowrap; }
 .detail-head {
   display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: .75rem;
 }
+.detail-head > * { min-width: 0; overflow-wrap: anywhere; }
 dl.detail-list {
   display: grid; grid-template-columns: minmax(8rem, 12rem) 1fr; gap: .1rem 1.25rem; margin: 1.25rem 0 0;
 }
@@ -300,8 +304,10 @@ dl.detail-list dt:first-of-type, dl.detail-list dt:first-of-type + dd { border-t
   }
   table.responsive td {
     display: flex; justify-content: space-between; gap: 1rem; text-align: right;
-    border-top: none; padding: .45rem 1rem;
+    border-top: none; padding: .45rem 1rem; min-width: 0;
   }
+  table.responsive td > * { min-width: 0; overflow-wrap: anywhere; }
+  table.responsive td a { white-space: normal; }
   table.responsive td::before {
     content: attr(data-label); font-weight: 600; color: var(--ink-soft); text-align: left; flex: none;
   }

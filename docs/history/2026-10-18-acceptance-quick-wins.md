@@ -1,0 +1,5 @@
+### 2026-10-18 - Add acceptance quick wins and measured mobile correction
+**Who:** Emile, with Codex assistance (AI-059) - **Type:** code | test | documentation
+**What:** Added field-associated request validation, FR-026 duplicate warning/confirm/cancel, FR-022 Manager filtered-list CSV export and the DEF-007 long-title wrapping correction. Updated RTM links, stable test IDs and bounded evidence.
+**Evidence:** New acceptance tests collect as 19 cases; after the confirmation-order refinement the full suite passed 96/96 in 200.76 seconds, persistence coverage was 291/358 lines (81.28%) and Ruff was clean. At a 390x844 browser viewport the long-title list/detail pages measured 375px document widths against 390px inner width. Emile reported a keyboard-only completion with visible focus and receipt #504, but the total exceeded 3 minutes; this is 1/5 participants and 0/1 within the NFR-007 threshold.
+**Review:** Don and Masego must review the exact PR revision. No team approval, release acceptance or human result is claimed by this entry.

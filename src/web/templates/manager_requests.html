@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Manager request export — CivicConnect{% endblock %}
+{% block content %}
+  <h1>Manager request list</h1>
+  <p class="page-intro">Filter the list, then export exactly the displayed rows and fields.</p>
+
+  <form method="get" action="{{ url_for('manager_requests') }}" class="filter-bar">
+    <div>
+      <label for="status">Status</label>
+      <select id="status" name="status">
+        <option value="">All statuses</option>
+        {% for item in statuses %}
+          <option value="{{ item }}"{% if selected_status == item %} selected{% endif %}>{{ item }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="category_id">Category</label>
+      <select id="category_id" name="category_id">
+        <option value="">All categories</option>
+        {% for category_id, category_name in categories %}
+          <option value="{{ category_id }}"{% if selected_category_id|string == category_id|string %} selected{% endif %}>{{ category_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit">Apply filters</button>
+    <button type="submit" name="format" value="csv" class="button--success">Export displayed rows to CSV</button>
+  </form>
+
+  <p><strong>{{ requests|length }}</strong> matching request{{ '' if requests|length == 1 else 's' }}.</p>
+  {% if requests %}
+    <div class="table-wrap">
+      <table class="responsive">
+        <caption class="visually-hidden">Filtered request list for Manager export</caption>
+        <thead><tr><th>Reference</th><th>Title</th><th>Category</th><th>Submitted</th><th>Status</th><th>Assignee</th></tr></thead>
+        <tbody>
+          {% for row in requests %}
+            <tr>
+              <td data-label="Reference">{{ row.reference }}</td>
+              <td data-label="Title">{{ row.title }}</td>
+              <td data-label="Category">{{ row.category }}</td>
+              <td data-label="Submitted">{{ row.submitted_at }}</td>
+              <td data-label="Status">{{ row.status }}</td>
+              <td data-label="Assignee">{{ row.assignee }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state"><p><strong>No requests match these filters.</strong></p></div>
+  {% endif %}
+{% endblock %}

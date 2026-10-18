@@ -29,7 +29,7 @@ The approved M1 record contains 26 FR, 14 NFR and 40 unique AC references. M1 is
 
 CHG-002 approves a narrower supervised evaluation slice; it explicitly retains unfulfilled baseline obligations. No acceptance criterion is removed from this denominator. Original out-of-scope and deferred items are not added as failures. M2 remains Proposed where the baseline file says so; ADR-001/007 and DEC-008/013/018 do not become Accepted/Decided merely by merging code or this closure.
 
-**Proposed QA scope completion: 40.00% = 16/40 points.** 9 criteria are assessed Met, 14 Partially Met and 17 Not Met. Met=1, Partially Met=0.5, Not Met=0. Scores are unweighted AC judgments, not test counts, and remain subject to independent review. **The 80% target is not demonstrated.** The large original-scope variance is a material final outcome, not corrected by renaming partial delivery as complete. Every unmet Must criterion stays visible in the RTM.
+**Proposed QA scope completion for the acceptance-quick-wins review candidate: 45.00% = 18/40 points.** 11 criteria are assessed Met, 14 Partially Met and 15 Not Met. Met=1, Partially Met=0.5, Not Met=0. Scores are unweighted AC judgments, not test counts, and remain subject to independent review and merge. **The 80% target is not demonstrated.** The previous reviewed candidate was 40.00%; FR-022 and FR-026 account for the two additional points. The large original-scope variance is a material final outcome, not corrected by renaming partial delivery as complete. Every unmet Must criterion stays visible in the RTM.
 
 ## 23.3 M1 scope to final delivery
 
@@ -44,7 +44,7 @@ CHG-002 approves a narrower supervised evaluation slice; it explicitly retains u
 | SCOPE-I-07 - Controlled status lifecycle enforced as a state machine | PARTIALLY IMPLEMENTED | Only New-to-Accepted is built. The complete seven-state permitted/forbidden matrix is not delivered. |
 | SCOPE-I-08 - Action, comment and resolution recording on a request | NOT IMPLEMENTED | Actions, comments and resolution recording are unavailable; no full completion workflow. |
 | SCOPE-I-09 - Management dashboard covering open, in progress, overdue, resolved and closed work | NOT IMPLEMENTED | Management open/overdue/resolved/closed counts and overdue identification are unavailable. |
-| SCOPE-I-10 - Breakdown of activity by category, status, assignee and period, with CSV export | NOT IMPLEMENTED | Activity breakdown and filtered CSV export are unavailable. |
+| SCOPE-I-10 - Breakdown of activity by category, status, assignee and period, with CSV export | PARTIALLY IMPLEMENTED | A Manager can filter by status/category and export the exact displayed rows. Activity breakdown, period/assignee/priority filtering and broader reporting remain unavailable. |
 | SCOPE-I-11 - Administration of the controlled category list and of users and roles | NOT IMPLEMENTED operational administration | Bootstrap seeds categories/users; it is not create/rename/deactivate/category-target or role/deactivation administration. |
 | SCOPE-I-12 - Immutable audit trail of status and assignment changes | PARTIALLY IMPLEMENTED | Submission/acceptance audit exists with actor IDs; later transition/reassignment obligations remain incomplete. |
 
@@ -61,7 +61,7 @@ The existing RTM owns the detailed final QA fields; this table is its generated 
 | FR-003 / AC-003 | Must | MET / 1 | Four roles and existing-operation matrix verified; TST-052 also confirms deactivation revokes access. This does not supply missing operational features. |
 | FR-004 / AC-004 | Should | NOT MET / 0 | Single-use, expiring emailed password reset is not implemented. Implement only if prioritised within remaining approved work; otherwise record unmet status and user consequence. |
 | FR-005 / AC-005 | Must | MET / 1 | Required fields, controlled category, New state, submitter/reference/time and receipt have existing tests and live HTTP evidence. |
-| FR-006 / AC-006 | Must | MET / 1 | Active-list selection and invalid/missing-category rejection verified. Administrator maintenance remains a separate unmet FR-023 obligation. |
+| FR-006 / AC-006 | Must | MET / 1 | Active-list selection and invalid/missing-category rejection verified; the field-level error is programmatically associated with the selector and other values are retained. Administrator maintenance remains a separate unmet FR-023 obligation. |
 | FR-007 / AC-007 | Must | PARTIALLY MET / 0.5 | Own list/detail/status exists. Confirm status-change date and the original resolution-note clause; later resolution functionality remains outside the current slice. |
 | FR-008 / AC-008 | Must | MET / 1 | Own recent-first list, fields and isolation are implemented and covered; stale TR-003 missing-list claim superseded. |
 | FR-009 / AC-009 | Must | PARTIALLY MET / 0.5 | Acceptance in-app/local-SMTP evidence exists. Rejected, resolved and comment triggers plus intended external delivery remain incomplete/unverified; use CHG-001 AC wording. |
@@ -77,25 +77,25 @@ The existing RTM owns the detailed final QA fields; this table is its generated 
 | FR-019 / AC-019 | Must | NOT MET / 0 | Period-based management dashboard counts are not implemented. |
 | FR-020 / AC-020 | Must | NOT MET / 0 | Category/status/assignee/time-period activity breakdown and reconciliation are not implemented. |
 | FR-021 / AC-021 | Must | NOT MET / 0 | Overdue identification against category targets is not implemented; target authority remains RSK-05. Do not invent authorised values. |
-| FR-022 / AC-022 | Should | NOT MET / 0 | Filtered-list CSV export and exact row/field reconciliation are not implemented. |
+| FR-022 / AC-022 | Should | MET / 1 | Manager-only status/category filtered list and CSV export reuse the same six-field display mapping; TST-063 reconciles exactly n displayed rows to n CSV data rows plus one header. TST-064/065 cover role and invalid-input negatives. Broader FR-012 reporting/search remains partial. |
 | FR-023 / AC-023 | Must | NOT MET / 0 | Operational category create/rename/deactivate/target management and referential-integrity behaviour are not implemented. |
 | FR-024 / AC-024 | Must | NOT MET / 0 | Operational role change/deactivation, loss of sign-in, Manager reassignment visibility and change audit are not implemented. |
 | FR-025 / AC-025 | Must | PARTIALLY MET / 0.5 | Creation/acceptance audit exists. Complete lifecycle/reassignment coverage remains partial; finalise k-change counting, actor/UTC/prior/new values and edit/delete negative evidence. |
-| FR-026 / AC-026 | Could | NOT MET / 0 | Same-category/location duplicate warning and confirm/cancel flow are not implemented. Preserve Could priority and any actual approved disposition. |
+| FR-026 / AC-026 | Could | MET / 1 | Same active category plus case-insensitive trimmed location against open statuses produces a warning listing safe request references, writes nothing before a choice, and permits confirm or cancel. TST-061/062 pass; review/merge remain pending. |
 | NFR-001 / AC-N001 | Must | PARTIALLY MET / 0.5 | Five-minute 500-record/10-user warm local scenario is rerun/confirmed separately in the evidence summary. Cold-start measurement is still absent; full compound AC therefore partial. |
 | NFR-002 / AC-N002 | Should | NOT MET / 0 | Weekday 07:00-18:00 SAST, >=95% staging availability over the M3 evaluation period and observed cold-start evidence are not established. State the real boundary; do not fabricate an elapsed-period uptime log. |
 | NFR-003 / AC-N003 | Must | PARTIALLY MET / 0.5 | Fresh bcrypt accounts verified; legacy-hash fixture/login migration exists but dormant historical account storage has no accepted migration/reset disposition. |
 | NFR-004 / AC-N004 | Must | MET / 1 | Existing-operation role matrix and new mid-session deactivation control pass. Missing operations are not counted as tested. |
 | NFR-005 / AC-N005 | Must | MET / 1 | Manual quality run 39091537311 on 52e175ba scanned 179 commits with no leaks found, using the existing exact false-positive fingerprint ignore and no restricted log range. Earlier application-only run 39090851534 scanned 174 commits. Platform push protection/bypass and final review remain separate. |
 | NFR-006 / AC-N006 | Must | PARTIALLY MET / 0.5 | Audit evidence covers the constructed slice. Confirm exact change sequence, actor/UTC/prior/new values and denied modification on final operations; later transitions/reassignments remain unavailable. |
-| NFR-007 / AC-N007 | Should | NOT MET / 0 | No completed moderated 5-participant usability evidence was identified. The original criterion is >=4 unaided valid submissions within 3 minutes; do not substitute AI execution or a single rehearsed demonstration. |
-| NFR-008 / AC-N008 | Should | PARTIALLY MET / 0.5 | Four labelled visible submission controls and four declared CSS contrast pairs pass a bounded automated check. No computed-style browser scan or human keyboard walkthrough; partial only. |
-| NFR-009 / AC-N009 | Should | MET / 1 | CI run 39091537311 on 52e175ba reports 62 passing tests and 230/293 persistence lines covered (78.4983%); the 70% threshold passes and XML/JSON coverage artifacts are retained. Source Bandit has no findings and dependency audit passes; local Ruff is clean. This candidate result is not a claim that branch-protection required-check settings are enabled or that it has merged to main. |
+| NFR-007 / AC-N007 | Should | NOT MET / 0 | Emile completed the first moderated local submission but reported a total over 3 minutes: 1/5 participants run and 0/1 within threshold. Four different remaining participants must all pass unaided within 3 minutes to reach the required 4/5; Emile repeats do not count as new participants. |
+| NFR-008 / AC-N008 | Should | PARTIALLY MET / 0.5 | Four labelled visible submission controls and four declared CSS contrast pairs pass a bounded automated check. Emile reported completing submission, duplicate confirmation and receipt by keyboard only with visible focus. A computed-style browser accessibility scan covering submission and detail still has not been run; partial only. |
+| NFR-009 / AC-N009 | Should | MET / 1 | The current local candidate passes 96/96 tests and 291/358 persistence lines (81.28%) against the 70% gate; Ruff is clean. Prior CI run 39091537311 passed the gate, Bandit and dependency audit on the earlier 62-case candidate. New CI and artifacts for this branch, required-check settings and merge remain pending. |
 | NFR-010 / AC-N010 | Must | NOT MET / 0 | Conclude R0 recurring-cost evidence, every service/free-tier limit/consumption and projection at 100 active users / 1,000 monthly requests. Resolve any storage/hosting-cost conflict without silently adopting a paid service. |
 | NFR-011 / AC-N011 | Should | PARTIALLY MET / 0.5 | Fresh local online backup/separate restore passed in 0.031 seconds with integrity OK and matching 501 request, 502 audit and one outbox row counts. Daily scheduling/retention, hosted durability and recovery from an earlier point are not evidenced; the complete original AC remains partial. |
 | NFR-012 / AC-N012 | Must | MET / 1 | DEF-006 nested email projection removed. Existing cross-requester/role checks plus TST-051 nested privacy and TST-052 inactive-session denial pass for the implemented interfaces. |
 | NFR-013 / AC-N013 | Should | NOT MET / 0 | 500 users plus 5,000 requests within documented storage limits while the NFR-001 test passes has not been demonstrated. Retain this distinction from the existing 500-request load result. |
-| NFR-014 / AC-N014 | Must | PARTIALLY MET / 0.5 | Server validation/CSRF and registration boundaries have tests. Confirm every implemented input has boundary/invalid-type coverage, field-level messages and retained non-secret form values; do not infer full acceptance from selected cases. |
+| NFR-014 / AC-N014 | Must | PARTIALLY MET / 0.5 | Submission fields now have direct blank/tampered, non-text and over-limit server tests, field-associated messages and retained non-secret values (TST-058-060). Registration, CSRF and Manager filter negatives add evidence, but every implemented input still lacks both required boundary and invalid-type coverage. |
 
 ## 23.5 M3 issue and register conclusion
 
@@ -143,7 +143,7 @@ Each student should show their actual contribution, one requirement-to-final-evi
 | Team name / number | Group U (provided by Emile) |
 | Members | Emile, Don, Masego; confirm institutional identifiers if Moodle requires them |
 | Repository | https://github.com/DonLukus/Civic-connect |
-| Assessed application candidate | 98b1c55700d940f915d856119f581adee8044986 |
+| Assessed application candidate | Review branch `m4/acceptance-quick-wins`, based on merged main `2524a66`; exact final commit remains pending review/merge |
 | Final commit / tag / release | PENDING final review and team freeze; do not submit the candidate label as an approved release |
 | PED | v4.0 review candidate, continuing the existing PED; promote to Final only after actual review |
 | Final RTM | docs/requirements/RTM.csv - 40 original records with proposed final QA fields |
