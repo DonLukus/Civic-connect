@@ -102,9 +102,9 @@ python -m flask --app wsgi:app run --host 127.0.0.1 --port 5000
 
 These Bash instructions express the same environment and application startup as the Windows path. They are not evidence of a fresh Linux/macOS walkthrough; use the project's recorded platform checks and verify your actual environment.
 
-Open `http://127.0.0.1:5000/register` to create a synthetic Requester, then sign in at `/login`. `wsgi.py` initialises the schema and default Utilities category. These commands set the environment directly: copying [.env.example](.env.example) alone does not populate the required values or guarantee a dotenv loader is installed. Keep the generated signing key stable for the local session; a new key invalidates old sessions.
+Open `http://127.0.0.1:5000/register` to create a synthetic Requester, then sign in at `/login`. `wsgi.py` initialises the schema and the default Utilities category, which is the only seeded category (category administration, FR-023, is not built). The application does not read a `.env` file because no dotenv package is installed, so these commands set the environment directly; [.env.example](.env.example) only lists the variable names. Keep the generated signing key stable for the local session; a new key invalidates old sessions.
 
-Privileged demo users can be provisioned through the optional bootstrap environment variables named in `.env.example`. For the complete Staff/notification demonstration, follow the isolated [M3 staging runbook](docs/deployment/m3-staging.md), which generates synthetic fixtures and a local STARTTLS mail sink. Do not run its fixture generator against an existing database. Public HTTPS and external mail delivery require separate verification.
+Privileged demo users can be provisioned through the optional bootstrap environment variables named in `.env.example`. For the complete Staff/notification demonstration with 14 synthetic accounts and 500 sample requests, install `requirements-staging.txt` (OpenSSL is needed; Git for Windows includes it), run `python -m scripts.m3_staging prepare` once and then `python -m scripts.m3_staging serve`; generated logins are in the git-ignored `.m3-local/config.json`. Follow the isolated [M3 staging runbook](docs/deployment/m3-staging.md), which generates synthetic fixtures and a local STARTTLS mail sink. Do not run its fixture generator against an existing database. Public HTTPS and external mail delivery require separate verification.
 
 ## Environment configuration
 
@@ -120,6 +120,7 @@ Privileged demo users can be provisioned through the optional bootstrap environm
 | `BOOTSTRAP_STAFF_EMAIL`, `BOOTSTRAP_STAFF_PASSWORD` | Optional pair to provision a Staff demo account. |
 | `BOOTSTRAP_MANAGER_EMAIL`, `BOOTSTRAP_MANAGER_PASSWORD` | Optional pair to provision a Manager demo account. |
 | `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD` | Optional pair to provision an Administrator demo account. |
+| Bootstrap password length | Any bootstrap password longer than 72 UTF-8 bytes (bcrypt's limit) makes startup refuse to run. |
 | `OUTBOX_WORKER_ENABLED` | Default `false`; `true` starts the in-process notification loop and requires SMTP host/sender settings. |
 | `OUTBOX_WORKER_POLL_SECONDS` | Default 60; positive integer interval between processing passes. |
 | `EMAIL_SMTP_HOST`, `EMAIL_SMTP_PORT` | SMTP host and port; port defaults to 587. The implementation calls STARTTLS. |
@@ -256,6 +257,10 @@ For help, start with the [interface contract](docs/deployment/m3-interface-agree
 | Original scope and requirements | [Controlled requirements](docs/requirements/), [RTM](docs/requirements/RTM.csv) |
 | Architecture and decisions | [ADRs](docs/decisions/adr/), [decision log](docs/decisions/decision-log.csv) |
 | Risk and AI accountability | [Risk register](docs/risk/risk-register.csv), [AI register](docs/governance/ai-usage-register.csv) |
+
+## Licence
+
+No licence has been chosen and no `LICENSE` file is committed, so all rights are reserved by default. The team, and the university if it has a claim on coursework, must decide before anyone reuses the code.
 
 ## Team responsibilities
 
