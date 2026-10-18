@@ -14,11 +14,6 @@ AI assistant reads to get up to speed without asking anyone.
 **Affects:** README; AI-048. No requirement/AC wording, RTM acceptance status, scope, source, tests, historical signature or branch setting changed. RTM changes are not needed for this documentation correction.
 **Evidence:** PED section 22; release-summary 17 October update; PRs #85/#86/#88-#91; GitHub main/ruleset/CI reads; README reference checks; Flask CLI startup/schema check against a fresh synthetic database; automated suite 60 passed in 178.13s on Python 3.12.14. The 60-pass result belongs to the earlier documentation revision on unchanged application code. For the expansion, local links/anchors, tree paths, dependency pins and target test name were checked; Bash and PowerShell snippets passed syntax parsing. No new Linux/macOS walkthrough or coverage measurement is claimed. These are automated checks, not a claim of personal student execution.
 **Review:** Two non-author reviews required. Public production remains NOT READY; this correction does not reopen completed M3 reviews or infer new acceptance.
-### 2026-10-18 - Independent full-history secret scan recorded (NFR-005)
-**Who:** Don, with Claude Code assistance (AI-052) - **Type:** security evidence
-**What:** Ran gitleaks 8.30.1 (checksum-verified) over all refs of a clone at `origin/main` af2f545: 176 commits with diffs scanned, 0 findings. Added `docs/security/secret-scan-full-history-2026-10-18.md` with the exact command, scope and limits, and linked it from RTM row TR-018.
-**Evidence:** Report file empty; limits stated (default rules only, local clone, no PR refs, forks or logs).
-**Review:** Needs two non-author approvals. This does not replace the per-PR CI scans.
 
 ### 2026-10-17 - GitHub governance verification record
 **Who:** Don, with Claude Code assistance - **Type:** docs, evidence
