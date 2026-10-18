@@ -21,7 +21,7 @@ def text(path):
     return path.read_text(encoding="utf-8")
 
 
-@pytest.mark.parametrize("guide", GUIDES, ids=lambda p: p.name)
+@pytest.mark.parametrize("guide", [*GUIDES, ROOT / "README.md"], ids=lambda p: p.name)
 def test_every_relative_link_resolves(guide):
     broken = []
     for target in re.findall(r"\]\(([^)]+)\)", text(guide)):
