@@ -14,11 +14,6 @@ AI assistant reads to get up to speed without asking anyone.
 **Affects:** README; AI-048. No requirement/AC wording, RTM acceptance status, scope, source, tests, historical signature or branch setting changed. RTM changes are not needed for this documentation correction.
 **Evidence:** PED section 22; release-summary 17 October update; PRs #85/#86/#88-#91; GitHub main/ruleset/CI reads; README reference checks; Flask CLI startup/schema check against a fresh synthetic database; automated suite 60 passed in 178.13s on Python 3.12.14. The 60-pass result belongs to the earlier documentation revision on unchanged application code. For the expansion, local links/anchors, tree paths, dependency pins and target test name were checked; Bash and PowerShell snippets passed syntax parsing. No new Linux/macOS walkthrough or coverage measurement is claimed. These are automated checks, not a claim of personal student execution.
 **Review:** Two non-author reviews required. Public production remains NOT READY; this correction does not reopen completed M3 reviews or infer new acceptance.
-### 2026-10-17 - UI polish: calmer civic look, status badges, progress tracker
-**Who:** Don, with Claude Code assistance (AI-053) - **Type:** UI, presentation only
-**What:** Rewrote `src/web/static/style.css` and restyled the 10 templates: branded header, card layouts, centred auth forms, status badges, a New-to-Closed progress tracker on request detail, a receipt-style confirmation page, friendlier empty states and landing text. Tables become stacked cards on phone widths (checked in a 390px layout), so nothing scrolls sideways. No routes, form fields, validation or backend code changed; no external fonts, scripts or CDN assets (NFR-005, NFR-010).
-**Evidence:** All 60 tests pass; pages screenshotted in headless Chrome against a local staging instance. Contrast was chosen for the NFR-008 4.5:1 target but no automated accessibility scan was run, so NFR-008 is not claimed as met.
-**Review:** Needs two non-author approvals. Masego should check the templates against the interface agreement and NFR-008. **ID note:** drafted as AI-048, which collided with Emile's AI-048 (PRs #92/#96); renumbered AI-053 before merge. No other record was changed.
 
 ### 2026-10-17 - GitHub governance verification record
 **Who:** Don, with Claude Code assistance - **Type:** docs, evidence
