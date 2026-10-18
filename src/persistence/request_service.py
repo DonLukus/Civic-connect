@@ -3,13 +3,18 @@ import sqlite3
 import uuid
 
 from src.persistence.lifecycle import LifecycleValidator
+from src.persistence.migrations import ensure_schema
 from src.persistence.request_repository import RequestRepository
+from src.persistence.workflow import VersionConflict, WorkflowMixin
+
+__all__ = ["RequestService", "VersionConflict"]
 
 
-class RequestService:
+class RequestService(WorkflowMixin):
     STATUSES = ("New", "Accepted", "In Progress", "On Hold", "Resolved", "Closed", "Rejected")
 
     def __init__(self, db_path: str):
+        ensure_schema(db_path)
         self.repo = RequestRepository(db_path)
         self.db_path = db_path
 
@@ -96,6 +101,7 @@ class RequestService:
                 SELECT r.id AS reference, r.requester_id, r.assignee_id, r.category_id,
                        r.title, r.description, r.location, r.status, r.version,
                        r.created_at AS submitted_at, r.updated_at, r.accepted_at,
+                       r.resolution_note, r.resolution_at, r.rejection_reason,
                        COALESCE((
                            SELECT MAX(a.changed_at) FROM request_audit AS a
                            WHERE a.request_id = r.id AND a.new_status = r.status
@@ -126,6 +132,9 @@ class RequestService:
             if not (role in ("Manager", "Administrator") or
                     (role == "Staff" and row["assignee_id"] == actor_id)):
                 detail.pop("requester_email")
+            if role == "Requester":
+                # FR-010: the other party's contact details are not shown to the Requester.
+                detail.pop("assignee_email", None)
 
             detail["history"] = [
                 dict(item) for item in conn.execute(
@@ -140,7 +149,30 @@ class RequestService:
                     (request_id,),
                 ).fetchall()
             ]
+            # FR-010 / FR-013: the comment thread shows author role and time, never contact details.
+            detail["comments"] = [
+                dict(item) for item in conn.execute(
+                    """
+                    SELECT c.id, c.author_id, u.role AS author_role, c.body, c.created_at
+                    FROM request_comments AS c
+                    JOIN users AS u ON u.id = c.author_id
+                    WHERE c.request_id = ?
+                    ORDER BY c.id ASC
+                    """,
+                    (request_id,),
+                ).fetchall()
+            ]
             return detail
+        finally:
+            conn.close()
+
+    def list_active_staff(self):
+        """Active Staff users, for a Manager choosing an assignee (FR-014)."""
+        conn = sqlite3.connect(self.db_path)
+        try:
+            return conn.execute(
+                "SELECT id, email FROM users WHERE role = 'Staff' AND is_active = 1 ORDER BY email"
+            ).fetchall()
         finally:
             conn.close()
 

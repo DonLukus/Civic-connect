@@ -19,8 +19,12 @@ from flask import (
 )
 from werkzeug.security import check_password_hash
 
-from src.persistence.request_service import RequestService
+from src.persistence import lifecycle
+from src.persistence.request_service import RequestService, VersionConflict
 from src.persistence.user_service import DuplicateEmailError, UserService
+
+# Which transitions need a written explanation (FR-016, FR-018, FR-015 reopen), for the action form.
+NOTE_LABELS = {"Resolved": "resolution note", "Rejected": "reason", "reopen": "reason"}
 
 
 def create_app(db_path: str, secret_key: str | None = None) -> Flask:
@@ -261,19 +265,106 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
             selected_status=status,
         )
 
-    @app.route("/requests/<int:request_id>", methods=["GET"])
-    def request_detail(request_id: int):
+    def available_transitions(detail):
+        """Statuses the signed-in user may move this request to (drives the action form)."""
+        role = g.current_user[1]
+        found = []
+        for target in lifecycle.STATUSES:
+            try:
+                lifecycle.check_transition(
+                    role, detail["assignee_id"] == g.current_user[0], detail["status"], target)
+            except (PermissionError, ValueError):
+                continue
+            found.append(target)
+        return found
+
+    def detail_page(request_id: int, error=None, status_code=200, form=None):
         try:
             detail = service.get_request_detail(g.current_user[0], request_id)
         except LookupError:
             abort(404)
         except PermissionError:
             abort(403)
+        role = g.current_user[1]
+        staff = service.list_active_staff() if role == "Manager" else []
+        can_comment = detail["assignee_id"] is not None and (
+            role == "Manager"
+            or (role == "Requester")
+            or (role == "Staff" and detail["assignee_id"] == g.current_user[0]))
         return render_template(
             "request_detail.html", request=detail, csrf_token=csrf_token(),
-            can_accept=(g.current_user[1] == "Staff" and detail["status"] == "New"
+            can_accept=(role == "Staff" and detail["status"] == "New"
                         and detail["assignee_id"] is None),
-        )
+            transitions=available_transitions(detail), staff_options=staff,
+            can_comment=can_comment, notes_required=NOTE_LABELS, error=error,
+            form=form or {},
+        ), status_code
+
+    def workflow_error(request_id: int, exc: Exception, form):
+        """Map a workflow failure to an HTTP status and re-show the request with the reason."""
+        if isinstance(exc, LookupError):
+            abort(404)
+        if isinstance(exc, PermissionError):
+            abort(403)
+        if isinstance(exc, VersionConflict):
+            return detail_page(request_id, error=str(exc), status_code=409, form=form)
+        return detail_page(request_id, error=str(exc), status_code=400, form=form)
+
+    def expected_version_or_400():
+        try:
+            value = int(request.form.get("expected_version", ""))
+        except ValueError:
+            abort(400)
+        if value < 0:
+            abort(400)
+        return value
+
+    @app.route("/requests/<int:request_id>", methods=["GET"])
+    def request_detail(request_id: int):
+        return detail_page(request_id)
+
+    @app.route("/requests/<int:request_id>/status", methods=["POST"])
+    def change_request_status(request_id: int):
+        if not valid_csrf():
+            abort(400)
+        if g.current_user[1] not in ("Staff", "Manager"):
+            abort(403)
+        version = expected_version_or_400()
+        try:
+            service.change_status(
+                request_id, g.current_user[0], request.form.get("target_status", ""),
+                version, request.form.get("note", ""))
+        except (LookupError, PermissionError, ValueError, VersionConflict) as exc:
+            return workflow_error(request_id, exc, request.form)
+        flash("Status updated.", "success")
+        return redirect(url_for("request_detail", request_id=request_id))
+
+    @app.route("/requests/<int:request_id>/assign", methods=["POST"])
+    def assign_request(request_id: int):
+        if not valid_csrf():
+            abort(400)
+        if g.current_user[1] != "Manager":
+            abort(403)
+        version = expected_version_or_400()
+        try:
+            service.assign_request(
+                request_id, g.current_user[0], int(request.form.get("assignee_id", "0") or 0),
+                version)
+        except (LookupError, PermissionError, ValueError, VersionConflict) as exc:
+            return workflow_error(request_id, exc, request.form)
+        flash("Assignment saved.", "success")
+        return redirect(url_for("request_detail", request_id=request_id))
+
+    @app.route("/requests/<int:request_id>/comments", methods=["POST"])
+    def add_request_comment(request_id: int):
+        if not valid_csrf():
+            abort(400)
+        try:
+            service.add_comment(request_id, g.current_user[0], request.form.get("body", ""))
+        except (LookupError, PermissionError, ValueError) as exc:
+            return workflow_error(request_id, exc, request.form)
+        flash("Comment added.", "success")
+        return redirect(url_for("request_detail", request_id=request_id))
 
     @app.route("/staff/requests/<int:request_id>/accept", methods=["POST"])
     def accept_request(request_id: int):

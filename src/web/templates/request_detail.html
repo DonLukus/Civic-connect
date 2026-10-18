@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Request #{{ request.reference }} — CivicConnect{% endblock %}
 {% block content %}
+  {% if error %}<p class="error-text" role="alert">{{ error }}</p>{% endif %}
   <div class="card">
   <div class="detail-head">
     <div>
@@ -20,15 +21,9 @@
     </ol>
   {% endif %}
 
-  {# Per docs/deployment/m3-interface-agreement.md's Route Contract
-     (GET /requests/<request_id>): one template serves the owning Requester,
-     Staff (unassigned or assigned to them), Manager and Administrator.
-     `requester_email` is only ever supplied to the roles allowed to see it
-     (Manager/Administrator/assigned Staff) - the backend withholds it
-     otherwise, so this template never decides that itself. `can_accept`
-     is backend-decided; this template only reflects it. `history` is the
-     audit log - comments/resolution notes don't exist in the schema yet,
-     so this view does not show or imply either. #}
+  {# One template serves the owning Requester, Staff, Manager and Administrator. The backend decides what
+     each may see (requester_email, assignee_email, comments) and what actions exist (can_accept,
+     transitions, staff_options, can_comment); this template only reflects those decisions. #}
 
   <dl class="detail-list">
     <dt>Title</dt><dd>{{ request.title }}</dd>
@@ -43,6 +38,12 @@
     {% if request.assignee_email %}
       <dt>Assignee contact</dt><dd>{{ request.assignee_email }}</dd>
     {% endif %}
+    {% if request.resolution_note %}
+      <dt>Resolution note</dt><dd>{{ request.resolution_note }}</dd>
+    {% endif %}
+    {% if request.rejection_reason %}
+      <dt>Reason for rejection</dt><dd>{{ request.rejection_reason }}</dd>
+    {% endif %}
     <dt>Submitted</dt><dd>{{ request.submitted_at }}</dd>
     <dt>Last updated</dt><dd>{{ request.last_status_changed_at }}</dd>
   </dl>
@@ -55,7 +56,67 @@
     </form>
   {% endif %}
 
+  {% if staff_options %}
+    <form class="action-bar" method="post" action="/requests/{{ request.reference }}/assign">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="expected_version" value="{{ request.version }}">
+      <label for="assignee_id">{{ 'Reassign to' if request.assignee_id else 'Assign to' }}</label>
+      <select id="assignee_id" name="assignee_id" required>
+        {% for staff_id, staff_email in staff_options %}
+          <option value="{{ staff_id }}" {% if staff_id == request.assignee_id %}selected{% endif %}>{{ staff_email }}</option>
+        {% endfor %}
+      </select>
+      <p><button type="submit">{{ 'Reassign' if request.assignee_id else 'Assign' }}</button></p>
+    </form>
+  {% endif %}
+
+  {% if transitions %}
+    <form class="action-bar" method="post" action="/requests/{{ request.reference }}/status">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="expected_version" value="{{ request.version }}">
+      <label for="target_status">Change status to</label>
+      <select id="target_status" name="target_status" required>
+        {% for target in transitions %}
+          <option value="{{ target }}" {% if form.get('target_status') == target %}selected{% endif %}>{{ target }}{% if request.status == 'Closed' %} (reopen){% endif %}</option>
+        {% endfor %}
+      </select>
+      <p>
+        <label for="note">Resolution note or reason</label>
+        <textarea id="note" name="note" maxlength="2000">{{ form.get('note', '') }}</textarea>
+        <span class="hint">Required to resolve (a resolution note), to reject, and to reopen a closed request (a reason).</span>
+      </p>
+      <p><button type="submit">Update status</button></p>
+    </form>
+  {% endif %}
+
   </div>
+
+  <h2>Comments</h2>
+  {% if request.comments %}
+    <ul class="notice-list">
+      {% for c in request.comments %}
+        <li>
+          <strong>{{ c.author_role }}</strong>
+          <span class="meta">{{ c.created_at }}</span>
+          {{ c.body }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="empty-state"><p>No comments yet.</p></div>
+  {% endif %}
+  {% if can_comment %}
+    <form class="card" method="post" action="/requests/{{ request.reference }}/comments">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <p>
+        <label for="body">Add a comment</label>
+        <textarea id="body" name="body" maxlength="2000" required>{{ form.get('body', '') }}</textarea>
+      </p>
+      <p><button type="submit">Post comment</button></p>
+    </form>
+  {% elif request.assignee_id is none %}
+    <p class="hint">Comments open once a staff member is assigned.</p>
+  {% endif %}
 
   <h2>History</h2>
   {% if request.history %}
