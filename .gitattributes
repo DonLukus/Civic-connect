@@ -16,3 +16,12 @@
 *.sqlite binary
 *.sqlite3 binary
 *.db binary
+
+# Append-only logs: every PR adds an entry to these two files at the same spot, so git reports a
+# conflict even though both sides are wanted. `merge=union` keeps the lines from both sides and
+# never writes conflict markers. It applies to local `git merge` / `git rebase`. Only use it for
+# files where concurrent edits are always additions; if two people edit the SAME existing line,
+# union keeps both versions, so review the result. A blank line between two entries may be lost
+# (harmless in Markdown); register rows must stay one per line.
+PROJECT_HISTORY.md merge=union
+docs/governance/ai-usage-register.csv merge=union
