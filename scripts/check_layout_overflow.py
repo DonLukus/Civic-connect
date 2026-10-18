@@ -1,7 +1,7 @@
 """Check that user-entered long text never makes a page scroll sideways (phone and desktop).
 
-Renders the real templates and stylesheet with a 240-character unbroken title/description and a
-normal title, then measures the document's scrollWidth against its clientWidth in headless
+Renders the real templates and stylesheet (requester, staff, manager and administrator pages) with a
+240-character unbroken title/description, an 80-character category name and a long email, plus a normal title, then measures the document's scrollWidth against its clientWidth in headless
 Chrome or Edge at 390 px (phone) and 1100 px (desktop). Exit code 1 on any overflow.
 
     CHROME=/path/to/chromium-browser   (optional; common install paths are tried)
@@ -45,9 +45,11 @@ def build_pages(work: Path) -> dict:
     conn = sqlite3.connect(db)
     conn.executescript((ROOT / "src/persistence/schema.sql").read_text(encoding="utf-8"))
     digest = generate_password_hash("pw")
-    for email, role in (("requester@example.test", "Requester"), ("staff@example.test", "Staff")):
+    for email, role in (("requester@example.test", "Requester"), ("staff@example.test", "Staff"),
+                        ("manager@example.test", "Manager"), ("a" * 70 + "@example.test", "Administrator")):
         conn.execute("INSERT INTO users(email,password_hash,role,is_active) VALUES(?,?,?,1)", (email, digest, role))
     conn.execute("INSERT INTO categories(name,target_resolution_hours,is_active) VALUES('Utilities',48,1)")
+    conn.execute("INSERT INTO categories(name,target_resolution_hours,is_active) VALUES(?,48,1)", ("D" * 80,))
     conn.commit()
     conn.close()
     service = RequestService(str(db))
@@ -63,7 +65,9 @@ def build_pages(work: Path) -> dict:
 
     for user_id, jobs in ((1, (("list", "/requests"), ("detail_normal", "/requests/1"),
                               ("detail_long", "/requests/2"), ("new_form", "/requests/new"))),
-                          (2, (("staff_queue", "/staff/queue"),))):
+                          (2, (("staff_queue", "/staff/queue"),)),
+                          (3, (("manager_list", "/manager/requests"), ("dashboard", "/manager/dashboard"))),
+                          (4, (("admin_users", "/admin/users"), ("admin_categories", "/admin/categories")))):
         with app.test_client() as client:
             with client.session_transaction() as session:
                 session["user_id"] = user_id

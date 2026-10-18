@@ -19,3 +19,9 @@ def test_detail_grid_and_flex_children_can_shrink():
     assert "minmax(0, 1fr)" in STYLE
     assert re.search(r"\.detail-head > div[^{]*\{[^}]*min-width: 0", STYLE)
     assert re.search(r"table\.responsive td \{[^}]*min-width: 0", STYLE)
+
+
+def test_a_long_signed_in_email_cannot_widen_the_header_or_the_admin_action_cells():
+    assert re.search(r"\.nav__user \{[^}]*overflow-wrap: anywhere", STYLE)
+    assert re.search(r"\.site-header nav \{[^}]*min-width: 0", STYLE)
+    assert re.search(r'td\[data-label="Actions"\] \{[^}]*flex-direction: column', STYLE)
