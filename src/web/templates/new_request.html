@@ -2,6 +2,7 @@
 {% block title %}Submit a service request — CivicConnect{% endblock %}
 {% block content %}
   <h1>Submit a service request</h1>
+  <p class="page-intro">Tell us what needs attention. All fields are required.</p>
 
   {% if error %}
     <p class="error-text"><strong>Could not submit:</strong> {{ error }}</p>
@@ -9,11 +10,11 @@
 
   <!-- FR-005: title, description, category and location are mandatory.
        FR-006: category comes only from the controlled, active list below. -->
-  <form method="post" action="/requests">
+  <form method="post" action="/requests" class="card">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <p>
       <label for="title">Title</label>
-      <input type="text" id="title" name="title" value="{{ values.get('title', '') }}" required>
+      <input type="text" id="title" name="title" placeholder="e.g. Streetlight not working" value="{{ values.get('title', '') }}" required>
     </p>
     <p>
       <label for="description">Description</label>
@@ -30,8 +31,8 @@
     </p>
     <p>
       <label for="location">Location</label>
-      <input type="text" id="location" name="location" value="{{ values.get('location', '') }}" required>
+      <input type="text" id="location" name="location" placeholder="Street, suburb or landmark" value="{{ values.get('location', '') }}" required>
     </p>
-    <p><button type="submit">Submit request</button></p>
+    <p><button type="submit">Submit request</button> <a class="button button--secondary" href="/requests">Cancel</a></p>
   </form>
 {% endblock %}

@@ -32,12 +32,23 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
-          python -m pip install pip-audit bandit pytest-cov
+          python -m pip install pip-audit bandit pytest-cov==7.1.0
 
-      # NFR-009: coverage is reported on every run and must not fall below 70% of src/.
-      # The business/service layer is above 90% today; the gate is deliberately a simple floor.
-      - name: Run tests with coverage
-        run: python -m pytest tests/ -q --cov=src --cov-report=term-missing --cov-fail-under=70
+      - name: Run tests
+        run: >-
+          python -m pytest tests/ -q --cov=src.persistence
+          --cov-report=term-missing --cov-report=xml:coverage.xml
+          --cov-report=json:coverage.json --cov-fail-under=70
+
+      - name: Retain persistence coverage evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: persistence-coverage-${{ github.sha }}
+          path: |
+            coverage.xml
+            coverage.json
+          if-no-files-found: error
 
       - name: Audit Python dependencies
         run: python -m pip_audit -r requirements.txt

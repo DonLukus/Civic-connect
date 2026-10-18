@@ -1,7 +1,24 @@
 {% extends "base.html" %}
 {% block title %}Request #{{ request.reference }} — CivicConnect{% endblock %}
 {% block content %}
-  <h1>Request #{{ request.reference }}</h1>
+  <div class="card">
+  <div class="detail-head">
+    <div>
+      <h1>Request #{{ request.reference }}</h1>
+      <p class="page-intro">{{ request.title }}</p>
+    </div>
+    <span class="badge badge--{{ request.status|lower|replace(' ', '-') }}">{{ request.status }}</span>
+  </div>
+  {% set flow = ['New', 'Accepted', 'In Progress', 'Resolved', 'Closed'] %}
+  {% if request.status in flow %}
+    {% set idx = flow.index(request.status) %}
+    <ol class="tracker" aria-label="Progress">
+      {% for step in flow %}
+        <li class="{{ 'is-current' if loop.index0 == idx else ('is-done' if loop.index0 < idx else '') }}"
+            {% if loop.index0 == idx %}aria-current="step"{% endif %}>{{ step }}</li>
+      {% endfor %}
+    </ol>
+  {% endif %}
 
   {# Per docs/deployment/m3-interface-agreement.md's Route Contract
      (GET /requests/<request_id>): one template serves the owning Requester,
@@ -13,12 +30,12 @@
      audit log - comments/resolution notes don't exist in the schema yet,
      so this view does not show or imply either. #}
 
-  <dl>
+  <dl class="detail-list">
     <dt>Title</dt><dd>{{ request.title }}</dd>
     <dt>Description</dt><dd>{{ request.description }}</dd>
     <dt>Category</dt><dd>{{ request.category }}</dd>
     <dt>Location</dt><dd>{{ request.location }}</dd>
-    <dt>Status</dt><dd>{{ request.status }}</dd>
+    <dt>Status</dt><dd><span class="badge badge--{{ request.status|lower|replace(' ', '-') }}">{{ request.status }}</span></dd>
     <dt>Assignee</dt><dd>{{ request.assignee_id or "Unassigned" }}</dd>
     {% if request.requester_email %}
       <dt>Requester</dt><dd>{{ request.requester_email }}</dd>
@@ -31,16 +48,19 @@
   </dl>
 
   {% if can_accept %}
-    <form method="post" action="/staff/requests/{{ request.reference }}/accept">
+    <form class="action-bar" method="post" action="/staff/requests/{{ request.reference }}/accept">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <input type="hidden" name="expected_version" value="{{ request.version }}">
       <button type="submit">Accept this request</button>
     </form>
   {% endif %}
 
+  </div>
+
   <h2>History</h2>
   {% if request.history %}
-    <table>
+    <div class="table-wrap">
+    <table class="responsive">
       <caption class="visually-hidden">Status and assignment history for this request</caption>
       <thead>
         <tr>
@@ -53,14 +73,14 @@
       <tbody>
         {% for h in request.history %}
           <tr>
-            <td>{{ h.changed_at }}</td>
-            <td>User #{{ h.actor_user_id }}</td>
-            <td>
+            <td data-label="When">{{ h.changed_at }}</td>
+            <td data-label="Who">User #{{ h.actor_user_id }}</td>
+            <td data-label="Status change">
               {% if h.previous_status != h.new_status %}
                 {{ h.previous_status or "—" }} &rarr; {{ h.new_status }}
               {% else %}—{% endif %}
             </td>
-            <td>
+            <td data-label="Assignee change">
               {% if h.previous_assignee_id != h.new_assignee_id %}
                 {{ h.previous_assignee_id or "Unassigned" }} &rarr; {{ h.new_assignee_id or "Unassigned" }}
               {% else %}—{% endif %}
@@ -69,7 +89,8 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
   {% else %}
-    <p class="empty-state">No history recorded yet.</p>
+    <div class="empty-state"><p>No history recorded yet.</p></div>
   {% endif %}
 {% endblock %}

@@ -1,0 +1,19 @@
+{
+  "assessed_application_commit": "98b1c55700d940f915d856119f581adee8044986",
+  "original_m1_content_snapshot": "52913f7121bfde410f1ec081665bd86a9ae80c98",
+  "snapshot_note": "M1 content reconstructed from the flat pre-CHG-001 source snapshot, not a claimed gate/release commit. M1 document date remains 8 September 2026.",
+  "applicable_criteria": 40,
+  "criteria_removed": 0,
+  "controlled_ac_text_changes": [
+    "AC-009 / CHG-001",
+    "AC-014 / CHG-001"
+  ],
+  "met": 9,
+  "partially_met": 14,
+  "not_met": 17,
+  "proposed_points": 16,
+  "proposed_percentage": 40.0,
+  "calculation": "100 * (Met + 0.5 * Partially Met) / 40",
+  "target_percentage": 80,
+  "review": "Provisional QA assessment; no new team acceptance; original Must obligations retained"
+}

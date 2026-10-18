@@ -12,3 +12,9 @@ Prepared 16 October 2026 for team review. These are identified limitations, not 
 | TD-006 | Outbox schema migration is not a demonstrated reversible deployment migration. | Don | Test interruption/rollback/forward repair with schema-compatible backup and restore. |
 
 Priorities, owners and target milestone require team confirmation. See release summary for current impact and evidence.
+
+## Closure assessment - 18 October 2026 (not team risk acceptance)
+
+TD-001 retained: stuck sending and duplicate external delivery remain unresolved. TD-002 retained: local storage does not prove durable hosting. TD-003 retained: dormant legacy records require migration/reset disposition. TD-004 retained: bootstrap and safe landing are not operational administration. TD-005 is partly addressed: the implemented-operation role matrix and inactive-session follow-up pass; browser automation, human keyboard/usability, availability/cold-start and 5,000-record capacity remain unverified. TD-006 retained: code/schema rollback is not established by a local backup drill.
+
+These final observations supersede stale statements that the matrix itself was never implemented. Owners/priorities remain proposed until actual team confirmation. Retaining debt with its consequence is not marking it fixed.

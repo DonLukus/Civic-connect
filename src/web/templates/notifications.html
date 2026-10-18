@@ -2,22 +2,23 @@
 {% block title %}Notifications — CivicConnect{% endblock %}
 {% block content %}
   <h1>Notifications</h1>
+  <p class="page-intro">Updates on your requests.</p>
 
   {# Per docs/deployment/m3-interface-agreement.md's Route Contract
      (GET /notifications, Requester only): `notifications` rows carry id,
      request_id, event_type, message, created_at, read_at. #}
 
   {% if notifications %}
-    <ul>
+    <ul class="notice-list">
       {% for n in notifications %}
-        <li class="{{ 'flash flash--success' if not n.read_at else '' }}">
+        <li class="{{ 'is-unread' if not n.read_at else '' }}">
           <a href="/requests/{{ n.request_id }}">#{{ n.request_id }}</a> —
           {{ n.message }}
-          <span class="nav__user">({{ n.created_at }})</span>
+          <span class="meta">{{ n.created_at }}</span>
         </li>
       {% endfor %}
     </ul>
   {% else %}
-    <p class="empty-state">No notifications yet.</p>
+    <div class="empty-state"><p><strong>You're all caught up.</strong></p><p>No notifications yet.</p></div>
   {% endif %}
 {% endblock %}

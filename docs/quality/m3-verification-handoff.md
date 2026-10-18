@@ -20,3 +20,7 @@
 ## Registration addition - 16 October
 
 User-requested self-registration now supplies 11 additional cases in `test_registration.py`: successful bcrypt-backed Requester creation/login (submitted privileged role ignored), invalid email/password/UTF-8 limits, case-insensitive duplicates, CSRF rejection and confirmation mismatch. FR-001 remains partial because Administrator provisioning/audit are not implemented. Inspect `registration-live.json` and the latest `registration-regression.xml`; the original 39-case result is the earlier integration snapshot. Review the new public route and the proposed 8-character registration minimum before final approval.
+
+## Dated finalisation reconciliation - 18 October 2026
+
+Earlier 18/39/50-case and pending-matrix notes retain their dates. The merged pre-finalisation suite has 60 cases; TST-051/052 now add a nested privacy regression and mid-session deactivation check, producing 62 passing cases on the review branch. DEF-006 was reproduced before correction. Full matrix evidence from #86 is addressed for implemented operations. Use the current RTM M4 QA fields, section 23 and the 18 October verification summary; absent operations and original acceptance obligations are not silently marked complete.
