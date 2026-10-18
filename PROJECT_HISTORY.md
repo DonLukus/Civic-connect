@@ -13,6 +13,11 @@ AI assistant reads to get up to speed without asking anyone.
 **What:** Added `docs/decisions/DEC-008-recommendation.md`: ASR table, weighted matrices for stack and platform, recommendation and the evidence still required. Corrected the record that the stack is Python/Flask (Node.js was only a scored alternative).
 **Evidence:** Matrix totals recomputed by script; test and coverage figures from a local run on `main` 6e99ae6 (60 passed, 83%). No provider free-tier terms were verified, and the doc says so.
 **Review:** DEC-008 stays Deferred and ADR-001/007 stay Proposed. Needs two non-author approvals; this is a recommendation, not approval.
+### 2026-10-17 - GitHub governance verification record
+**Who:** Don, with Claude Code assistance - **Type:** docs, evidence
+**What:** Added `docs/governance/github-governance-verification-2026-10-17.md` recording what the `main` rulesets actually enforce versus section 10 / DEC-001: stale-approval dismissal off, no required status checks, and merged PRs without two approvals (#22, #26, #28, #54-#56, #75).
+**Evidence:** Public GitHub API reads; bypass actors and secret-scanning settings could not be seen without admin access and are marked unverified. No settings were changed.
+**Review:** Needs two non-author approvals. The corrective settings changes are listed in the file and need team agreement.
 
 ### 2026-10-17 - Correct the incomplete PED v3.0 PDF export
 **Who:** Emile, with Codex assistance (AI-045) - **Type:** tooling, document correction
