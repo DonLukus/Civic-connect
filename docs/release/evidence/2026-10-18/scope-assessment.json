@@ -1,5 +1,8 @@
 {
-  "assessed_application_commit": "98b1c55700d940f915d856119f581adee8044986",
+  "assessed_application_commit": null,
+  "candidate_branch": "m4/acceptance-quick-wins",
+  "candidate_base_commit": "2524a66",
+  "prior_assessed_application_commit": "98b1c55700d940f915d856119f581adee8044986",
   "original_m1_content_snapshot": "52913f7121bfde410f1ec081665bd86a9ae80c98",
   "snapshot_note": "M1 content reconstructed from the flat pre-CHG-001 source snapshot, not a claimed gate/release commit. M1 document date remains 8 September 2026.",
   "applicable_criteria": 40,
@@ -8,12 +11,12 @@
     "AC-009 / CHG-001",
     "AC-014 / CHG-001"
   ],
-  "met": 9,
+  "met": 12,
   "partially_met": 14,
-  "not_met": 17,
-  "proposed_points": 16,
-  "proposed_percentage": 40.0,
+  "not_met": 14,
+  "proposed_points": 19,
+  "proposed_percentage": 47.5,
   "calculation": "100 * (Met + 0.5 * Partially Met) / 40",
   "target_percentage": 80,
-  "review": "Provisional QA assessment; no new team acceptance; original Must obligations retained"
+  "review": "Provisional QA assessment for an unmerged review candidate; no new team acceptance; original Must obligations retained"
 }
