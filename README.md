@@ -1,5 +1,7 @@
 # CivicConnect
 
+**New here? Start with [docs/START-HERE.md](docs/START-HERE.md)**: one page that says where everything is, plus a one-page [architecture](docs/ARCHITECTURE.md) and a [requirement-to-code-to-test map](docs/REQUIREMENTS-MAP.md).
+
 Community service request management platform for SEN381, Belgium Campus ITversity, 2026.
 
 **Team repository: [DonLukus/Civic-connect](https://github.com/DonLukus/Civic-connect).** Check `git remote -v` before using a checkout or reporting its status; similarly named repositories are not interchangeable.
