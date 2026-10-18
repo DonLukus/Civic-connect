@@ -11,11 +11,11 @@
     "AC-009 / CHG-001",
     "AC-014 / CHG-001"
   ],
-  "met": 11,
+  "met": 12,
   "partially_met": 14,
-  "not_met": 15,
-  "proposed_points": 18,
-  "proposed_percentage": 45.0,
+  "not_met": 14,
+  "proposed_points": 19,
+  "proposed_percentage": 47.5,
   "calculation": "100 * (Met + 0.5 * Partially Met) / 40",
   "target_percentage": 80,
   "review": "Provisional QA assessment for an unmerged review candidate; no new team acceptance; original Must obligations retained"

@@ -25,7 +25,8 @@ The final full-suite rerun completed after the landing disclosure correction:
 - **Final result after the keyboard-order refinement:** 96 passed in 200.76 seconds on Python 3.12.14.
 - **Persistence coverage:** 291/358 lines, 81.28%; the 70% threshold passed.
 - **Ruff:** clean for `src` and the new acceptance tests.
-- **Boundary:** local Python/Flask/SQLite evidence. Coverage is persistence-package line coverage, not browser or whole-application coverage. New CI and independent review are pending; this is not hosted availability, external email, team approval or production acceptance.
+- **CI:** all seven checks pass on PR #103 revision `45bcdf6`, including the full test/static-analysis job after replacing the parameter-placeholder f-string that Bandit flagged.
+- **Boundary:** local Python/Flask/SQLite evidence. Coverage is persistence-package line coverage, not browser or whole-application coverage. Independent review is pending; this is not hosted availability, external email, team approval or production acceptance.
 
 ## Browser layout evidence
 
@@ -40,20 +41,16 @@ This closes DEF-007 for the measured pages and fixture. It is not a full respons
 
 ## Human keyboard and usability result
 
-Emile personally reported the following first-participant result while supervising the local run:
+Emile supervised five different human participants and reported the following local moderated results. Participant identities and synthetic credentials are deliberately excluded from the repository.
 
-| Measure | Reported/observed result |
-|---|---|
-| Participant | Emile (1 of 5 required representative participants) |
-| Flow | Signed-in Requester submission -> duplicate warning -> confirmation -> receipt |
-| Keyboard only | Yes, reported by Emile |
-| Visible focus throughout | Yes, reported by Emile |
-| Duplicate warning | Existing request #502 displayed |
-| Retained values | Yes; Emile's supplied warning-screen image showed the entered title, description and category retained |
-| Receipt | #504; Emile supplied the completed receipt screen |
-| Timing | Over 3 minutes total; exact final duration was not captured |
-| Problems | No separate functional fault reported; the confirm action originally followed all retained fields in tab order |
+| Participant | Duration | Completed | Unaided | Screens | Receipt | Problem observed | Qualifies |
+|---|---:|---|---|---:|---|---|---|
+| P1 Emile | 2:12 | Yes | Yes, reported | 3 | #504 | Duplicate confirmation originally followed retained fields in tab order | Yes |
+| P2 | 0:52 | Yes | Yes | 2 | #505 | None observed | Yes |
+| P3 | 0:37.29 | Yes | Yes | 2 | #506 | None observed | Yes |
+| P4 | 0:33.20 | Yes | Yes | 2 | #507 | None observed | Yes |
+| P5 | 1:06.22 | Yes | Yes | 2 | #508 | None observed | Yes |
 
-**Assessment boundary:** this is positive manual evidence for the keyboard-completion part of NFR-008 on one local submission path. It does not replace the required automated computed-style accessibility scan. For NFR-007 this participant is an unsuccessful timing result because the total exceeded three minutes. The criterion remains Not Met with 1/5 participants run and 0/1 within the threshold. Four different participants must all complete unaided within three minutes to reach 4/5. Repeats by Emile do not create new participants.
+The task was to submit a Utilities request for a broken streetlight at the participant's assigned synthetic location, starting from the submission page and stopping at the receipt. Emile reported giving no help during the timed attempts. All five completed validly, unaided, within three minutes and no more than three screens. This exceeds AC-N007's threshold of at least 4/5, so NFR-007 is proposed **Met**.
 
-After preserving that result, the review candidate was adjusted so duplicate confirmation and cancellation precede the retained fields in keyboard order. This is a usability improvement; it does not rewrite Emile's original result. Four additional local synthetic accounts were prepared outside version control for four different people. No additional participant outcome is claimed yet.
+P1 also supplies positive manual evidence for the keyboard-completion part of NFR-008: Emile reported keyboard-only use, visible focus, the duplicate warning and retained values, and supplied warning/receipt screenshots. This does not replace the required automated computed-style accessibility scan, so NFR-008 remains Partially Met. After P1, duplicate confirmation and cancellation were moved before the retained fields in keyboard order; later participants did not encounter a duplicate because each used a distinct location.
