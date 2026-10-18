@@ -8,6 +8,12 @@ AI assistant reads to get up to speed without asking anyone.
 
 **Rule.** Every pull request adds an entry here. Newest at the top.
 
+### 2026-10-18 - Consolidate verified README corrections from #93 into #92
+**Who:** Don, with Claude Code assistance (AI-055) - **Type:** documentation
+**What:** On top of PR #92's README: added a Licence section (no licence chosen, no LICENSE file), said plainly that no `.env` file is read, named Utilities as the only seeded category, added the 72-byte bootstrap password limit and the two-command staging demo. PR #93 is superseded by #92 once this is merged.
+**Evidence:** Each statement checked against `wsgi.py`, `user_service.py`, `app.py`, `requirements*.txt`; all README links resolve. No code changed.
+**Review:** Needs two non-author approvals (Emile's #92 content, Don's additions: Masego and one other member).
+
 ### 2026-10-18 - Correct active repository provenance and README status
 **Who:** Emile, with Codex assistance (AI-048) - **Type:** documentation, correction
 **What:** Reconciled the README against DonLukus/Civic-connect main af2f545 and its actual M3/PED/release evidence. Replaced stale M2, 15-test, single-account and unimplemented-queue statements, direct-main deployment commands and unsupported licence/production assertions. Added the canonical repository, actual scoped journeys, 60-case test boundary, local setup, continuing PED, pending decisions and the precise governance gaps. Earlier work prepared against Don-Sanvura/Civic-connect was a repository mismatch; its PRs #7/#8 were closed and labelled withdrawn, preserving their history. Its Node.js diagnostics and conclusions were not imported into this Flask implementation. After Emile requested preserving useful README guidance, restored the project tree, stack table, environment reference, Bash/PowerShell setup, security/CSRF notes, targeted/coverage commands, deployment boundaries, contribution/support steps and team table while retaining corrected facts.
