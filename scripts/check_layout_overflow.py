@@ -24,6 +24,7 @@ from src.persistence.request_service import RequestService
 from src.web.app import create_app
 
 ROOT = Path(__file__).resolve().parents[1]
+LAYOUT_KEY = "layout-check-value"
 WIDTHS = (390, 1100)
 CANDIDATES = (
     os.environ.get("CHROME", ""),
@@ -56,7 +57,7 @@ def build_pages(work: Path) -> dict:
     service.create_request(1, 1, "Streetlight not working", "Normal description", "Main Rd")
     service.create_request(1, 1, "A" * 240, "B" * 240, "C" * 120)
     css = (ROOT / "src/web/static/style.css").read_text(encoding="utf-8")
-    app = create_app(str(db), secret_key="layout-check")
+    app = create_app(str(db), secret_key=LAYOUT_KEY)
     pages = {}
 
     def grab(client, name, path):

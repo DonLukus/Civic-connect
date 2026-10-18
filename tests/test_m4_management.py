@@ -17,6 +17,7 @@ from src.persistence.request_service import RequestService
 from src.web.app import create_app
 
 SCHEMA = Path(__file__).resolve().parents[1] / "src" / "persistence" / "schema.sql"
+APP_KEY = "test-signing-value"
 REQ_A, REQ_B, STAFF_1, STAFF_2, MANAGER, ADMIN = 1, 2, 3, 4, 5, 6
 ROADS, PARKS, RETIRED = 1, 2, 3
 
@@ -397,7 +398,7 @@ def test_duplicate_warning_does_not_reveal_other_peoples_titles(svc, db):
 
 @pytest.fixture
 def client_for(db):
-    app = create_app(db, secret_key="test-secret")
+    app = create_app(db, secret_key=APP_KEY)
 
     def make_client(user_id):
         client = app.test_client()
