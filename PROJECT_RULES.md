@@ -28,7 +28,7 @@ Every substantive contribution follows this sequence, without exception.
 4. **Open a pull request.** Describe what changed, why, which identifiers are affected, and the RTM impact.
 5. **Get two approvals** from members other than the author.
 6. **Update the affected registers and the RTM** in the same change.
-7. **Add a `PROJECT_HISTORY.md` entry.**
+7. **Add a history entry** as a new file `docs/history/YYYY-MM-DD-slug.md` (see `docs/history/README.md`). Do not edit `PROJECT_HISTORY.md`; it is a frozen archive.
 
 ## 3. Decision rules
 
@@ -61,7 +61,7 @@ Identifiers are **never reused and never renumbered** after baseline.
 
 AI is a permitted engineering assistant. It is not an author and it does not carry accountability.
 
-- Material AI contributions are recorded in `docs/governance/ai-usage-register.csv` with the verification actually performed.
+- Material AI contributions are recorded with the verification actually performed: one file per record, `docs/governance/ai-usage/AI-nnn.csv` (see its README; `python tools/ai_register.py --next` gives the next ID). `docs/governance/ai-usage-register.csv` holds the earlier records.
 - Every pull request declares whether AI assisted.
 - AI-generated content passes the same branch, review and approval controls as human content.
 - Never expose credentials, confidential material or personal data to an external AI system.
@@ -73,7 +73,7 @@ AI is a permitted engineering assistant. It is not an author and it does not car
 Provide three things and it will behave consistently regardless of model or member:
 
 1. This file — the rules.
-2. `PROJECT_HISTORY.md` — the current state.
+2. The project history — the current state (`python tools/history.py`).
 3. The specific issue — what is required now.
 
 Then apply step 2 of the SOP: the assistant states the goal, the relevance and the plan **before** producing anything.
@@ -154,5 +154,5 @@ A useful comment says what you checked, one specific finding, and your decision.
 - [ ] Two approvals from members other than the author; every conversation resolved
 - [ ] Identifiers follow the scheme; every referenced identifier exists
 - [ ] RTM and affected registers updated
-- [ ] `PROJECT_HISTORY.md` entry added
+- [ ] History entry file added in `docs/history/`
 - [ ] From M3: linked to a requirement, tests passing, static analysis clean, no secret committed
