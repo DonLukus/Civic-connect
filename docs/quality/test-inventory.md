@@ -238,3 +238,25 @@ TST-001 through TST-050 retain their identifiers and dated evidence. Two risk-dr
 | TST-052 | tests/test_m4_final_regressions.py::test_deactivation_invalidates_existing_session_and_direct_service_access | NFR-004/012: mid-session deactivation redirects HTTP access to sign-in and rejects direct service retrieval. Existing boundary confirmed; no new account-management screen. |
 
 Full automated run: 62 passed in 128.48 seconds on Python 3.12.14. Persistence-layer coverage: 230/293 lines, 78.4983%; not a whole-application/browser-coverage claim. The source and final evidence hashes are indexed in the 18 October verification summary. Independent human review remains pending.
+
+## Part 8 - M4 acceptance quick wins, 18 October 2026 (review candidate)
+
+The append-only audit tests merged after TST-052 are assigned stable function IDs first. Parametrized cases retain one ID per test function, consistent with the inventory above.
+
+| ID | Test | Cases | Requirement(s) | Purpose and boundary |
+|---|---|---:|---|---|
+| TST-053 | `test_audit_rows_can_be_added` | 1 | FR-025, NFR-006 | Confirms legitimate append operations remain possible. |
+| TST-054 | `test_audit_rows_cannot_be_changed_or_deleted` | 3 | FR-025, NFR-006 | Database triggers reject two update forms and deletion. |
+| TST-055 | `test_replace_cannot_overwrite_an_existing_audit_row` | 4 | FR-025, NFR-006 | Rejects both SQLite replace forms with recursive triggers off and on. |
+| TST-056 | `test_new_audit_rows_still_insert_after_replace_guard` | 1 | FR-025, NFR-006 | Confirms the replace guard does not block new IDs. |
+| TST-057 | `test_existing_database_gains_protection_on_startup` | 1 | FR-025, NFR-006 | Confirms startup migration adds triggers to an older database. |
+| TST-058 | `test_submission_rejection_is_field_associated_and_retains_other_values` | 4 | FR-005, FR-006, NFR-014 | Client-side validation bypass: blank/tampered values return a field-associated message, retain other values and create no row. |
+| TST-059 | `test_service_rejects_non_text_submission_values` | 3 | FR-005, NFR-014 | Rejects non-text title, description and location values without a write. |
+| TST-060 | `test_service_enforces_documented_text_boundaries` | 3 | FR-005, NFR-014 | Rejects title/description/location one character over their declared maximums without a write. |
+| TST-061 | `test_duplicate_warning_lists_reference_then_allows_confirmation` | 1 | FR-026 | Same category/location lists the open reference, withholds requester contact, writes nothing before confirmation and permits confirmation. |
+| TST-062 | `test_nonduplicate_submission_does_not_show_warning` | 1 | FR-026 | Different category does not produce a false duplicate warning. |
+| TST-063 | `test_manager_filtered_csv_matches_displayed_row_values` | 1 | FR-022 | Filtered HTML and CSV reconcile to one data row and the same six field values. |
+| TST-064 | `test_manager_export_route_rejects_other_roles` | 3 | FR-022, NFR-004 | Requester, Staff and Administrator receive 403 on the Manager export route. |
+| TST-065 | `test_manager_export_rejects_invalid_filters_and_format` | 3 | FR-022, NFR-014 | Invalid status/category filters and unsupported export format return 400. |
+
+Collection now contains 96 cases: 77 cases on the merged starting point plus 19 acceptance-quick-win cases. The final local run passed 96/96 in 200.76 seconds with persistence coverage 291/358 lines (81.28%); review, CI and merge remain pending. Details and boundaries are recorded in `docs/release/evidence/2026-10-18/acceptance-quick-wins.md`.

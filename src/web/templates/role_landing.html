@@ -3,9 +3,19 @@
 {% block content %}
   <h1>Welcome, {{ role }}</h1>
   <p class="page-intro">You are signed in as {{ role|lower }}.</p>
-  <div class="notice" role="note">
-    <strong>Coming soon.</strong> The {{ role|lower }} tools (activity dashboard,
-    category and user administration) are not built yet. They are deferred
-    past this release and recorded in the project's decision log.
-  </div>
+  {% if role == 'Manager' %}
+    <div class="tile-grid">
+      <a class="tile" href="{{ url_for('manager_requests') }}">
+        <strong>Request list and CSV export</strong>
+        <span>Filter requests and download the same rows for offline analysis.</span>
+      </a>
+    </div>
+    <div class="notice" role="note">
+      The activity dashboard and category and user administration remain deferred and are not built yet.
+    </div>
+  {% else %}
+    <div class="notice" role="note">
+      <strong>Coming soon.</strong> Administrator category and user tools are not built yet.
+    </div>
+  {% endif %}
 {% endblock %}

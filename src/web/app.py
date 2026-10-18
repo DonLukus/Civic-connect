@@ -1,6 +1,8 @@
-"""Small authenticated M2 request-submission slice (FR-002, FR-005, FR-006)."""
+"""Small authenticated CivicConnect web application."""
 
+import csv
 import hmac
+import io
 import os
 import secrets
 import sqlite3
@@ -8,6 +10,7 @@ import sqlite3
 import bcrypt
 from flask import (
     Flask,
+    Response,
     abort,
     flash,
     g,
@@ -20,7 +23,11 @@ from flask import (
 from werkzeug.security import check_password_hash
 
 from src.persistence import lifecycle
-from src.persistence.request_service import RequestService, VersionConflict
+from src.persistence.request_service import (
+    RequestService,
+    SubmissionValidationError,
+    VersionConflict,
+)
 from src.persistence.user_service import DuplicateEmailError, UserService
 
 # Which transitions need a written explanation (FR-016, FR-018, FR-015 reopen), for the action form.
@@ -65,6 +72,13 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
             return conn.execute(
                 "SELECT id, name FROM categories WHERE is_active = 1 ORDER BY name"
             ).fetchall()
+        finally:
+            conn.close()
+
+    def all_categories():
+        conn = sqlite3.connect(db_path)
+        try:
+            return conn.execute("SELECT id, name FROM categories ORDER BY name").fetchall()
         finally:
             conn.close()
 
@@ -187,7 +201,8 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
         if g.current_user[1] != "Requester":
             abort(403)
         return render_template(
-            "new_request.html", categories=active_categories(), error=None, values={},
+            "new_request.html", categories=active_categories(), error=None,
+            field_errors={}, duplicate_warning=[], values={},
             csrf_token=csrf_token(),
         )
 
@@ -199,17 +214,36 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
             abort(403)
         form = request.form
         try:
-            request_id = service.create_request(
+            duplicates = service.find_open_duplicates(
                 requester_id=g.current_user[0],
-                category_id=int(form.get("category_id", 0) or 0),
+                category_id=form.get("category_id", ""),
                 title=form.get("title", ""),
                 description=form.get("description", ""),
                 location=form.get("location", ""),
             )
+            if duplicates and form.get("confirm_duplicate") != "yes":
+                return render_template(
+                    "new_request.html", categories=active_categories(), error=None,
+                    field_errors={}, duplicate_warning=duplicates, values=form,
+                    csrf_token=csrf_token(),
+                ), 409
+            request_id = service.create_request(
+                requester_id=g.current_user[0],
+                category_id=form.get("category_id", ""),
+                title=form.get("title", ""),
+                description=form.get("description", ""),
+                location=form.get("location", ""),
+            )
+        except SubmissionValidationError as exc:
+            return render_template(
+                "new_request.html", categories=active_categories(), error=None,
+                field_errors={exc.field: str(exc)}, duplicate_warning=[], values=form,
+                csrf_token=csrf_token(),
+            ), 400
         except ValueError as exc:
             return render_template(
                 "new_request.html", categories=active_categories(), error=str(exc),
-                values=form, csrf_token=csrf_token(),
+                field_errors={}, duplicate_warning=[], values=form, csrf_token=csrf_token(),
             ), 400
 
         return redirect(url_for("request_submitted", request_id=request_id))
@@ -236,6 +270,56 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
         if g.current_user[1] not in ("Manager", "Administrator"):
             abort(403)
         return render_template("role_landing.html", role=g.current_user[1])
+
+    @app.route("/manager/requests", methods=["GET"])
+    def manager_requests():
+        if g.current_user[1] != "Manager":
+            abort(403)
+        status = request.args.get("status") or None
+        category_id = request.args.get("category_id") or None
+        try:
+            rows = service.list_manager_requests(
+                g.current_user[0], status=status, category_id=category_id
+            )
+        except ValueError as exc:
+            return str(exc), 400
+
+        display_rows = [
+            {
+                "reference": f"#{row['reference']}",
+                "title": row["title"],
+                "category": row["category"],
+                "submitted_at": row["submitted_at"],
+                "status": row["status"],
+                "assignee": row["assignee"],
+                "request_id": row["reference"],
+            }
+            for row in rows
+        ]
+        if request.args.get("format") == "csv":
+            output = io.StringIO(newline="")
+            writer = csv.DictWriter(
+                output,
+                fieldnames=["Reference", "Title", "Category", "Submitted", "Status", "Assignee"],
+            )
+            writer.writeheader()
+            for row in display_rows:
+                writer.writerow({
+                    "Reference": row["reference"], "Title": row["title"],
+                    "Category": row["category"], "Submitted": row["submitted_at"],
+                    "Status": row["status"], "Assignee": row["assignee"],
+                })
+            return Response(
+                output.getvalue(), mimetype="text/csv",
+                headers={"Content-Disposition": "attachment; filename=civicconnect-requests.csv"},
+            )
+        if request.args.get("format") not in (None, ""):
+            return "format must be csv when supplied", 400
+        return render_template(
+            "manager_requests.html", requests=display_rows, statuses=service.STATUSES,
+            categories=all_categories(), selected_status=status,
+            selected_category_id=category_id,
+        )
 
     @app.route("/requests", methods=["GET"])
     def request_list():
