@@ -6,13 +6,22 @@ Running record of every significant change, decision and milestone event on Civi
 date order, with who and why. Together with `PROJECT_RULES.md` they are the files any team member or
 AI assistant reads to get up to speed without asking anyone.
 
-**Rule.** Every pull request adds an entry here. Newest at the top.
+**Rule.** This file is a frozen archive of the entries merged before `docs/history/` was introduced. Every
+new pull request adds its own entry as a separate file in [docs/history/](docs/history/README.md), so pull
+requests no longer conflict on this file. Read everything newest first with `python tools/history.py`.
 
-### 2026-10-18 - Stop append-only log conflicts: union merge for history and AI register
-**Who:** Don, with Claude Code assistance (AI-056) - **Type:** repository tooling
-**What:** Added `merge=union` for `PROJECT_HISTORY.md` and `docs/governance/ai-usage-register.csv` to `.gitattributes`. Every PR adds an entry to these files at the same position, which produced repeated conflicts (PRs #93-#96) although both sides were always wanted. Local `git merge` and `git rebase` now keep both sides without conflict markers.
-**Evidence:** Reproduced in a throwaway repository: two branches each added a history entry at the top and a register row at the end; the merge completed with no conflict and kept both. Limits: not verified in GitHub's merge button; a blank line between entries can be dropped; two edits to the same existing line are both kept, so review such merges. Duplicate AI IDs are still not detected, so allocate the next unused ID.
-**Review:** Needs two non-author approvals; `.gitattributes` has no CODEOWNER entry beyond the default.
+### 2026-10-18 - M4 scope and evidence closure prepared for Group U review
+**Who:** Emile, with Codex assistance (AI-050) - **Type:** requirements QA, closure, document tooling
+**What:** Reconciled all 40 original AC references and controlled CHG-001 wording, retaining the full denominator. Proposed QA scope completion is 40.00% (9 Met, 14 Partially Met, 17 Not Met), not the 80% target. Updated existing RTM/registers with dated current observations, corrected stale missing-list/matrix/decision claims and continued the PED through section 23 with a reasoned staging no-go recommendation and Group U submission information. Extended the existing builder for a full v4 review continuation, preserving historical signatures and the explicit missing section 18. Added persistence coverage reporting and a 70% threshold to the existing quality workflow; CI run 39091537311 on 52e175ba actually passed 62 tests in 38.81s, 78.50% persistence coverage against the 70% threshold, retained XML/JSON artifact 12122139293, Bandit and dependency audit. Its full-history scan covered 179 commits with no leaks. Branch-protection required checks remain a separate unresolved control.
+**Evidence:** Application candidate 98b1c55700d940f915d856119f581adee8044986: 62 tests pass, persistence coverage 78.4983%, Ruff/Bandit and dependency audit clean; five-minute local load 13,212 successes/zero errors/p95 0.281s; two live HTTP journeys and local restart/backup/restore pass. Explicit manual Gitleaks scan covers 174 commits with no leaks after the existing precise false-positive ignore; old main scan actually covered zero commits. Raw credentials/logs/databases remain ignored. PED v4 review export completed: 80 rendered pages; 23 available numbered sources and 2,227 source blocks verified against extracted PDF text. All pages visually inspected in overview sheets with selected full-size checks; no clipping/overlap observed. Export/source hashes are recorded in docs/release/evidence/2026-10-18/ped-export-verification.json. Section 18 remains explicitly absent; no new signatures or Final approval.
+**Affects:** Original TR-001..040/FR/NFR/AC identifiers preserved; no criterion removed, no historical student approval changed. AI-050; existing risk/debt/defect/decision/change records. The draft is based on README PR #92 so its restored guidance is preserved; #92 needs its own real reviews/merge.
+**Review:** Independent reviews, proposed AC scores, final team go/no-go decision, final assessed documentation reference and actual Moodle submission remain pending. Deadline supplied by Emile: 18 October 2026. Machine verification is not student sign-off.
+
+### 2026-10-18 - Finalisation privacy regression and inactive-session verification
+**Who:** Emile, with Codex assistance (AI-049) - **Type:** defect fix, verification
+**What:** DEF-006: unassigned Staff service detail withheld top-level contact but exposed the Requester email in history.actor_email. Removed that unused projection; current templates retain actor IDs and authorised top-level contact. Added TST-051 (nested contact privacy) and TST-052 (deactivation invalidates an existing session and direct service access).
+**Evidence:** Synthetic before-fix result 1 failed/1 passed; after fix 62 passed in 128.48s. Persistence-layer coverage 230/293 lines (78.4983%); Ruff clean and Bandit no findings. This is automated evidence; no new student approval or browser walkthrough claimed.
+**Affects:** NFR-012/TR-015; NFR-004/TR-017; DEF-006; TST-051/052. Original requirements/criteria and historical signatures preserved. Independent review pending.
 
 ### 2026-10-18 - Correct active repository provenance and README status
 **Who:** Emile, with Codex assistance (AI-048) - **Type:** documentation, correction

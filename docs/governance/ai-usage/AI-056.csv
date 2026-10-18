@@ -1,0 +1,1 @@
+AI-056,2026-10-18,Don,Claude (Claude Code),Added merge=union for the two append-only logs in .gitattributes.,Edited .gitattributes and tested the behaviour in a throwaway repository.,Reproduced two-branch merge with and without conflict markers; checked blank-line and ordering side effects; GitHub web merge not tested.,Tooling only.,Does not detect duplicate AI IDs.

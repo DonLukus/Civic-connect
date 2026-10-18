@@ -12,6 +12,16 @@ on:
     paths: ['docs/**']
 
 jobs:
+  ai-register:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # Records after AI-056 are one file each, so a duplicate ID is no longer a visible merge
+      # conflict in a shared file; this check is what catches two PRs picking the same ID.
+      - name: AI register IDs are unique and well formed
+        run: python3 tools/ai_register.py --check
+
   traceability:
     runs-on: ubuntu-latest
     steps:

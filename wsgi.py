@@ -70,6 +70,26 @@ def _migrate_m3_schema(conn: sqlite3.Connection) -> None:
         );
         CREATE INDEX IF NOT EXISTS idx_request_notifications_requester
             ON request_notifications(requester_id, created_at);
+
+        -- Databases created before this change get the same append-only protection.
+        CREATE TRIGGER IF NOT EXISTS request_audit_no_update
+        BEFORE UPDATE ON request_audit
+        BEGIN
+            SELECT RAISE(ABORT, 'request_audit is append-only (FR-025, NFR-006)');
+        END;
+
+        CREATE TRIGGER IF NOT EXISTS request_audit_no_delete
+        BEFORE DELETE ON request_audit
+        BEGIN
+            SELECT RAISE(ABORT, 'request_audit is append-only (FR-025, NFR-006)');
+        END;
+
+        CREATE TRIGGER IF NOT EXISTS request_audit_no_replace
+        BEFORE INSERT ON request_audit
+        WHEN NEW.id IS NOT NULL AND EXISTS (SELECT 1 FROM request_audit WHERE id = NEW.id)
+        BEGIN
+            SELECT RAISE(ABORT, 'request_audit is append-only (FR-025, NFR-006)');
+        END;
         """
     )
 

@@ -1,0 +1,5 @@
+### 2026-10-18 - Independent re-verification of main; coverage gate superseded by #96
+**Who:** Don, with Claude Code assistance (AI-058) - **Type:** verification record
+**What:** Re-verified `main` at af2f545 before the closure work: 60 tests pass, 83% line coverage (`request_service.py` 91%, `user_service.py` 90%, `app.py` 91%, `outbox.py` 64%), Ruff clean, Bandit no medium or high findings, `pip-audit` no known vulnerabilities. This PR first proposed a CI coverage gate in `quality.yml`; PR #96 merged a stronger one (persistence-only coverage with a 70% floor and retained XML/JSON artifacts), so the workflow change was dropped and `main`'s `quality.yml` kept unchanged.
+**Evidence:** Local run on Python 3.14.3 (CI uses 3.11). The figures are a dated snapshot of an earlier revision and are not the latest candidate result. No file other than this record and the AI-058 record is changed by this PR. Required-check settings are a separate ruleset matter.
+**Review:** Needs two non-author approvals; it can also be closed with no loss, as the verification figures are recorded in the PED and release evidence.

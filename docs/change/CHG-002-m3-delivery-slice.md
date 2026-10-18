@@ -20,3 +20,7 @@ Defer Manager reporting/dashboard (FR-019?022), operational Administrator accoun
 ## Decision requested
 
 Recommend accept the delivery slice for M3 evaluation with explicit exclusions, subject to the assessment brief and team review. Don and Masego must record their actual decision/date through review. Until then this is a review proposal; it does not amend the approved product baseline or establish release readiness.
+
+## Dated closure reconciliation - 18 October 2026
+
+The preceding pending text is the historical proposal. Don and Masego's supervised-slice decisions are recorded in PR #86 and described in PED section 22. This does not remove original Must requirements or amend every original AC to match the slice. The M4 QA assessment keeps all 40 original criteria in the denominator, identifies absent Manager/Admin/lifecycle behaviour and flags the FR-002 public-registration wording reconciliation. No new vote or approval is claimed here.

@@ -13,7 +13,7 @@ Quick links: [Status](#current-status) | [Features](#purpose-and-implemented-sco
 | M3 evaluation slice | Implemented, reviewed and merged through PR #85, including the role-matrix/RTM work from #86 |
 | PED | Continuing M1/M2 document through M3 section 22; corrected full export merged through #89/#90 |
 | Decisions | #88 recorded DEC-013 through DEC-018; ADR-001/007 remain Proposed and DEC-008 remains Deferred |
-| Automated suite | 60 pytest cases; service, in-process web/integration and role/registration regressions, not 60 browser tests |
+| Automated suite | 62 pytest cases on the finalisation review candidate (60 earlier cases plus two privacy/session regressions); not 62 browser tests |
 | Staging | Isolated local Waitress/SQLite environment with synthetic users and a local SMTP sink |
 | Public production | **NOT READY** |
 
@@ -102,9 +102,9 @@ python -m flask --app wsgi:app run --host 127.0.0.1 --port 5000
 
 These Bash instructions express the same environment and application startup as the Windows path. They are not evidence of a fresh Linux/macOS walkthrough; use the project's recorded platform checks and verify your actual environment.
 
-Open `http://127.0.0.1:5000/register` to create a synthetic Requester, then sign in at `/login`. `wsgi.py` initialises the schema and default Utilities category. These commands set the environment directly: copying [.env.example](.env.example) alone does not populate the required values or guarantee a dotenv loader is installed. Keep the generated signing key stable for the local session; a new key invalidates old sessions.
+Open `http://127.0.0.1:5000/register` to create a synthetic Requester, then sign in at `/login`. `wsgi.py` initialises the schema and the default Utilities category, which is the only seeded category (category administration, FR-023, is not built). The application does not read a `.env` file because no dotenv package is installed, so these commands set the environment directly; [.env.example](.env.example) only lists the variable names. Keep the generated signing key stable for the local session; a new key invalidates old sessions.
 
-Privileged demo users can be provisioned through the optional bootstrap environment variables named in `.env.example`. For the complete Staff/notification demonstration, follow the isolated [M3 staging runbook](docs/deployment/m3-staging.md), which generates synthetic fixtures and a local STARTTLS mail sink. Do not run its fixture generator against an existing database. Public HTTPS and external mail delivery require separate verification.
+Privileged demo users can be provisioned through the optional bootstrap environment variables named in `.env.example`. For the complete Staff/notification demonstration with 14 synthetic accounts and 500 sample requests, install `requirements-staging.txt` (OpenSSL is needed; Git for Windows includes it), run `python -m scripts.m3_staging prepare` once and then `python -m scripts.m3_staging serve`; generated logins are in the git-ignored `.m3-local/config.json`. Follow the isolated [M3 staging runbook](docs/deployment/m3-staging.md), which generates synthetic fixtures and a local STARTTLS mail sink. Do not run its fixture generator against an existing database. Public HTTPS and external mail delivery require separate verification.
 
 ## Environment configuration
 
@@ -120,6 +120,7 @@ Privileged demo users can be provisioned through the optional bootstrap environm
 | `BOOTSTRAP_STAFF_EMAIL`, `BOOTSTRAP_STAFF_PASSWORD` | Optional pair to provision a Staff demo account. |
 | `BOOTSTRAP_MANAGER_EMAIL`, `BOOTSTRAP_MANAGER_PASSWORD` | Optional pair to provision a Manager demo account. |
 | `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD` | Optional pair to provision an Administrator demo account. |
+| Bootstrap password length | Any bootstrap password longer than 72 UTF-8 bytes (bcrypt's limit) makes startup refuse to run. |
 | `OUTBOX_WORKER_ENABLED` | Default `false`; `true` starts the in-process notification loop and requires SMTP host/sender settings. |
 | `OUTBOX_WORKER_POLL_SECONDS` | Default 60; positive integer interval between processing passes. |
 | `EMAIL_SMTP_HOST`, `EMAIL_SMTP_PORT` | SMTP host and port; port defaults to 587. The implementation calls STARTTLS. |
@@ -161,7 +162,7 @@ python -m pytest tests/ --cov=src --cov-report=html
 
 Inspect `htmlcov/index.html` and the measured service-layer coverage before claiming NFR-009. The report is ignored by Git; these commands do not assert that coverage has already met its threshold.
 
-The current suite contains 60 cases. The earlier 15-, 18-, 39- and 50-case reports are historical snapshots. Flask test-client cases are in-process functional/integration tests. Separate live HTTP journeys and supplementary browser walkthrough evidence are recorded; no persistent browser automation suite is claimed.
+The finalisation review candidate contains 62 cases; the merged pre-finalisation suite contains 60. The earlier 15-, 18-, 39- and 50-case reports are historical snapshots. Flask test-client cases are in-process functional/integration tests. Separate live HTTP journeys and supplementary browser walkthrough evidence are recorded; no persistent browser automation suite is claimed.
 
 The recorded NFR-001 local warm-instance measurement used 10 Staff users, 500 filtered records and 300 seconds: 8,503 successful requests, zero failures, p95 0.422 seconds. Load/restart/backup evidence predates registration and was not silently relabelled as a rerun on later revisions. It is not hosted availability, cold-start, browser-rendering or production-capacity evidence.
 
@@ -257,6 +258,10 @@ For help, start with the [interface contract](docs/deployment/m3-interface-agree
 | Architecture and decisions | [ADRs](docs/decisions/adr/), [decision log](docs/decisions/decision-log.csv) |
 | Risk and AI accountability | [Risk register](docs/risk/risk-register.csv), [AI register](docs/governance/ai-usage-register.csv) |
 
+## Licence
+
+No licence has been chosen and no `LICENSE` file is committed, so all rights are reserved by default. The team, and the university if it has a claim on coursework, must decide before anyone reuses the code.
+
 ## Team responsibilities
 
 | Member | Current M3 responsibility recorded in document control |
@@ -268,3 +273,8 @@ For help, start with the [interface contract](docs/deployment/m3-interface-agree
 These describe the M3 allocation; the historical M1 ownership in PROJECT_RULES is retained. Authorship and actual review evidence remain in PRs, history and the AI register. All three remain accountable for the whole project.
 
 The full PED export includes all existing numbered sources and preserves historical signatures and dates. Section 18 has no source and remains an explicit gap. Record the actual submission date and final documentation identifier when submitting; this README supplies neither a signature nor a submission claim.
+
+
+## Finalisation review candidate - Group U
+
+[PED section 23](docs/PED/23-final-scope-and-project-conclusion.md) continues the same document into a v4.0 review candidate, with the original 40-AC scope assessment, current verification and remaining gates. Proposed scope completion is **40.00%**, below the 80% target and pending independent review; the supervised slice does not remove missing original commitments. The new DEF-006 service-data privacy fix, 62-case result, 78.4983% persistence line coverage, five-minute local load and passing CI coverage report and explicit 179-commit history scan are indexed in the [18 October evidence](docs/release/evidence/2026-10-18/verification-summary.json). Public production remains NOT READY. Final team release decision, assessed documentation reference and actual Moodle submission are pending. Deadline: 18 October 2026, provided by Emile.

@@ -226,3 +226,15 @@ request through the route, not just a *different*, unassigned Staff member corre
 404. Both this and the TST-029/030 mislabelling correction above were raised by Don's AI-assisted
 review of commit `9d10b11`, not found independently here - credited rather than silently folded
 in as if self-caught.
+
+
+## Part 7 - Finalisation, 18 October 2026 (review pending)
+
+TST-001 through TST-050 retain their identifiers and dated evidence. Two risk-driven final regressions bring the collected suite to 62, not a new M4 quota.
+
+| ID | Test | Purpose and boundary |
+|---|---|---|
+| TST-051 | tests/test_m4_final_regressions.py::test_unassigned_staff_history_does_not_disclose_requester_contact | NFR-012: all nested service data excludes Requester contact for unassigned Staff, while authorised Manager contact and audit actor IDs remain available. Fails before DEF-006 fix. |
+| TST-052 | tests/test_m4_final_regressions.py::test_deactivation_invalidates_existing_session_and_direct_service_access | NFR-004/012: mid-session deactivation redirects HTTP access to sign-in and rejects direct service retrieval. Existing boundary confirmed; no new account-management screen. |
+
+Full automated run: 62 passed in 128.48 seconds on Python 3.12.14. Persistence-layer coverage: 230/293 lines, 78.4983%; not a whole-application/browser-coverage claim. The source and final evidence hashes are indexed in the 18 October verification summary. Independent human review remains pending.

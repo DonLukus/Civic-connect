@@ -7,6 +7,7 @@ as labelled records so that all fields remain legible in a portrait PDF.
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import html
 import json
@@ -270,12 +271,13 @@ class Renderer:
 
 
 class PEDDocument(BaseDocTemplate):
-    def __init__(self, path, built_date):
+    def __init__(self, path, built_date, version="3.0"):
         super().__init__(str(path), pagesize=A4, rightMargin=44, leftMargin=44,
                          topMargin=49, bottomMargin=49,
-                         title="CivicConnect Project Engineering Document v3.0 - Full continuation",
+                         title=f"CivicConnect Project Engineering Document v{version} - Review continuation",
                          author="CivicConnect team")
         self.built_date = built_date
+        self.version = version
         frame = Frame(44, 49, WIDTH, PAGE_HEIGHT - 98,
                       leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0)
         self.addPageTemplates(PageTemplate(id="PED", frames=frame, onPage=self.page_chrome))
@@ -287,7 +289,7 @@ class PEDDocument(BaseDocTemplate):
         canvas.drawString(44, PAGE_HEIGHT - 29, "CivicConnect - SEN381 - Continuing Project Engineering Document")
         canvas.setStrokeColor(RULE)
         canvas.line(44, 36, PAGE_WIDTH - 44, 36)
-        canvas.drawString(44, 24, f"PED v3.0 - full export - {self.built_date}")
+        canvas.drawString(44, 24, f"PED v{self.version} - full export - {self.built_date}")
         canvas.drawRightString(PAGE_WIDTH - 44, 24, str(doc.page))
         canvas.restoreState()
 
@@ -310,7 +312,7 @@ def verify_pdf(output, sections):
             text_page.close()
             page.close()
     lines = [line for text in text_pages for line in text.splitlines()
-             if not line.startswith(("CivicConnect - SEN381 - Continuing", "PED v3.0 - full export"))
+             if not line.startswith(("CivicConnect - SEN381 - Continuing", "PED v3.0 - full export", "PED v4.0 - full export"))
              and not re.fullmatch(r"\s*\d+\s*", line)]
     # PDFium marks a visible line-final hyphen as U+FFFE in some embedded fonts.
     # Normalize that extraction marker only; the PDF still displays the hyphen.
@@ -334,20 +336,37 @@ def verify_pdf(output, sections):
     return pdf, len(text_pages), checked
 
 
-def build(output, render_dir, built_date):
+def build(output, render_dir, built_date, version="3.0"):
     output.parent.mkdir(parents=True, exist_ok=True)
+    if version == "4.0":
+        # Refuse an export whose scope headline no longer reconciles to the live RTM.
+        with (ROOT / "docs/requirements/RTM.csv").open(encoding="utf8", newline="") as handle:
+            scope_rows = list(csv.DictReader(handle))
+        values = [float(row["M4 proposed AC value"]) for row in scope_rows]
+        if len(scope_rows) != 40 or len({row["Acceptance criteria"] for row in scope_rows}) != 40:
+            raise ValueError("M4 review requires the preserved 40-criterion baseline")
+        if any(value not in (0, .5, 1) for value in values):
+            raise ValueError("M4 scores must be 0, 0.5 or 1")
+        summary = json.loads((ROOT / "docs/release/evidence/2026-10-18/scope-assessment.json").read_text())
+        percentage = sum(values) / len(values) * 100
+        if summary["proposed_points"] != sum(values) or summary["proposed_percentage"] != percentage:
+            raise ValueError("M4 scope summary does not reconcile to the RTM")
+        closure = (PED / "23-final-scope-and-project-conclusion.md").read_text(encoding="utf8")
+        if f"{percentage:.2f}%" not in closure:
+            raise ValueError("M4 PED headline does not reconcile to the RTM")
     styles = setup_styles()
     source_ref = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
-    paths = sorted(PED.glob("[0-9][0-9]-*.md"))
-    if not paths or paths[0].name != "00-document-control.md" or not paths[-1].name.startswith("22-"):
-        raise ValueError("Expected document control through section 22")
-    required = {f"{number:02}" for number in range(23) if number != 18}
+    last_section = 23 if version == "4.0" else 22
+    paths = [p for p in sorted(PED.glob("[0-9][0-9]-*.md")) if int(p.name[:2]) <= last_section]
+    if not paths or paths[0].name != "00-document-control.md" or not paths[-1].name.startswith(f"{last_section}-"):
+        raise ValueError(f"Expected document control through section {last_section}")
+    required = {f"{number:02}" for number in range(last_section + 1) if number != 18}
     missing = required - {path.name[:2] for path in paths}
     if missing:
         raise ValueError("Missing required PED source sections: " + ", ".join(sorted(missing)))
     sections = [(path, parse_source(path.read_text(encoding="utf8"))) for path in paths]
     sections = [(path, root, section_title(path, root)) for path, root in sections]
-    m3_text = paths[-1].read_text(encoding="utf8")
+    m3_text = next(p for p in paths if p.name.startswith("22-")).read_text(encoding="utf8")
     match = re.search(r"Merged into `main` at commit `([a-f0-9]{40})` via PR #(\d+)", m3_text)
     if not match:
         raise ValueError("Section 22 must identify the actual implementation baseline")
@@ -359,26 +378,30 @@ def build(output, render_dir, built_date):
     gap_note = ("The repository has no section 18 source. Existing numbering is preserved; "
                 "this export does not invent the missing technology narrative or promote any baseline/ADR status."
                 if "18" not in {path.name[:2] for path in paths} else
-                "All numbered sections 00 through 22 have source files. Historical baseline and ADR statuses retain their scope.")
+                f"All numbered sections 00 through {last_section} have source files. Historical baseline and ADR statuses retain their scope.")
     renderer = Renderer(styles, source_ref)
     story = [Spacer(1, 38), Paragraph("CivicConnect", styles["Title"]),
-             Paragraph("Project Engineering Document v3.0", styles["Heading1"]),
+             Paragraph(f"Project Engineering Document v{version} - review candidate", styles["Heading1"]),
              Paragraph("Engineering foundation, architecture, construction and verification", styles["BodyText"]),
              Spacer(1, 17)]
     cover = [
         f"<b>Full continuing PED - {built_date}</b><br/>SEN381 Software Engineering 381<br/>Belgium Campus ITversity",
-        "<b>Team:</b> Emile, Don and Masego",
+        "<b>Team:</b> Group U - Emile, Don and Masego" if version == "4.0" else "<b>Team:</b> Emile, Don and Masego",
         (f"<b>M3 implementation baseline:</b> {implementation_sha}<br/>Merged through PR #{implementation_pr}. "
         "The recorded approvals concern that implementation slice. Check the associated documentation PR for this export's review status."),
         ('<b>Repository:</b> <a href="https://github.com/DonLukus/Civic-connect" color="#125f78">'
         'github.com/DonLukus/Civic-connect</a>'),
         ("<b>Continuity:</b> This export includes every numbered Markdown source currently present in docs/PED, "
-        "starting with document control, preserving M1/M2, and continuing through section 22. "
-        "Earlier statements and signatures retain their dated scope. Read the dated M3 update and section 22 for current status."),
+        f"starting with document control, preserving M1/M2/M3, and continuing through section {last_section}. "
+        "Earlier statements and signatures retain their dated scope. Read the latest dated closure section for current status."),
         "<b>Source boundary:</b> " + gap_note,
         ("<b>Assessment access:</b> RTM: docs/requirements/RTM.csv. CI/test evidence and local staging instructions "
         f"are indexed in section 22. Public production readiness: {production_status}. No new signatures appear in this export."),
     ]
+    if version == "4.0":
+        cover.append("<b>Submission boundary:</b> Deadline 18 October 2026, supplied by Emile. "
+                     "Final team approval, deployment decision, assessed documentation reference and actual Moodle submission remain pending. "
+                     "This review export is not a signed Final submission; section 23 contains the proposed original-AC scope result and unresolved obligations.")
     story.extend(Paragraph(item, styles["BodyText"]) for item in cover)
     story.extend([PageBreak(), Paragraph("Contents", styles["Heading1"])])
     toc = TableOfContents()
@@ -402,7 +425,7 @@ def build(output, render_dir, built_date):
         if first_heading is not None:
             del blocks[first_heading]
         story.extend(renderer.blocks(blocks))
-    document = PEDDocument(output, built_date)
+    document = PEDDocument(output, built_date, version)
     document.multiBuild(story)
     pdf, pages, checked = verify_pdf(output, sections)
     if render_dir is not None:
@@ -412,11 +435,12 @@ def build(output, render_dir, built_date):
     manifest = {
         "export": output.relative_to(ROOT).as_posix() if output.is_relative_to(ROOT) else str(output),
         "build_date": built_date, "pages": pages, "implementation_baseline": implementation_sha,
+        "ped_version": version, "review_status": "Review candidate; no new signatures or final acceptance",
         "source_base_commit": source_ref,
         "scope": "All numbered source files included; working-branch documentation fixes require review.",
         "sources": [{"path": p.relative_to(ROOT).as_posix(), "sha256": hashlib.sha256(p.read_bytes()).hexdigest()}
                     for p in paths],
-        "missing_source_numbers": [n for n in range(23) if f"{n:02}" not in {p.name[:2] for p in paths}],
+        "missing_source_numbers": [n for n in range(last_section + 1) if f"{n:02}" not in {p.name[:2] for p in paths}],
         "wide_register_records": renderer.table_records,
         "source_blocks_verified": checked,
         "pdf_sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
@@ -431,9 +455,11 @@ def build(output, render_dir, built_date):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, default=PED / "exports/PED_v3.0-review.pdf")
+    parser.add_argument("--output", type=Path, default=None)
+    parser.add_argument("--ped-version", choices=["3.0", "4.0"], default="3.0")
     parser.add_argument("--render-dir", type=Path,
                         help="Optional ignored/private directory for page PNGs")
     parser.add_argument("--build-date", default=date.today().isoformat())
     args = parser.parse_args()
-    build(args.output.resolve(), args.render_dir, args.build_date)
+    output = args.output or PED / f"exports/PED_v{args.ped_version}-review.pdf"
+    build(output.resolve(), args.render_dir, args.build_date, args.ped_version)
