@@ -1,0 +1,124 @@
+{
+  "export": "docs/PED/exports/PED_v4.0-review.pdf",
+  "build_date": "2026-10-18",
+  "pages": 80,
+  "implementation_baseline": "c7e92de8f818b66ca1ecc0faf88b0987c4b17b40",
+  "ped_version": "4.0",
+  "review_status": "Review candidate; no new signatures or final acceptance",
+  "source_base_commit": "5dd8e848e370a703f463818d8c60a5b5e1f9fcbf",
+  "scope": "All numbered source files included; working-branch documentation fixes require review.",
+  "sources": [
+    {
+      "path": "docs/PED/00-document-control.md",
+      "sha256": "35f285ec8b1c5f59114a109c1b3ec86383230539d7fd1e5d5ce9d91085a8ff19"
+    },
+    {
+      "path": "docs/PED/01-introduction.md",
+      "sha256": "d46a7853d80554cae034dbcdbcbc58d4b494deb11488c3d3d66e8b78acbc6272"
+    },
+    {
+      "path": "docs/PED/02-problem-and-business-need.md",
+      "sha256": "d23ff506f09d4ad948abb2344f35d0fedfb27f79f831da7ed6845c7e2f9e553d"
+    },
+    {
+      "path": "docs/PED/03-stakeholders.md",
+      "sha256": "45f4bb426d85842b340888d7308b8b3466e5621d38425e674e25efa765643325"
+    },
+    {
+      "path": "docs/PED/04-scope-baseline.md",
+      "sha256": "ffa458c31a68a3de379eb665da7435307e106b525a8138f01af0bdd930d6f945"
+    },
+    {
+      "path": "docs/PED/05-constraints-assumptions.md",
+      "sha256": "ec52126fdcec35fdb39981c99566841f6d35ea369503c464099fda56751e9884"
+    },
+    {
+      "path": "docs/PED/06-requirements.md",
+      "sha256": "8a8cb2459f38f32a3c60a6ef19f874b720791bf7c96eed9800772c9884ef6aa5"
+    },
+    {
+      "path": "docs/PED/07-traceability.md",
+      "sha256": "cd2e57be7e47bad9e14065ca2f201f04774350589ad25958d04fad1c33c19720"
+    },
+    {
+      "path": "docs/PED/08-risk.md",
+      "sha256": "6355efca596a15748f1b4f2ff8cd2308ca40665faa51d4298223e61f2777a377"
+    },
+    {
+      "path": "docs/PED/09-forward-engineering.md",
+      "sha256": "b91000efc228d2dc8bebade72386919c7dada1c0d1590229ec42064d0ee066ab"
+    },
+    {
+      "path": "docs/PED/10-decision-log.md",
+      "sha256": "efc565325a25fb1e9dcf21bf60efa8ecfa1e10ed58acc4f1c1c71594d32b5369"
+    },
+    {
+      "path": "docs/PED/11-process-governance.md",
+      "sha256": "e23b2db0193ad303c9d5e7f570c6c41984497582b26c84806db704f0e9038b63"
+    },
+    {
+      "path": "docs/PED/12-repository-configuration.md",
+      "sha256": "008e589931ecb85216f75d681b9019845c4d8c79b0d13416b93a1dad4e9af589"
+    },
+    {
+      "path": "docs/PED/13-responsible-ai.md",
+      "sha256": "c2d22a21915fb8a19114a0ce78c531a4ebb8a142e9cd90298ca3911c05a94569"
+    },
+    {
+      "path": "docs/PED/14-m1-boundaries.md",
+      "sha256": "0614e2473a761194f9d83c76c60884d0c6170c60b4b3f4330a63bdbb6dda51ab"
+    },
+    {
+      "path": "docs/PED/15-baseline-signoff.md",
+      "sha256": "9d03e24664b71eb6a864a6b28a1a3387768dbf680104f3eabe8a0244a306544a"
+    },
+    {
+      "path": "docs/PED/16-architecture-baseline.md",
+      "sha256": "3e01364f09b110f7a4feb8aafad4c962391939bc6f373f9ab7545af3ee619e4f"
+    },
+    {
+      "path": "docs/PED/17-data-persistence.md",
+      "sha256": "f38668050f6249cf654d7eb0154f37d7e5d2dcd74f243c4ec1c97cab64aaf388"
+    },
+    {
+      "path": "docs/PED/19-design-decisions.md",
+      "sha256": "9bf6d708e6383b155f0c75049a8337315faa79659beff46672585c6084112b53"
+    },
+    {
+      "path": "docs/PED/20-integration-deployment.md",
+      "sha256": "a46132eabb83b71b558acc497dc86f69620c7e76e976090bad8af21b2ae9cab8"
+    },
+    {
+      "path": "docs/PED/21-m2-baseline-signoff.md",
+      "sha256": "8ccca1bfa9edd86541ffa5761e40497da70f9a2dc0f2ce8b9936476c3572346a"
+    },
+    {
+      "path": "docs/PED/22-m3-construction-verification-release.md",
+      "sha256": "9a2953e714a96178b4c6b5bcfd69047f8e6e0aaf978f4abce058462a67d1ae33"
+    },
+    {
+      "path": "docs/PED/23-final-scope-and-project-conclusion.md",
+      "sha256": "45ef1bede0b7ece787bb8bef5311605da3c38626647faad56832b2f445ce43d1"
+    }
+  ],
+  "missing_source_numbers": [
+    18
+  ],
+  "wide_register_records": 102,
+  "source_blocks_verified": 2227,
+  "pdf_sha256": "6fb04e9eb641224a6e338f62fed5be7afac530d6870225e578f71ad0fc21d188",
+  "assessed_application_candidate": "98b1c55700d940f915d856119f581adee8044986",
+  "implementation_baseline_note": "implementation_baseline is the historical merged M3 slice; assessed_application_candidate is the freshly verified M4 application.",
+  "render_verification": {
+    "rendered_pages": 80,
+    "overview_sheets_inspected": 5,
+    "full_size_pages_inspected": [
+      1,
+      74,
+      76,
+      78,
+      80
+    ],
+    "result": "All pages reviewed in overview sheets and selected full-size pages; latest changed page 78 rechecked after restore-rationale clarification. No clipping or overlap observed. No student acceptance or signature claimed."
+  }
+}
