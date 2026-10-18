@@ -4,7 +4,7 @@
 
 ## 23.1 Product and evidence identity
 
-Active repository: https://github.com/DonLukus/Civic-connect. The current acceptance-quick-wins candidate is PR #103 revision `45bcdf6`, based on main `2524a66`; its final assessed commit/tag must be selected after independent review and merge. It continues the earlier verified application candidate `98b1c55700d940f915d856119f581adee8044986` with FR-006 validation, FR-022 filtered CSV export, FR-026 duplicate handling and DEF-007 mobile wrapping changes.
+Active repository: https://github.com/DonLukus/Civic-connect. PR #103 (acceptance quick wins) was reviewed by Masego and Don and merged to main as `73603845b0f48ccc2c65f7d13c594e0ebf1e3462` on 2026-10-18; its measurements name revision `45bcdf6` (merged head `e5821c48`, one later commit). Which commit and tag are formally assessed is still a team decision; checks on the exact merge commit are in `docs/release/evidence/2026-10-18/final-main-verification.md`. It continues the earlier verified application candidate `98b1c55700d940f915d856119f581adee8044986` with FR-006 validation, FR-022 filtered CSV export, FR-026 duplicate handling and DEF-007 mobile wrapping changes.
 
 The two live HTTP journeys and local load/recovery reports are indexed in [docs/release/evidence/2026-10-18/verification-summary.json](../release/evidence/2026-10-18/verification-summary.json). Results identify exact source hashes; no machine execution is attributed to a student personally. This is not a new feature programme.
 

@@ -5,7 +5,7 @@
 **Owner:** Emile, with Codex execution assistance (AI-059)
 
 **Branch:** `m4/acceptance-quick-wins` from merged `origin/main` at `2524a66`
-**Review state:** independent review and merge pending
+**Review state:** merged to `main` as `73603845b0f48ccc2c65f7d13c594e0ebf1e3462` on 2026-10-18. Approved by Masego and Don (non-author reviewers) on PR head `e5821c48`. The measurements below name revision `45bcdf6`; the merged head `e5821c48` adds one later commit, `e5821c4`, which recorded the moderated usability result and updated the affected registers. Checks on the exact merge commit are listed in `final-main-verification.md`.
 
 ## Implemented acceptance behaviour
 
@@ -26,7 +26,7 @@ The final full-suite rerun completed after the landing disclosure correction:
 - **Persistence coverage:** 291/358 lines, 81.28%; the 70% threshold passed.
 - **Ruff:** clean for `src` and the new acceptance tests.
 - **CI:** all seven checks pass on PR #103 revision `45bcdf6`, including the full test/static-analysis job after replacing the parameter-placeholder f-string that Bandit flagged.
-- **Boundary:** local Python/Flask/SQLite evidence. Coverage is persistence-package line coverage, not browser or whole-application coverage. Independent review is pending; this is not hosted availability, external email, team approval or production acceptance.
+- **Boundary:** local Python/Flask/SQLite evidence. Coverage is persistence-package line coverage, not browser or whole-application coverage. The PR was independently reviewed and merged (see Review state); this is not hosted availability, external email, team approval or production acceptance.
 
 ## Browser layout evidence
 
