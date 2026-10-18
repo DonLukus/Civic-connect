@@ -420,15 +420,12 @@ def test_route_notifications_and_landing():
     landing = client.get("/landing")
     assert landing.status_code == 200
     landing_body = landing.get_data(as_text=True).lower()
-    # The page is allowed to name "dashboard" while explicitly disclosing it's
-    # deferred (that's honest, correct content) - the shared nav/logout button
-    # from base.html will always appear too, so checking for "no links at all"
-    # would wrongly fail on that. What actually matters: no link/button
-    # anywhere claims to lead to a dashboard or admin feature that isn't built.
-    assert "deferred" in landing_body, "the landing page must disclose that Manager/Admin features are deferred"
-    assert 'href="/dashboard' not in landing_body and "view dashboard" not in landing_body, (
-        "the landing page must not offer a working link into a dashboard that doesn't exist"
-    )
+    # M4: the Manager dashboard and request list now exist, so the landing page links to them and no
+    # longer says they are deferred. Every link it offers must lead to a real, working page.
+    assert 'href="/manager/dashboard"' in landing_body and 'href="/manager/requests"' in landing_body
+    assert "deferred" not in landing_body
+    assert client.get("/manager/dashboard").status_code == 200
+    assert client.get("/manager/requests").status_code == 200
     os.remove(db_path)
 
 

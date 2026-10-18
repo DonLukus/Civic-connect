@@ -1,0 +1,77 @@
+{# Shared search/filter/sort bar for every request list (FR-012).
+   Expects: filters (validated dict), statuses, categories [(id, name)], action (URL), mode
+   ('requester' | 'staff' | 'manager'), staff [(id, email)] for managers, export_url (optional),
+   query_string. The server validates every value again; this form only offers the choices. #}
+<form method="get" action="{{ action }}" class="filter-bar" role="search">
+  <div>
+    <label for="q">Search</label>
+    <input id="q" name="q" type="search" value="{{ filters.q }}" maxlength="100" placeholder="Reference or keyword">
+  </div>
+  <div>
+    <label for="status">Status</label>
+    <select id="status" name="status">
+      <option value="" {% if not filters.status %}selected{% endif %}>All</option>
+      {% for s in statuses %}
+        <option value="{{ s }}" {% if filters.status == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="category">Category</label>
+    <select id="category" name="category">
+      <option value="">All</option>
+      {% for cat_id, cat_name in categories %}
+        <option value="{{ cat_id }}" {% if filters.category == cat_id %}selected{% endif %}>{{ cat_name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  {% if mode != 'requester' %}
+  <div>
+    <label for="assignee">Assigned to</label>
+    <select id="assignee" name="assignee">
+      <option value="">Anyone</option>
+      {% if mode == 'staff' %}<option value="me" {% if filters.assignee == 'me' %}selected{% endif %}>Me</option>{% endif %}
+      <option value="unassigned" {% if filters.assignee == 'unassigned' %}selected{% endif %}>Unassigned</option>
+      {% if mode == 'manager' %}
+        <option value="inactive" {% if filters.assignee == 'inactive' %}selected{% endif %}>Deactivated staff (needs reassigning)</option>
+        {% for staff_id, staff_email in staff %}
+          <option value="{{ staff_id }}" {% if filters.assignee == staff_id|string %}selected{% endif %}>{{ staff_email }}</option>
+        {% endfor %}
+      {% endif %}
+    </select>
+  </div>
+  {% endif %}
+  <div>
+    <label for="from">Submitted from</label>
+    <input id="from" name="from" type="date" value="{{ filters['from'] or '' }}">
+  </div>
+  <div>
+    <label for="to">to</label>
+    <input id="to" name="to" type="date" value="{{ filters.to or '' }}">
+  </div>
+  <div>
+    <label for="sort">Sort by</label>
+    <select id="sort" name="sort">
+      {% for key, label in [('created', 'Submitted'), ('updated', 'Last updated'), ('status', 'Status'), ('category', 'Category'), ('reference', 'Reference')] %}
+        <option value="{{ key }}" {% if filters.sort == key %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="dir">Order</label>
+    <select id="dir" name="dir">
+      <option value="desc" {% if filters.dir == 'desc' %}selected{% endif %}>Newest / Z to A first</option>
+      <option value="asc" {% if filters.dir == 'asc' %}selected{% endif %}>Oldest / A to Z first</option>
+    </select>
+  </div>
+  <div>
+    <label for="overdue"><input id="overdue" name="overdue" type="checkbox" value="1" {% if filters.overdue %}checked{% endif %}> Overdue only</label>
+  </div>
+  <div>
+    <button type="submit">Apply</button>
+    <a class="button button--secondary" href="{{ action }}">Reset</a>
+    {% if export_url %}
+      <a class="button button--secondary" href="{{ export_url }}{{ '?' ~ query_string if query_string else '' }}">Export CSV</a>
+    {% endif %}
+  </div>
+</form>

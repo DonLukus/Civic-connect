@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — CivicConnect{% endblock %}
+{% block content %}
+  <h1>Activity dashboard</h1>
+  <p class="page-intro">
+    Requests submitted
+    {% if report.period['from'] or report.period.to %}
+      {% if report.period['from'] %}from {{ report.period['from'] }}{% endif %}
+      {% if report.period.to %}to {{ report.period.to }}{% endif %}
+    {% else %}in all periods{% endif %}.
+    Every figure is counted directly from the stored requests.
+  </p>
+
+  <form method="get" action="/manager/dashboard" class="filter-bar">
+    <div><label for="from">From</label><input id="from" name="from" type="date" value="{{ report.period['from'] or '' }}"></div>
+    <div><label for="to">To</label><input id="to" name="to" type="date" value="{{ report.period.to or '' }}"></div>
+    <div><button type="submit">Show period</button> <a class="button button--secondary" href="/manager/dashboard">All time</a></div>
+  </form>
+
+  <div class="stat-grid">
+    <div class="stat"><span class="stat__n">{{ report.total }}</span><span class="stat__l">Total requests</span></div>
+    <div class="stat"><span class="stat__n">{{ report.open }}</span><span class="stat__l">Open</span></div>
+    <div class="stat"><span class="stat__n">{{ report.in_progress }}</span><span class="stat__l">In progress</span></div>
+    <div class="stat stat--alert"><span class="stat__n">{{ report.overdue }}</span><span class="stat__l">Overdue</span></div>
+    <div class="stat"><span class="stat__n">{{ report.resolved }}</span><span class="stat__l">Resolved</span></div>
+    <div class="stat"><span class="stat__n">{{ report.closed }}</span><span class="stat__l">Closed</span></div>
+    <div class="stat"><span class="stat__n">{{ report.rejected }}</span><span class="stat__l">Rejected</span></div>
+    <div class="stat"><span class="stat__n">{{ report.unassigned_open }}</span><span class="stat__l">Open, unassigned</span></div>
+  </div>
+  <p class="hint">Open means New, Accepted, In Progress or On Hold. Overdue means open for longer than the category's target time
+    (set under Categories); it is counted from submission.</p>
+
+  <h2>By status</h2>
+  <div class="table-wrap">
+    <table class="responsive">
+      <caption class="visually-hidden">Requests by status</caption>
+      <thead><tr><th scope="col">Status</th><th scope="col">Requests</th></tr></thead>
+      <tbody>
+        {% for s in statuses %}
+          <tr>
+            <td data-label="Status"><span class="badge badge--{{ s|lower|replace(' ', '-') }}">{{ s }}</span></td>
+            <td data-label="Requests">{{ report.by_status[s] }}</td>
+          </tr>
+        {% endfor %}
+        <tr><td data-label="Status"><strong>Total</strong></td><td data-label="Requests"><strong>{{ report.total }}</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>By category</h2>
+  <div class="table-wrap">
+    <table class="responsive">
+      <caption class="visually-hidden">Requests by category</caption>
+      <thead><tr><th scope="col">Category</th><th scope="col">Requests</th></tr></thead>
+      <tbody>
+        {% for c in report.by_category %}
+          <tr>
+            <td data-label="Category">{{ c.name }}{% if not c.active %} <span class="hint">(inactive)</span>{% endif %}</td>
+            <td data-label="Requests">{{ c.count }}</td>
+          </tr>
+        {% endfor %}
+        <tr><td data-label="Category"><strong>Total</strong></td><td data-label="Requests"><strong>{{ report.total }}</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>By assignee</h2>
+  <div class="table-wrap">
+    <table class="responsive">
+      <caption class="visually-hidden">Requests by assignee</caption>
+      <thead><tr><th scope="col">Assignee</th><th scope="col">Requests</th></tr></thead>
+      <tbody>
+        {% for a in report.by_assignee %}
+          <tr><td data-label="Assignee">{{ a.email }}</td><td data-label="Requests">{{ a.count }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <p><a class="button" href="/manager/requests">See all requests</a>
+     <a class="button button--secondary" href="/manager/requests?overdue=1">See overdue requests</a></p>
+{% endblock %}

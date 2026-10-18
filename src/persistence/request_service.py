@@ -4,13 +4,14 @@ import uuid
 
 from src.persistence.lifecycle import LifecycleValidator
 from src.persistence.migrations import ensure_schema
+from src.persistence.reporting import ReportingMixin
 from src.persistence.request_repository import RequestRepository
 from src.persistence.workflow import VersionConflict, WorkflowMixin
 
 __all__ = ["RequestService", "VersionConflict"]
 
 
-class RequestService(WorkflowMixin):
+class RequestService(WorkflowMixin, ReportingMixin):
     STATUSES = ("New", "Accepted", "In Progress", "On Hold", "Resolved", "Closed", "Rejected")
 
     def __init__(self, db_path: str):

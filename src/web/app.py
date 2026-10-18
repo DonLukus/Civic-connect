@@ -8,6 +8,7 @@ import sqlite3
 import bcrypt
 from flask import (
     Flask,
+    Response,
     abort,
     flash,
     g,
@@ -23,6 +24,7 @@ from src.persistence import lifecycle
 from src.persistence.admin_service import ROLES, AdminService
 from src.persistence.password_reset import INVALID_LINK as INVALID_RESET_LINK
 from src.persistence.password_reset import PasswordResetService
+from src.persistence.reporting import parse_filters, requests_to_csv
 from src.persistence.request_service import RequestService, VersionConflict
 from src.persistence.user_service import DuplicateEmailError, UserService
 
@@ -204,6 +206,17 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
             abort(403)
         form = request.form
         try:
+            category_id = int(form.get("category_id", 0) or 0)
+        except ValueError:
+            category_id = 0
+        if form.get("confirm_duplicate") != "1" and form.get("title", "").strip():
+            duplicates = service.find_possible_duplicates(category_id, form.get("location", ""))
+            if duplicates:
+                return render_template(
+                    "new_request.html", categories=active_categories(), error=None, values=form,
+                    duplicates=duplicates, csrf_token=csrf_token(),
+                ), 200
+        try:
             request_id = service.create_request(
                 requester_id=g.current_user[0],
                 category_id=int(form.get("category_id", 0) or 0),
@@ -242,33 +255,75 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
             abort(403)
         return render_template("role_landing.html", role=g.current_user[1])
 
+    def categories_for_filters():
+        conn = sqlite3.connect(db_path)
+        try:
+            return conn.execute("SELECT id, name FROM categories ORDER BY name").fetchall()
+        finally:
+            conn.close()
+
+    def list_page(template, extra=None):
+        """Shared by every request list: validate the filters, run one query, render."""
+        try:
+            filters = parse_filters(request.args)
+            rows = service.search_requests(g.current_user[0], filters)
+        except ValueError as exc:
+            return str(exc), 400
+        return render_template(
+            template, requests=rows, statuses=service.STATUSES, filters=filters,
+            selected_status=filters["status"], categories=categories_for_filters(),
+            query_string=request.query_string.decode("ascii", "ignore"), **(extra or {}),
+        )
+
+    def csv_response(filename):
+        try:
+            rows = service.search_requests(g.current_user[0], parse_filters(request.args))
+        except ValueError as exc:
+            return str(exc), 400
+        return Response(
+            requests_to_csv(rows), mimetype="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"})
+
     @app.route("/requests", methods=["GET"])
     def request_list():
         if g.current_user[1] != "Requester":
             abort(403)
-        status = request.args.get("status") or None
-        try:
-            requests = service.list_requester_requests(g.current_user[0], status=status)
-        except ValueError as exc:
-            return str(exc), 400
-        return render_template(
-            "requester_requests.html", requests=requests, statuses=service.STATUSES,
-            selected_status=status,
-        )
+        return list_page("requester_requests.html")
 
     @app.route("/staff/queue", methods=["GET"])
     def staff_queue():
         if g.current_user[1] != "Staff":
             abort(403)
-        status = request.args.get("status") or None
+        return list_page("staff_queue.html")
+
+    @app.route("/staff/queue.csv", methods=["GET"])
+    def staff_queue_csv():
+        if g.current_user[1] != "Staff":
+            abort(403)
+        return csv_response("staff-queue.csv")
+
+    @app.route("/manager/requests", methods=["GET"])
+    def manager_requests():
+        if g.current_user[1] != "Manager":
+            abort(403)
+        return list_page("manager_requests.html", {"staff": service.list_active_staff()})
+
+    @app.route("/manager/requests.csv", methods=["GET"])
+    def manager_requests_csv():
+        if g.current_user[1] != "Manager":
+            abort(403)
+        return csv_response("requests.csv")
+
+    @app.route("/manager/dashboard", methods=["GET"])
+    def manager_dashboard():
+        if g.current_user[1] != "Manager":
+            abort(403)
         try:
-            requests = service.list_staff_queue(g.current_user[0], status=status)
+            report = service.dashboard(g.current_user[0], request.args.get("from") or None,
+                                       request.args.get("to") or None)
         except ValueError as exc:
             return str(exc), 400
-        return render_template(
-            "staff_queue.html", requests=requests, statuses=service.STATUSES,
-            selected_status=status,
-        )
+        return render_template("dashboard.html", report=report, statuses=service.STATUSES)
 
     def available_transitions(detail):
         """Statuses the signed-in user may move this request to (drives the action form)."""

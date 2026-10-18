@@ -36,6 +36,8 @@
           <a href="/admin/categories">Categories</a>
         {% elif current_user.role == 'Manager' %}
           <a href="/landing">Home</a>
+          <a href="/manager/requests">Requests</a>
+          <a href="/manager/dashboard">Dashboard</a>
         {% endif %}
         <form method="post" action="{{ url_for('logout') }}" class="nav__logout">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">

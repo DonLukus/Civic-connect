@@ -13,7 +13,7 @@ Quick links: [Status](#current-status) | [Features](#purpose-and-implemented-sco
 | M3 evaluation slice | Implemented, reviewed and merged through PR #85, including the role-matrix/RTM work from #86 |
 | PED | Continuing M1/M2 document through M3 section 22; corrected full export merged through #89/#90 |
 | Decisions | #88 recorded DEC-013 through DEC-018; ADR-001/007 remain Proposed and DEC-008 remains Deferred |
-| Automated suite | 62 pytest cases on the finalisation review candidate (60 earlier cases plus two privacy/session regressions); not 62 browser tests |
+| Automated suite | 271 pytest cases: service, in-process web/integration, role and migration checks; not browser tests |
 | Staging | Isolated local Waitress/SQLite environment with synthetic users and a local SMTP sink |
 | Public production | **NOT READY** |
 
@@ -23,15 +23,20 @@ Status reconciled 18 October 2026 against main `af2f5456a9a940f6c9a020db5cd5fe5e
 
 CivicConnect aims to replace fragmented requests across email, telephone, WhatsApp, spreadsheets and paper with a controlled request record, clear ownership and attributable changes.
 
-The merged supervised M3 slice provides:
+The application now implements every functional requirement in the baseline (FR-001 to FR-026):
 
-- Public Requester registration and session-based login. Self-registration always creates a Requester.
-- Requester submission with controlled categories, confirmation, own request list/detail and current status.
-- Staff login, role-scoped queue, status filtering, detail and self-acceptance with version/conflict checks.
-- Acceptance audit/outbox records and Requester in-app notification; SMTP transport was exercised against a local sink.
-- Manager and Administrator login with safe landing pages. Operational dashboards and administration are not implemented by those pages.
+- **Everyone:** register as a Requester, sign in and out, reset a forgotten password by emailed single-use link.
+- **Requester:** submit a request (controlled category, duplicate warning at the same place), see only their own requests with status, last change and any resolution note or rejection reason, search, filter and sort them, comment once a staff member is assigned, and receive in-app and email notifications when a request is accepted, rejected or resolved or when staff comment.
+- **Staff:** a queue of unassigned and own requests with search, filters, sort, overdue flags and CSV export; accept a request; move it through In Progress, On Hold, Resolved (resolution note required) or Rejected (reason required); comment.
+- **Manager:** all requests with the same tools; assign and reassign; close resolved requests; reopen closed ones with a reason; an activity dashboard (counts by status, category and assignee for a period) and overdue identification from each category's configured target time.
+- **Administrator:** create accounts with exactly one role (the person sets their own password through a one-time link), change roles, deactivate and reactivate accounts, and manage the category list (create, rename, target time, deactivate, delete only when unused). Every change is audited.
+- **Throughout:** every status or assignment change writes an audit row in the same transaction; the audit tables cannot be edited or deleted through the application; stale pages are refused by a version check; the role is checked on the server for every operation.
 
-The current lifecycle implements **New to Accepted**, not the entire baseline lifecycle. FR-012 supplies status filtering, not the full search/filter/sort requirement. Registration does not complete Administrator provisioning or audit under FR-001. Acceptance notification does not complete every FR-009 notification trigger.
+Three things to know before relying on it:
+
+- The lifecycle rules beyond what FR-014 to FR-018 state (who may reopen, whether Staff may reject, whether Rejected is final) are a **proposal** awaiting the team's decision: [DEC-019](docs/decisions/DEC-019-lifecycle-transition-table.md).
+- The 40.00% scope assessment in [PED section 23](docs/PED/23-final-scope-and-project-conclusion.md) describes the earlier delivered slice. This work is new, has not been through that independent assessment, and changes no acceptance status by itself.
+- Email is only exercised against a local test sink, and there is no login or password-reset rate limiting yet.
 
 [CHG-002](docs/change/CHG-002-m3-delivery-slice.md) records the scoped evaluation proposal; its dated pending wording is followed by the recorded decisions in PED section 22 and the release-summary update. Deferred baseline obligations remain visible and are not marked fulfilled by narrowing the demonstration. [Requirements and original acceptance criteria](docs/requirements/) and the [RTM](docs/requirements/RTM.csv) remain the controlled references.
 
@@ -102,7 +107,7 @@ python -m flask --app wsgi:app run --host 127.0.0.1 --port 5000
 
 These Bash instructions express the same environment and application startup as the Windows path. They are not evidence of a fresh Linux/macOS walkthrough; use the project's recorded platform checks and verify your actual environment.
 
-Open `http://127.0.0.1:5000/register` to create a synthetic Requester, then sign in at `/login`. `wsgi.py` initialises the schema and the default Utilities category, which is the only seeded category (category administration, FR-023, is not built). The application does not read a `.env` file because no dotenv package is installed, so these commands set the environment directly; [.env.example](.env.example) only lists the variable names. Keep the generated signing key stable for the local session; a new key invalidates old sessions.
+Open `http://127.0.0.1:5000/register` to create a synthetic Requester, then sign in at `/login`. `wsgi.py` initialises the schema and the default Utilities category, which is the only seeded category; an Administrator adds and manages the rest under Categories. The application does not read a `.env` file because no dotenv package is installed, so these commands set the environment directly; [.env.example](.env.example) only lists the variable names. Keep the generated signing key stable for the local session; a new key invalidates old sessions.
 
 Privileged demo users can be provisioned through the optional bootstrap environment variables named in `.env.example`. For the complete Staff/notification demonstration with 14 synthetic accounts and 500 sample requests, install `requirements-staging.txt` (OpenSSL is needed; Git for Windows includes it), run `python -m scripts.m3_staging prepare` once and then `python -m scripts.m3_staging serve`; generated logins are in the git-ignored `.m3-local/config.json`. Follow the isolated [M3 staging runbook](docs/deployment/m3-staging.md), which generates synthetic fixtures and a local STARTTLS mail sink. Do not run its fixture generator against an existing database. Public HTTPS and external mail delivery require separate verification.
 
@@ -129,7 +134,7 @@ Privileged demo users can be provisioned through the optional bootstrap environm
 | `EMAIL_FROM_ADDRESS` | Sender address required for delivery. |
 | `FLASK_ENV` | Present in the template; the setup instructions configure the launch explicitly with Flask CLI. It is not a substitute for reviewing deployment/security settings. |
 
-Each bootstrap email/password must be supplied together. Startup does not reset an existing account's password, and it refuses a matching email with a different role. This is demo provisioning, not the missing Administrator user-management screen. Check [wsgi.py](wsgi.py) and the [interface agreement](docs/deployment/m3-interface-agreement.md) for the actual contract.
+Each bootstrap email/password must be supplied together. Startup does not reset an existing account's password, and it refuses a matching email with a different role. This is only for first-time demo accounts; day-to-day account management is done by an Administrator under Users. Check [wsgi.py](wsgi.py) and the [interface agreement](docs/deployment/m3-interface-agreement.md) for the actual contract.
 
 ## Security controls and limits
 
@@ -191,8 +196,13 @@ Civic-connect/
 |   |   |-- schema.sql              # SQLite schema
 |   |   |-- request_service.py      # Request rules, queries and acceptance
 |   |   |-- request_repository.py   # Earlier repository implementation
-|   |   |-- user_service.py         # Requester registration
-|   |   |-- lifecycle.py            # Implemented transition validation
+|   |   |-- user_service.py         # Requester registration, password rules
+|   |   |-- workflow.py             # Status changes, assign/reassign, comments (one transaction each)
+|   |   |-- reporting.py            # Search/filter/sort, dashboard, overdue, CSV, duplicate check
+|   |   |-- admin_service.py        # Accounts, roles and categories (Administrator only)
+|   |   |-- password_reset.py       # Single-use, expiring reset links
+|   |   |-- migrations.py           # Versioned schema upgrades, applied when a service starts
+|   |   |-- lifecycle.py            # Status transition table and role rules (DEC-019, proposed)
 |   |   `-- outbox.py               # Notification claiming and delivery
 |   `-- web/
 |       |-- app.py                  # Flask routes, sessions and CSRF
@@ -226,8 +236,8 @@ Civic-connect/
 
 Public production remains NOT READY. Outstanding behaviour and assurance include:
 
-- Full lifecycle/resolution/rejection, comments, password reset, broader search/filter/sort, Manager reporting and operational Administrator functions.
-- Durable hosted storage, external SMTP/TLS, outbox recovery/idempotency, dormant legacy hashes and schema-compatible rollback.
+- Independent review and re-assessment of the work above against the original acceptance criteria, and a decision on DEC-019.
+- Login and reset rate limiting, revoking sessions after a password reset, durable hosted storage, external SMTP/TLS, outbox recovery/idempotency, dormant legacy hashes and schema-compatible rollback.
 - Sustained availability, cold-start, capacity and accessibility evidence; daily backup scheduling/retention beyond the recorded local restore drill.
 - Final technology/hosting decisions and evidence-backed disposition of remaining acceptance criteria.
 

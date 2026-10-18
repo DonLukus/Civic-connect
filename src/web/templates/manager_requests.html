@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}All requests — CivicConnect{% endblock %}
+{% block content %}
+  <h1>All requests</h1>
+  <p class="page-intro">Every request. Open one to assign, reassign or move it along.</p>
+
+  {% set action = "/manager/requests" %}{% set mode = "manager" %}{% set export_url = "/manager/requests.csv" %}
+  {% include "_filters.html" %}
+
+  {% if requests %}
+    <div class="table-wrap">
+    <table class="responsive">
+      <caption class="visually-hidden">All service requests</caption>
+      <thead>
+        <tr>
+          <th scope="col">Reference</th>
+          <th scope="col">Title</th>
+          <th scope="col">Category</th>
+          <th scope="col">Submitted</th>
+          <th scope="col">Status</th>
+          <th scope="col">Overdue</th>
+          <th scope="col">Assignee</th>
+          <th scope="col">Last updated</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in requests %}
+          <tr>
+            <td data-label="Reference">#{{ r.reference }}</td>
+            <td data-label="Title">{{ r.title }}</td>
+            <td data-label="Category">{{ r.category }}</td>
+            <td data-label="Submitted">{{ r.submitted_at }}</td>
+            <td data-label="Status"><span class="badge badge--{{ r.status|lower|replace(' ', '-') }}">{{ r.status }}</span></td>
+            <td data-label="Overdue">{% if r.overdue %}<span class="badge badge--rejected">Overdue</span>{% else %}&mdash;{% endif %}</td>
+            <td data-label="Assignee">{{ r.assignee_email or "Unassigned" }}{% if r.assignee_inactive %} <span class="badge badge--on-hold">deactivated &ndash; reassign</span>{% endif %}</td>
+            <td data-label="Last updated">{{ r.last_status_changed_at }}</td>
+            <td><a href="/requests/{{ r.reference }}">View &rarr;</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  {% else %}
+    <div class="empty-state"><p><strong>Nothing to show.</strong></p><p>No requests match these filters.</p></div>
+  {% endif %}
+{% endblock %}

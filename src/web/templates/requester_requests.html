@@ -10,18 +10,8 @@
      `selected_status` drive the filter form. Field names match that
      contract exactly - do not rename locally. #}
 
-  <form method="get" action="/requests" class="filter-bar">
-    <div>
-      <label for="status">Filter by status</label>
-      <select id="status" name="status">
-        <option value="" {% if not selected_status %}selected{% endif %}>All</option>
-        {% for s in statuses %}
-          <option value="{{ s }}" {% if selected_status == s %}selected{% endif %}>{{ s }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <button type="submit">Apply filter</button>
-  </form>
+  {% set action = "/requests" %}{% set mode = "requester" %}{% set export_url = none %}
+  {% include "_filters.html" %}
 
   {% if requests %}
     <div class="table-wrap">
