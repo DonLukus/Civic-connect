@@ -72,7 +72,69 @@ class OutboxProcessor:
             return f"A comment was added to request #{request_id}: {payload.get('comment', '')}"
         raise ValueError(f"Unsupported notification event: {event_type}")
 
+    def _deliver_password_reset(self, row_id: int) -> None:
+        """FR-004: email the one-time reset link, then scrub the token from the stored event."""
+        conn = sqlite3.connect(self.db_path)
+        try:
+            row = conn.execute(
+                "SELECT u.email, e.payload_json, e.correlation_id FROM outbox_events e "
+                "JOIN users u ON u.id = e.aggregate_id "
+                "WHERE e.id = ? AND e.aggregate_type = 'PasswordReset'", (row_id,)).fetchone()
+        finally:
+            conn.close()
+        if row is None:
+            raise ValueError("Outbox event has no matching account")
+        email, raw, correlation_id = row
+        token = json.loads(raw or "{}").get("token")
+        if not token:
+            raise ValueError("This reset event has no token left to send")
+        base = os.environ.get("APP_BASE_URL", "http://127.0.0.1:5000").rstrip("/")
+        text = (f"Use this link to set a new CivicConnect password: {base}/reset-password/{token}\n"
+                "It works once and expires in 60 minutes. If you did not ask for it, ignore this email.")
+        self._send_plain_email(email, "Set your CivicConnect password", text, correlation_id)
+        conn = sqlite3.connect(self.db_path)
+        try:
+            conn.execute("UPDATE outbox_events SET payload_json = '{}' WHERE id = ?", (row_id,))
+            conn.commit()
+        finally:
+            conn.close()
+
+    @staticmethod
+    def _smtp_send(message: EmailMessage) -> None:
+        host = os.environ.get("EMAIL_SMTP_HOST")
+        if not host or not os.environ.get("EMAIL_FROM_ADDRESS"):
+            raise RuntimeError("EMAIL_SMTP_HOST and EMAIL_FROM_ADDRESS must be configured")
+        port = int(os.environ.get("EMAIL_SMTP_PORT", "587"))
+        with smtplib.SMTP(host, port, timeout=15) as smtp:
+            smtp.starttls()
+            username = os.environ.get("EMAIL_SMTP_USERNAME")
+            password = os.environ.get("EMAIL_SMTP_PASSWORD")
+            if username:
+                if not password:
+                    raise RuntimeError("EMAIL_SMTP_PASSWORD is required with EMAIL_SMTP_USERNAME")
+                smtp.login(username, password)
+            smtp.send_message(message)
+
+    @classmethod
+    def _send_plain_email(cls, recipient: str, subject: str, text: str, correlation_id: str) -> None:
+        message = EmailMessage()
+        message["Subject"] = subject
+        message["From"] = os.environ.get("EMAIL_FROM_ADDRESS", "")
+        message["To"] = recipient
+        message["X-Correlation-ID"] = correlation_id
+        message.set_content(text)
+        cls._smtp_send(message)
+
     def _deliver(self, row_id: int) -> None:
+        conn = sqlite3.connect(self.db_path)
+        try:
+            kind = conn.execute(
+                "SELECT aggregate_type FROM outbox_events WHERE id = ?", (row_id,)).fetchone()
+        finally:
+            conn.close()
+        if kind and kind[0] == "PasswordReset":
+            self._deliver_password_reset(row_id)
+            return
         conn = sqlite3.connect(self.db_path)
         try:
             event = conn.execute(

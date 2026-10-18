@@ -3,9 +3,16 @@
 {% block content %}
   <h1>Welcome, {{ role }}</h1>
   <p class="page-intro">You are signed in as {{ role|lower }}.</p>
+  {% if role == 'Administrator' %}
+  <div class="tile-grid">
+    <a class="tile" href="/admin/users"><strong>Users and roles</strong><span>Create accounts, change roles, deactivate people.</span></a>
+    <a class="tile" href="/admin/categories"><strong>Categories</strong><span>Manage the list Requesters choose from and the target times.</span></a>
+  </div>
+  {% else %}
   <div class="notice" role="note">
     <strong>Coming soon.</strong> The {{ role|lower }} tools (activity dashboard,
     category and user administration) are not built yet. They are deferred
     past this release and recorded in the project's decision log.
   </div>
+  {% endif %}
 {% endblock %}

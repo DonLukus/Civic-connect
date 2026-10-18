@@ -123,6 +123,7 @@ Privileged demo users can be provisioned through the optional bootstrap environm
 | Bootstrap password length | Any bootstrap password longer than 72 UTF-8 bytes (bcrypt's limit) makes startup refuse to run. |
 | `OUTBOX_WORKER_ENABLED` | Default `false`; `true` starts the in-process notification loop and requires SMTP host/sender settings. |
 | `OUTBOX_WORKER_POLL_SECONDS` | Default 60; positive integer interval between processing passes. |
+| `APP_BASE_URL` | Public address used in password-reset emails (default `http://127.0.0.1:5000`; no trailing slash needed). Set it to the real HTTPS address when deployed. |
 | `EMAIL_SMTP_HOST`, `EMAIL_SMTP_PORT` | SMTP host and port; port defaults to 587. The implementation calls STARTTLS. |
 | `EMAIL_SMTP_USERNAME`, `EMAIL_SMTP_PASSWORD` | Optional SMTP login; a username requires a password. Local staging uses its separate synthetic sink configuration. |
 | `EMAIL_FROM_ADDRESS` | Sender address required for delivery. |

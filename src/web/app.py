@@ -20,6 +20,9 @@ from flask import (
 from werkzeug.security import check_password_hash
 
 from src.persistence import lifecycle
+from src.persistence.admin_service import ROLES, AdminService
+from src.persistence.password_reset import INVALID_LINK as INVALID_RESET_LINK
+from src.persistence.password_reset import PasswordResetService
 from src.persistence.request_service import RequestService, VersionConflict
 from src.persistence.user_service import DuplicateEmailError, UserService
 
@@ -44,6 +47,8 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
     if not 10 <= password_cost <= 16:
         raise RuntimeError("PASSWORD_HASH_COST must be between 10 and 16")
     users = UserService(db_path, password_cost)
+    admin = AdminService(db_path, password_cost)
+    resets = PasswordResetService(db_path, password_cost)
 
     def hash_password(password: str) -> str:
         if len(password.encode("utf-8")) > 72:
@@ -79,7 +84,7 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
 
     @app.before_request
     def require_login():
-        if request.endpoint in ("login", "register", "static"):
+        if request.endpoint in ("login", "register", "static", "forgot_password", "reset_password"):
             return None
         user_id = session.get("user_id")
         g.current_user = query_one(
@@ -381,6 +386,137 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
         if not service.accept_request(request_id, g.current_user[0], expected_version):
             return "Request cannot be accepted in its current state", 409
         return redirect(url_for("request_detail", request_id=request_id))
+
+    # ---- FR-004: password reset (public, as FR-002 allows) -----------------------------------
+
+    @app.route("/forgot-password", methods=["GET", "POST"])
+    def forgot_password():
+        sent = False
+        if request.method == "POST":
+            if not valid_csrf():
+                abort(400)
+            resets.request_reset(request.form.get("email", ""))
+            sent = True  # the same answer whether or not the address has an account
+        return render_template("forgot_password.html", sent=sent, csrf_token=csrf_token())
+
+    @app.route("/reset-password/<token>", methods=["GET", "POST"])
+    def reset_password(token: str):
+        error, status = None, 200
+        if request.method == "POST":
+            if not valid_csrf():
+                abort(400)
+            password = request.form.get("password", "")
+            if password != request.form.get("confirm_password", ""):
+                error, status = "Passwords do not match.", 400
+            else:
+                try:
+                    resets.set_password(token, password)
+                except ValueError as exc:
+                    error, status = str(exc), 400
+                else:
+                    session.clear()
+                    flash("Your password has been set. Sign in with it.", "success")
+                    return redirect(url_for("login"))
+        elif not resets.is_valid(token):
+            error, status = INVALID_RESET_LINK, 400
+        return render_template("reset_password.html", error=error, token=token,
+                               link_invalid=(error == INVALID_RESET_LINK),
+                               csrf_token=csrf_token()), status
+
+    # ---- FR-001, FR-023, FR-024: administration (Administrator only) --------------------------
+
+    def require_admin():
+        if g.current_user[1] != "Administrator":
+            abort(403)
+
+    def admin_users_page(error=None, status_code=200, setup_link=None, created_email=None):
+        require_admin()
+        return render_template(
+            "admin_users.html", users=admin.list_users(g.current_user[0]), roles=ROLES,
+            audit=admin.list_admin_audit(g.current_user[0], 15), error=error,
+            setup_link=setup_link, created_email=created_email, csrf_token=csrf_token(),
+        ), status_code
+
+    def admin_categories_page(error=None, status_code=200):
+        require_admin()
+        return render_template(
+            "admin_categories.html", categories=admin.list_categories(g.current_user[0]),
+            error=error, csrf_token=csrf_token(),
+        ), status_code
+
+    def admin_action(page, action):
+        """Run an admin change; show the page again with the reason if it is refused."""
+        require_admin()
+        if not valid_csrf():
+            abort(400)
+        try:
+            action()
+        except LookupError:
+            abort(404)
+        except PermissionError:
+            abort(403)
+        except ValueError as exc:
+            return page(error=str(exc), status_code=400)
+        flash("Saved.", "success")
+        return None
+
+    @app.route("/admin/users", methods=["GET"])
+    def admin_users():
+        return admin_users_page()
+
+    @app.route("/admin/users", methods=["POST"])
+    def admin_create_user():
+        require_admin()
+        if not valid_csrf():
+            abort(400)
+        email = request.form.get("email", "")
+        try:
+            _user_id, token = admin.provision_user(g.current_user[0], email, request.form.get("role", ""))
+        except ValueError as exc:
+            return admin_users_page(error=str(exc), status_code=400)
+        link = url_for("reset_password", token=token, _external=True)
+        return admin_users_page(setup_link=link, created_email=email.strip().lower())
+
+    @app.route("/admin/users/<int:user_id>/role", methods=["POST"])
+    def admin_change_role(user_id: int):
+        refused = admin_action(admin_users_page, lambda: admin.change_role(
+            g.current_user[0], user_id, request.form.get("role", "")))
+        return refused or redirect(url_for("admin_users"))
+
+    @app.route("/admin/users/<int:user_id>/active", methods=["POST"])
+    def admin_set_user_active(user_id: int):
+        refused = admin_action(admin_users_page, lambda: admin.set_active(
+            g.current_user[0], user_id, request.form.get("active") == "1"))
+        return refused or redirect(url_for("admin_users"))
+
+    @app.route("/admin/categories", methods=["GET"])
+    def admin_categories():
+        return admin_categories_page()
+
+    @app.route("/admin/categories", methods=["POST"])
+    def admin_create_category():
+        refused = admin_action(admin_categories_page, lambda: admin.create_category(
+            g.current_user[0], request.form.get("name", ""), request.form.get("target_hours", "")))
+        return refused or redirect(url_for("admin_categories"))
+
+    @app.route("/admin/categories/<int:category_id>/update", methods=["POST"])
+    def admin_update_category(category_id: int):
+        refused = admin_action(admin_categories_page, lambda: admin.update_category(
+            g.current_user[0], category_id, request.form.get("name"),
+            request.form.get("target_hours")))
+        return refused or redirect(url_for("admin_categories"))
+
+    @app.route("/admin/categories/<int:category_id>/active", methods=["POST"])
+    def admin_set_category_active(category_id: int):
+        refused = admin_action(admin_categories_page, lambda: admin.set_category_active(
+            g.current_user[0], category_id, request.form.get("active") == "1"))
+        return refused or redirect(url_for("admin_categories"))
+
+    @app.route("/admin/categories/<int:category_id>/delete", methods=["POST"])
+    def admin_delete_category(category_id: int):
+        refused = admin_action(admin_categories_page, lambda: admin.delete_category(
+            g.current_user[0], category_id))
+        return refused or redirect(url_for("admin_categories"))
 
     @app.route("/notifications", methods=["GET"])
     def notifications():

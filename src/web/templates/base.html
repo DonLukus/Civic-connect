@@ -30,7 +30,11 @@
           <a href="/notifications">Notifications</a>
         {% elif current_user.role == 'Staff' %}
           <a href="/staff/queue">Staff queue</a>
-        {% elif current_user.role in ('Manager', 'Administrator') %}
+        {% elif current_user.role == 'Administrator' %}
+          <a href="/landing">Home</a>
+          <a href="/admin/users">Users</a>
+          <a href="/admin/categories">Categories</a>
+        {% elif current_user.role == 'Manager' %}
           <a href="/landing">Home</a>
         {% endif %}
         <form method="post" action="{{ url_for('logout') }}" class="nav__logout">

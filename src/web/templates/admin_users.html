@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Users — CivicConnect{% endblock %}
+{% block content %}
+  <h1>Users and roles</h1>
+  <p class="page-intro">Create accounts, change roles and deactivate people who should no longer sign in.</p>
+
+  {% if error %}<p class="error-text" role="alert">{{ error }}</p>{% endif %}
+  {% if setup_link %}
+    <div class="notice" role="status">
+      <strong>Account created for {{ created_email }}.</strong> Give them this one-time link so they can set their own password.
+      It works once and expires in 72 hours. It is shown only now.
+      <p><code>{{ setup_link }}</code></p>
+    </div>
+  {% endif %}
+
+  <form class="card" method="post" action="{{ url_for('admin_create_user') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <h2>Create an account</h2>
+    <p><label for="email">Email</label><input id="email" name="email" type="email" maxlength="254" required></p>
+    <p><label for="role">Role</label>
+      <select id="role" name="role" required>
+        {% for r in roles %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
+      </select></p>
+    <p><button type="submit">Create account</button></p>
+  </form>
+
+  <h2>Accounts</h2>
+  <div class="table-wrap">
+  <table class="responsive">
+    <caption class="visually-hidden">All user accounts</caption>
+    <thead><tr><th scope="col">Email</th><th scope="col">Role</th><th scope="col">Status</th><th scope="col">Open assigned</th><th scope="col">Actions</th></tr></thead>
+    <tbody>
+      {% for u in users %}
+        <tr>
+          <td data-label="Email">{{ u.email }}</td>
+          <td data-label="Role">{{ u.role }}</td>
+          <td data-label="Status">{{ 'Active' if u.is_active else 'Inactive' }}</td>
+          <td data-label="Open assigned">{{ u.open_assigned }}</td>
+          <td data-label="Actions">
+            <form method="post" action="{{ url_for('admin_change_role', user_id=u.id) }}" class="filter-bar">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <label class="visually-hidden" for="role-{{ u.id }}">Role for {{ u.email }}</label>
+              <select id="role-{{ u.id }}" name="role">
+                {% for r in roles %}<option value="{{ r }}" {% if r == u.role %}selected{% endif %}>{{ r }}</option>{% endfor %}
+              </select>
+              <button type="submit">Change role</button>
+            </form>
+            <form method="post" action="{{ url_for('admin_set_user_active', user_id=u.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <input type="hidden" name="active" value="{{ '0' if u.is_active else '1' }}">
+              <button type="submit" class="button--secondary">{{ 'Deactivate' if u.is_active else 'Reactivate' }}</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Recent account changes</h2>
+  {% if audit %}
+    <div class="table-wrap">
+    <table class="responsive">
+      <caption class="visually-hidden">Recent administration changes</caption>
+      <thead><tr><th scope="col">When</th><th scope="col">By</th><th scope="col">Change</th><th scope="col">Account</th><th scope="col">From</th><th scope="col">To</th></tr></thead>
+      <tbody>
+        {% for a in audit %}
+          <tr>
+            <td data-label="When">{{ a.changed_at }}</td>
+            <td data-label="By">User #{{ a.actor_user_id }}</td>
+            <td data-label="Change">{{ a.action_type }}</td>
+            <td data-label="Account">{{ ('User #' ~ a.target_user_id) if a.target_user_id else '—' }}</td>
+            <td data-label="From">{{ a.previous_value or '—' }}</td>
+            <td data-label="To">{{ a.new_value or '—' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  {% else %}
+    <div class="empty-state"><p>No changes yet.</p></div>
+  {% endif %}
+{% endblock %}
