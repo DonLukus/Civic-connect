@@ -8,6 +8,12 @@ AI assistant reads to get up to speed without asking anyone.
 
 **Rule.** Every pull request adds an entry here. Newest at the top.
 
+### 2026-10-18 - Finalisation privacy regression and inactive-session verification
+**Who:** Emile, with Codex assistance (AI-049) - **Type:** defect fix, verification
+**What:** DEF-006: unassigned Staff service detail withheld top-level contact but exposed the Requester email in history.actor_email. Removed that unused projection; current templates retain actor IDs and authorised top-level contact. Added TST-051 (nested contact privacy) and TST-052 (deactivation invalidates an existing session and direct service access).
+**Evidence:** Synthetic before-fix result 1 failed/1 passed; after fix 62 passed in 128.48s. Persistence-layer coverage 230/293 lines (78.4983%); Ruff clean and Bandit no findings. This is automated evidence; no new student approval or browser walkthrough claimed.
+**Affects:** NFR-012/TR-015; NFR-004/TR-017; DEF-006; TST-051/052. Original requirements/criteria and historical signatures preserved. Independent review pending.
+
 ### 2026-10-17 - GitHub governance verification record
 **Who:** Don, with Claude Code assistance - **Type:** docs, evidence
 **What:** Added `docs/governance/github-governance-verification-2026-10-17.md` recording what the `main` rulesets actually enforce versus section 10 / DEC-001: stale-approval dismissal off, no required status checks, and merged PRs without two approvals (#22, #26, #28, #54-#56, #75).
