@@ -74,11 +74,6 @@ TRANSITIONS = {
 MANAGER_ONLY = {("Resolved", "Closed"), ("Closed", "In Progress"), ("New", "Rejected")}
 
 
-def target_statuses(current_status: str) -> set[str]:
-    """Statuses a request in `current_status` may move to (Accepted via accept/assign only)."""
-    return set(TRANSITIONS.get(current_status, set())) - {"Accepted"}
-
-
 def check_transition(role: str, is_assignee: bool, current: str, target: str) -> None:
     """Raise PermissionError / ValueError unless this actor may make this change of status."""
     if target not in STATUSES:
