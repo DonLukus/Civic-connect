@@ -65,7 +65,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      # The token is read-only on purpose, so the action cannot post a PR comment ("Resource not
+      # accessible by integration"). Comments are switched off instead of widening the token; any
+      # finding still fails the job and is listed, with file, rule and commit, in the job summary
+      # and the uploaded report artifact.
       - name: Scan repository for secrets
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
