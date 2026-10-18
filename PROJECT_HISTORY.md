@@ -8,6 +8,12 @@ AI assistant reads to get up to speed without asking anyone.
 
 **Rule.** Every pull request adds an entry here. Newest at the top.
 
+### 2026-10-18 - Independent full-history secret scan recorded (NFR-005)
+**Who:** Don, with Claude Code assistance (AI-052) - **Type:** security evidence
+**What:** Ran gitleaks 8.30.1 (checksum-verified) over all refs of a clone at `origin/main` af2f545: 176 commits with diffs scanned, 0 findings. Added `docs/security/secret-scan-full-history-2026-10-18.md` with the exact command, scope and limits, and linked it from RTM row TR-018.
+**Evidence:** Report file empty; limits stated (default rules only, local clone, no PR refs, forks or logs).
+**Review:** Needs two non-author approvals. This does not replace the per-PR CI scans.
+
 ### 2026-10-17 - GitHub governance verification record
 **Who:** Don, with Claude Code assistance - **Type:** docs, evidence
 **What:** Added `docs/governance/github-governance-verification-2026-10-17.md` recording what the `main` rulesets actually enforce versus section 10 / DEC-001: stale-approval dismissal off, no required status checks, and merged PRs without two approvals (#22, #26, #28, #54-#56, #75).
