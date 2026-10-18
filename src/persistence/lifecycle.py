@@ -44,3 +44,57 @@ class LifecycleValidator:
             )
 
         return False
+
+
+# ---------------------------------------------------------------------------------------------
+# FR-015..FR-018: the full transition table.
+#
+# PROPOSED, NOT YET TEAM-APPROVED (see docs/decisions/DEC-019-lifecycle-transition-table.md).
+# The baselined requirements name the seven states and fix only these rules: a Closed request may
+# change only through the defined reopen path (FR-015), Resolved needs a note (FR-016), only a
+# Manager closes (FR-017), Rejected needs a reason (FR-018), and accept/assign moves New to
+# Accepted (FR-014). Everything else below is the smallest sensible reading, kept in this one
+# table so the team can change it in one place.
+# ---------------------------------------------------------------------------------------------
+STATUSES = ("New", "Accepted", "In Progress", "On Hold", "Resolved", "Closed", "Rejected")
+OPEN_STATUSES = ("New", "Accepted", "In Progress", "On Hold")
+TERMINAL_STATUSES = ("Resolved", "Closed", "Rejected")
+
+TRANSITIONS = {
+    "New": {"Accepted", "Rejected"},
+    "Accepted": {"In Progress", "On Hold", "Resolved", "Rejected"},
+    "In Progress": {"On Hold", "Resolved", "Rejected"},
+    "On Hold": {"In Progress", "Rejected"},
+    "Resolved": {"Closed", "In Progress"},
+    "Closed": {"In Progress"},  # the defined reopen path
+    "Rejected": set(),
+}
+
+# Transitions only a Manager may make (everything else is open to the assigned Staff user and Manager).
+MANAGER_ONLY = {("Resolved", "Closed"), ("Closed", "In Progress"), ("New", "Rejected")}
+
+
+def check_transition(role: str, is_assignee: bool, current: str, target: str) -> None:
+    """Raise PermissionError / ValueError unless this actor may make this change of status."""
+    if target not in STATUSES:
+        raise ValueError("status must be one of the supported request statuses")
+    if target not in TRANSITIONS.get(current, set()) or target == "Accepted":
+        raise ValueError(f"A {current} request cannot move to {target}")
+    if role == "Manager":
+        return
+    if (current, target) in MANAGER_ONLY:
+        raise PermissionError("Only a Manager may make this change")
+    if role == "Staff" and is_assignee:
+        return
+    raise PermissionError("Only the assigned Staff user or a Manager may change this request's status")
+
+
+def required_note(current: str, target: str) -> str | None:
+    """Name of the mandatory explanation for this change, or None."""
+    if target == "Resolved":
+        return "resolution note"
+    if target == "Rejected":
+        return "reason"
+    if current == "Closed":
+        return "reason"
+    return None

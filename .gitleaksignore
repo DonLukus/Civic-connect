@@ -1,3 +1,10 @@
 # Public PR #83 commit SHA in provenance was misclassified as an API key.
 # Exact historical finding only; future findings and other files remain scanned.
 d83c5af4c2c0b36ca9006091a8026850268a4e7e:docs/release/evidence/2026-10-16/source-manifest.json:generic-api-key:8
+# Synthetic test password 'Route-pass-123' in the password-reset route test, as first committed.
+# Exact historical findings only (commit, file, rule, line); the file now declares it once with an inline allow.
+186628edbf2af275b972c8e3cfe636e1c10cf0e0:tests/test_m4_admin.py:generic-api-key:430
+186628edbf2af275b972c8e3cfe636e1c10cf0e0:tests/test_m4_admin.py:generic-api-key:433
+186628edbf2af275b972c8e3cfe636e1c10cf0e0:tests/test_m4_admin.py:generic-api-key:435
+186628edbf2af275b972c8e3cfe636e1c10cf0e0:tests/test_m4_admin.py:generic-api-key:436
+186628edbf2af275b972c8e3cfe636e1c10cf0e0:tests/test_m4_admin.py:generic-api-key:439

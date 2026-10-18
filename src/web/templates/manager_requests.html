@@ -1,53 +1,49 @@
 {% extends "base.html" %}
-{% block title %}Manager request export — CivicConnect{% endblock %}
+{% block title %}All requests — CivicConnect{% endblock %}
 {% block content %}
-  <h1>Manager request list</h1>
-  <p class="page-intro">Filter the list, then export exactly the displayed rows and fields.</p>
+  <h1>All requests</h1>
+  <p class="page-intro">Every request. Open one to assign, reassign or move it along.</p>
 
-  <form method="get" action="{{ url_for('manager_requests') }}" class="filter-bar">
-    <div>
-      <label for="status">Status</label>
-      <select id="status" name="status">
-        <option value="">All statuses</option>
-        {% for item in statuses %}
-          <option value="{{ item }}"{% if selected_status == item %} selected{% endif %}>{{ item }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div>
-      <label for="category_id">Category</label>
-      <select id="category_id" name="category_id">
-        <option value="">All categories</option>
-        {% for category_id, category_name in categories %}
-          <option value="{{ category_id }}"{% if selected_category_id|string == category_id|string %} selected{% endif %}>{{ category_name }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <button type="submit">Apply filters</button>
-    <button type="submit" name="format" value="csv" class="button--success">Export displayed rows to CSV</button>
-  </form>
+  {% set action = "/manager/requests" %}{% set mode = "manager" %}{% set export_url = "/manager/requests.csv" %}
+  {% include "_filters.html" %}
 
   <p><strong>{{ requests|length }}</strong> matching request{{ '' if requests|length == 1 else 's' }}.</p>
+
   {% if requests %}
     <div class="table-wrap">
-      <table class="responsive">
-        <caption class="visually-hidden">Filtered request list for Manager export</caption>
-        <thead><tr><th>Reference</th><th>Title</th><th>Category</th><th>Submitted</th><th>Status</th><th>Assignee</th></tr></thead>
-        <tbody>
-          {% for row in requests %}
-            <tr>
-              <td data-label="Reference">{{ row.reference }}</td>
-              <td data-label="Title">{{ row.title }}</td>
-              <td data-label="Category">{{ row.category }}</td>
-              <td data-label="Submitted">{{ row.submitted_at }}</td>
-              <td data-label="Status">{{ row.status }}</td>
-              <td data-label="Assignee">{{ row.assignee }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+    <table class="responsive">
+      <caption class="visually-hidden">All service requests</caption>
+      <thead>
+        <tr>
+          <th scope="col">Reference</th>
+          <th scope="col">Title</th>
+          <th scope="col">Category</th>
+          <th scope="col">Submitted</th>
+          <th scope="col">Status</th>
+          <th scope="col">Overdue</th>
+          <th scope="col">Assignee</th>
+          <th scope="col">Last updated</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in requests %}
+          <tr>
+            <td data-label="Reference">#{{ r.reference }}</td>
+            <td data-label="Title">{{ r.title }}</td>
+            <td data-label="Category">{{ r.category }}</td>
+            <td data-label="Submitted">{{ r.submitted_at }}</td>
+            <td data-label="Status"><span class="badge badge--{{ r.status|lower|replace(' ', '-') }}">{{ r.status }}</span></td>
+            <td data-label="Overdue">{% if r.overdue %}<span class="badge badge--rejected">Overdue</span>{% else %}&mdash;{% endif %}</td>
+            <td data-label="Assignee">{{ r.assignee_email or "Unassigned" }}{% if r.assignee_inactive %} <span class="badge badge--on-hold">deactivated &ndash; reassign</span>{% endif %}</td>
+            <td data-label="Last updated">{{ r.last_status_changed_at }}</td>
+            <td><a href="/requests/{{ r.reference }}">View &rarr;</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
     </div>
   {% else %}
-    <div class="empty-state"><p><strong>No requests match these filters.</strong></p></div>
+    <div class="empty-state"><p><strong>Nothing to show.</strong></p><p>No requests match these filters.</p></div>
   {% endif %}
 {% endblock %}

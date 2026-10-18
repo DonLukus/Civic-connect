@@ -14,6 +14,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import UTC, datetime
+from email import message_from_string
 from pathlib import Path
 
 from scripts.m3_staging import CONFIG, LOCAL
@@ -90,8 +91,13 @@ def journeys():
     assert "Submit a service request" in page
     csrf = token(page)
     category = re.search(r'<option value="(\d+)"', page).group(1)
-    url, receipt = citizen.post("/requests", {"csrf_token": csrf, "title": "M3 live system check",
-        "description": "Synthetic end-to-end verification", "location": "Test area", "category_id": category})
+    form = {"csrf_token": csrf, "title": "M3 live system check",
+            "description": "Synthetic end-to-end verification", "location": "Test area", "category_id": category}
+    url, receipt = citizen.post("/requests", form)
+    if "may already be reported" in receipt:
+        # FR-026: the fixture already holds open requests in this category and place, so the
+        # Requester is asked to confirm. Confirming is the behaviour under test here.
+        url, receipt = citizen.post("/requests", {**form, "confirm_duplicate": "1"})
     request_id = int(re.search(r"/requests/(\d+)/submitted", url).group(1))
     assert f"#{request_id}" in receipt
     _, page = citizen.get("/requests")
@@ -146,6 +152,184 @@ def journeys():
     })
 
 
+def _option_value(page, label):
+    """Value of the <option> whose visible text is `label` (e.g. a staff member's email)."""
+    match = re.search(r'<option value="(\d+)"[^>]*>\s*' + re.escape(label) + r"\s*</option>", page)
+    assert match, f"No option labelled {label!r} on the page"
+    return match.group(1)
+
+
+def _decoded_mail_to(mailbox, recipient):
+    """Decoded text bodies of every captured email to `recipient` (undoes quoted-printable wrapping)."""
+    if not mailbox.exists():
+        return ""
+    bodies = []
+    for line in mailbox.read_text(encoding="utf-8").splitlines():
+        record = json.loads(line)
+        if recipient in record["recipients"]:
+            message = message_from_string(record["message"])
+            bodies.append(message.get_payload(decode=True).decode("utf-8", errors="replace"))
+    return "\n".join(bodies)
+
+
+def _wait_for(check, what, seconds=30):
+    limit = time.monotonic() + seconds
+    while not check():
+        if time.monotonic() > limit:
+            raise AssertionError(f"Not observed within {seconds} seconds: {what}")
+        time.sleep(0.25)
+
+
+def workflow():
+    """The M4 functional journey over real HTTP: submit, assign, work, comment, resolve, close,
+    notifications, administration, dashboard, CSV export, password reset and deactivation."""
+    config = json.loads(CONFIG.read_text(encoding="utf-8"))
+    accounts = config["accounts"]
+    pick = {role: next(a for a in accounts if a["role"] == role) for role in
+            ("Requester", "Staff", "Manager", "Administrator")}
+    mailbox = LOCAL / "mailbox.jsonl"
+    mail = lambda: mailbox.read_text(encoding="utf-8") if mailbox.exists() else ""
+    title = f"M4 workflow check {int(time.time())}"
+    citizen, worker, manager, admin = BrowserHTTP(), BrowserHTTP(), BrowserHTTP(), BrowserHTTP()
+    steps = []
+
+    # 1. Requester submits (confirming the duplicate prompt, which the fixture triggers).
+    _, page = citizen.login(pick["Requester"])
+    form = {"csrf_token": token(page), "title": title, "description": "Synthetic workflow verification",
+            "location": "Test area", "category_id": re.search(r'<option value="(\d+)"', page).group(1)}
+    url, receipt = citizen.post("/requests", form)
+    if "may already be reported" in receipt:
+        url, receipt = citizen.post("/requests", {**form, "confirm_duplicate": "1"})
+    request_id = int(re.search(r"/requests/(\d+)/submitted", url).group(1))
+    steps.append("Requester submitted (duplicate prompt confirmed)")
+
+    # 2. Manager finds it by keyword, assigns it to a Staff member (New -> Accepted).
+    manager.login(pick["Manager"])
+    _, listing = manager.get("/manager/requests?q=" + urllib.parse.quote(title))
+    assert f"/requests/{request_id}" in listing
+    _, detail = manager.get(f"/requests/{request_id}")
+    version = re.search(r'name="expected_version" value="(\d+)"', detail).group(1)
+    staff_id = _option_value(detail, pick["Staff"]["email"])
+    _, detail = manager.post(f"/requests/{request_id}/assign", {
+        "csrf_token": token(detail), "expected_version": version, "assignee_id": staff_id})
+    assert "Accepted" in detail
+    steps.append("Manager assigned it to Staff (Accepted)")
+
+    # 3. Staff work it: In Progress, comment, a refused Resolved without a note, then Resolved with one.
+    worker.login(pick["Staff"])
+
+    def staff_status(target, note=""):
+        _, page = worker.get(f"/requests/{request_id}")
+        data = {"csrf_token": token(page), "target_status": target, "note": note,
+                "expected_version": re.search(r'name="expected_version" value="(\d+)"', page).group(1)}
+        try:
+            return worker.post(f"/requests/{request_id}/status", data)[1]
+        except urllib.error.HTTPError as error:
+            return error
+
+    assert "In Progress" in staff_status("In Progress")
+    _, page = worker.get(f"/requests/{request_id}")
+    _, page = worker.post(f"/requests/{request_id}/comments", {"csrf_token": token(page), "body": "Crew booked for Friday"})
+    assert "Crew booked for Friday" in page
+    refused = staff_status("Resolved", "")
+    assert getattr(refused, "code", None) == 400, "Resolving without a note must be refused"
+    assert "Resolved" in staff_status("Resolved", "Replaced the valve")
+    steps.append("Staff: In Progress, comment, Resolved refused without a note, Resolved with a note")
+
+    # 4. Staff cannot close; the Manager can.
+    refused = staff_status("Closed")
+    assert getattr(refused, "code", None) == 403, "Staff must not be able to close"
+    _, page = manager.get(f"/requests/{request_id}")
+    _, page = manager.post(f"/requests/{request_id}/status", {
+        "csrf_token": token(page), "target_status": "Closed", "note": "",
+        "expected_version": re.search(r'name="expected_version" value="(\d+)"', page).group(1)})
+    assert "Closed" in page
+    steps.append("Staff refused (403) closing; Manager closed")
+
+    # 5. Requester sees the outcome, comments back; notifications arrive in-app and by email.
+    _, page = citizen.get(f"/requests/{request_id}")
+    assert "Replaced the valve" in page and "Closed" in page and "Crew booked for Friday" in page
+    _wait_for(lambda: all(text in citizen.get("/notifications")[1] for text in ("resolved", "comment was added")),
+              "in-app notifications for resolved and comment")
+    _wait_for(lambda: "Replaced the valve" in mail() and "Crew booked for Friday" in mail(),
+              "emails carrying the resolution note and the comment")
+    steps.append("Requester saw note, status and comment; in-app and email notifications observed")
+
+    with sqlite3.connect(config["env"]["DATABASE_URL"]) as db:
+        audit = db.execute("SELECT action_type, previous_status, new_status FROM request_audit "
+                           "WHERE request_id=? ORDER BY id", (request_id,)).fetchall()
+        comments = db.execute("SELECT count(*) FROM request_comments WHERE request_id=?", (request_id,)).fetchone()[0]
+        total = db.execute("SELECT count(*) FROM requests").fetchone()[0]
+    assert [a[2] for a in audit if a[2]] == ["New", "Accepted", "In Progress", "Resolved", "Closed"], audit
+    assert comments == 1
+
+    # 6. Manager dashboard and CSV agree with the stored records.
+    _, dash = manager.get("/manager/dashboard")
+    assert re.search(rf'stat__n">{total}</span><span class="stat__l">Total requests', dash), "dashboard total != stored count"
+    _, csv_text = manager.get("/manager/requests.csv?q=" + urllib.parse.quote(title))
+    lines = [line for line in csv_text.splitlines() if line]
+    assert len(lines) == 2 and lines[1].split(",")[0] == str(request_id)
+    steps.append(f"Dashboard total {total} equals stored requests; CSV has header plus 1 row")
+
+    # 7. Administrator: create a Staff account, new category; the person sets a password from the one-time
+    #    link, resets it through the emailed link, signs in, and is then deactivated and locked out.
+    admin.login(pick["Administrator"])
+    _, page = admin.get("/admin/users")
+    email = f"m4-staff-{int(time.time())}@example.test"
+    _, page = admin.post("/admin/users", {"csrf_token": token(page), "email": email, "role": "Staff"})
+    setup = re.search(r"/reset-password/([\w-]+)", page).group(1)
+    newbie = BrowserHTTP()
+    _, form_page = newbie.get(f"/reset-password/{setup}")
+    first = "First-password-123"
+    newbie.post(f"/reset-password/{setup}", {"csrf_token": token(form_page), "password": first, "confirm_password": first})
+    assert "invalid or has expired" in _get_error(newbie, f"/reset-password/{setup}"), "setup link must be single use"
+    _, page = newbie.login({"email": email, "password": first})
+    assert "Staff queue" in page
+    forgot = BrowserHTTP()
+    _, page = forgot.get("/forgot-password")
+    _, page = forgot.post("/forgot-password", {"csrf_token": token(page), "email": email})
+    assert "we have sent a link" in page
+    _wait_for(lambda: "reset-password/" in _decoded_mail_to(mailbox, email), "reset email")
+    reset_token = re.search(r"reset-password/([\w-]+)", _decoded_mail_to(mailbox, email)).group(1)
+    _, form_page = forgot.get(f"/reset-password/{reset_token}")
+    second = "Second-password-456"
+    forgot.post(f"/reset-password/{reset_token}", {"csrf_token": token(form_page), "password": second, "confirm_password": second})
+    fresh = BrowserHTTP()
+    _, page = fresh.login({"email": email, "password": second})
+    assert "Staff queue" in page
+    _, page = admin.get("/admin/users")
+    with sqlite3.connect(config["env"]["DATABASE_URL"]) as db:
+        new_id = db.execute("SELECT id FROM users WHERE email=?", (email,)).fetchone()[0]
+    admin.post(f"/admin/users/{new_id}/active", {"csrf_token": token(page), "active": "0"})
+    locked = BrowserHTTP()
+    _, page = locked.login({"email": email, "password": second})
+    assert "Invalid email or password" in page
+    steps.append("Administrator created a Staff account; setup link single use; reset by emailed link; deactivation blocks sign-in")
+    _, page = admin.get("/admin/categories")
+    name = f"M4 category {int(time.time())}"
+    _, page = admin.post("/admin/categories", {"csrf_token": token(page), "name": name, "target_hours": "36"})
+    assert name in page
+    with sqlite3.connect(config["env"]["DATABASE_URL"]) as db:
+        admin_rows = [r[0] for r in db.execute("SELECT action_type FROM admin_audit ORDER BY id")]
+    assert {"create_user", "deactivate_user", "create_category"} <= set(admin_rows), admin_rows
+    steps.append("Administrator added a category; administration audit rows present")
+
+    save("workflow-journey.json", {
+        "pass": True, "request_id": request_id, "steps": steps,
+        "request_audit_statuses": [a[2] for a in audit if a[2]],
+        "limits": "Live HTTP system test, not browser automation. Email goes to the local STARTTLS sink, not an "
+                  "external inbox. Synthetic accounts only.",
+    })
+
+
+def _get_error(client, path):
+    """Body of a page (including an error page) without raising on a 4xx."""
+    try:
+        return client.get(path)[1]
+    except urllib.error.HTTPError as error:
+        return error.read().decode()
+
+
 def restart_check():
     config = json.loads(CONFIG.read_text(encoding="utf-8"))
     reference = json.loads((LOCAL / "restart-reference.json").read_text())
@@ -160,12 +344,14 @@ def restart_check():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["load", "journeys", "restart"])
+    parser.add_argument("action", choices=["load", "journeys", "workflow", "restart"])
     parser.add_argument("--seconds", type=int, default=300)
     args = parser.parse_args()
     if args.action == "load":
         load_test(args.seconds)
     elif args.action == "journeys":
         journeys()
+    elif args.action == "workflow":
+        workflow()
     else:
         restart_check()

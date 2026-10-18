@@ -3,19 +3,15 @@
 {% block content %}
   <h1>Welcome, {{ role }}</h1>
   <p class="page-intro">You are signed in as {{ role|lower }}.</p>
-  {% if role == 'Manager' %}
-    <div class="tile-grid">
-      <a class="tile" href="{{ url_for('manager_requests') }}">
-        <strong>Request list and CSV export</strong>
-        <span>Filter requests and download the same rows for offline analysis.</span>
-      </a>
-    </div>
-    <div class="notice" role="note">
-      The activity dashboard and category and user administration remain deferred and are not built yet.
-    </div>
+  {% if role == 'Administrator' %}
+  <div class="tile-grid">
+    <a class="tile" href="/admin/users"><strong>Users and roles</strong><span>Create accounts, change roles, deactivate people.</span></a>
+    <a class="tile" href="/admin/categories"><strong>Categories</strong><span>Manage the list Requesters choose from and the target times.</span></a>
+  </div>
   {% else %}
-    <div class="notice" role="note">
-      <strong>Coming soon.</strong> Administrator category and user tools are not built yet.
-    </div>
+  <div class="tile-grid">
+    <a class="tile" href="/manager/dashboard"><strong>Dashboard</strong><span>Counts by status, category and assignee, and what is overdue.</span></a>
+    <a class="tile" href="/manager/requests"><strong>All requests</strong><span>Search, assign, reassign and export.</span></a>
+  </div>
   {% endif %}
 {% endblock %}

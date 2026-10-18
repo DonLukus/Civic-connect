@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Categories — CivicConnect{% endblock %}
+{% block content %}
+  <h1>Request categories</h1>
+  <p class="page-intro">The controlled list Requesters choose from. The target time decides when an open request counts as overdue.</p>
+
+  {% if error %}<p class="error-text" role="alert">{{ error }}</p>{% endif %}
+
+  <form class="card" method="post" action="{{ url_for('admin_create_category') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <h2>Add a category</h2>
+    <p><label for="name">Name</label><input type="text" id="name" name="name" maxlength="80" required></p>
+    <p><label for="target_hours">Target resolution time (hours)</label>
+      <input type="number" id="target_hours" name="target_hours" min="1" max="8760" required></p>
+    <p><button type="submit">Add category</button></p>
+  </form>
+
+  <h2>Current categories</h2>
+  <div class="table-wrap">
+  <table class="responsive">
+    <caption class="visually-hidden">Request categories</caption>
+    <thead><tr><th scope="col">Name</th><th scope="col">Target (hours)</th><th scope="col">Status</th><th scope="col">Requests</th><th scope="col">Actions</th></tr></thead>
+    <tbody>
+      {% for c in categories %}
+        <tr>
+          <td data-label="Name">{{ c.name }}</td>
+          <td data-label="Target (hours)">{{ c.target_resolution_hours }}</td>
+          <td data-label="Status">{{ 'Active' if c.is_active else 'Inactive' }}</td>
+          <td data-label="Requests">{{ c.request_count }}</td>
+          <td data-label="Actions">
+            <form method="post" action="{{ url_for('admin_update_category', category_id=c.id) }}" class="inline-form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <label class="visually-hidden" for="name-{{ c.id }}">Name</label>
+              <input type="text" id="name-{{ c.id }}" name="name" value="{{ c.name }}" maxlength="80" required>
+              <label class="visually-hidden" for="hours-{{ c.id }}">Target hours</label>
+              <input type="number" id="hours-{{ c.id }}" name="target_hours" value="{{ c.target_resolution_hours }}" min="1" max="8760" required>
+              <button type="submit">Save</button>
+            </form>
+            <form method="post" action="{{ url_for('admin_set_category_active', category_id=c.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <input type="hidden" name="active" value="{{ '0' if c.is_active else '1' }}">
+              <button type="submit" class="button--secondary">{{ 'Deactivate' if c.is_active else 'Reactivate' }}</button>
+            </form>
+            {% if c.request_count == 0 %}
+              <form method="post" action="{{ url_for('admin_delete_category', category_id=c.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="button--secondary">Delete</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+{% endblock %}

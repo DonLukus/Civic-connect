@@ -1,8 +1,6 @@
 """Small authenticated CivicConnect web application."""
 
-import csv
 import hmac
-import io
 import os
 import secrets
 import sqlite3
@@ -22,8 +20,24 @@ from flask import (
 )
 from werkzeug.security import check_password_hash
 
-from src.persistence.request_service import RequestService, SubmissionValidationError
+from src.persistence import lifecycle
+from src.persistence.admin_service import ROLES, AdminService
+from src.persistence.password_reset import INVALID_LINK as INVALID_RESET_LINK
+from src.persistence.password_reset import PasswordResetService
+from src.persistence.reporting import (
+    DISPLAYED_CSV_COLUMNS,
+    parse_filters,
+    requests_to_csv,
+)
+from src.persistence.request_service import (
+    RequestService,
+    SubmissionValidationError,
+    VersionConflict,
+)
 from src.persistence.user_service import DuplicateEmailError, UserService
+
+# Which transitions need a written explanation (FR-016, FR-018, FR-015 reopen), for the action form.
+NOTE_LABELS = {"Resolved": "resolution note", "Rejected": "reason", "reopen": "reason"}
 
 
 def create_app(db_path: str, secret_key: str | None = None) -> Flask:
@@ -43,6 +57,8 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
     if not 10 <= password_cost <= 16:
         raise RuntimeError("PASSWORD_HASH_COST must be between 10 and 16")
     users = UserService(db_path, password_cost)
+    admin = AdminService(db_path, password_cost)
+    resets = PasswordResetService(db_path, password_cost)
 
     def hash_password(password: str) -> str:
         if len(password.encode("utf-8")) > 72:
@@ -67,13 +83,6 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
         finally:
             conn.close()
 
-    def all_categories():
-        conn = sqlite3.connect(db_path)
-        try:
-            return conn.execute("SELECT id, name FROM categories ORDER BY name").fetchall()
-        finally:
-            conn.close()
-
     def csrf_token():
         if "_csrf_token" not in session:
             session["_csrf_token"] = secrets.token_urlsafe(32)
@@ -85,7 +94,7 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
 
     @app.before_request
     def require_login():
-        if request.endpoint in ("login", "register", "static"):
+        if request.endpoint in ("login", "register", "static", "forgot_password", "reset_password"):
             return None
         user_id = session.get("user_id")
         g.current_user = query_one(
@@ -206,19 +215,18 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
             abort(403)
         form = request.form
         try:
-            duplicates = service.find_open_duplicates(
-                requester_id=g.current_user[0],
-                category_id=form.get("category_id", ""),
-                title=form.get("title", ""),
-                description=form.get("description", ""),
-                location=form.get("location", ""),
-            )
-            if duplicates and form.get("confirm_duplicate") != "yes":
+            category_id = int(form.get("category_id", 0) or 0)
+        except ValueError:
+            category_id = 0
+        if form.get("confirm_duplicate") not in ("1", "yes") and form.get("title", "").strip():
+            duplicates = service.find_possible_duplicates(category_id, form.get("location", ""))
+            if duplicates:
                 return render_template(
                     "new_request.html", categories=active_categories(), error=None,
                     field_errors={}, duplicate_warning=duplicates, values=form,
                     csrf_token=csrf_token(),
                 ), 409
+        try:
             request_id = service.create_request(
                 requester_id=g.current_user[0],
                 category_id=form.get("category_id", ""),
@@ -263,97 +271,180 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
             abort(403)
         return render_template("role_landing.html", role=g.current_user[1])
 
-    @app.route("/manager/requests", methods=["GET"])
-    def manager_requests():
-        if g.current_user[1] != "Manager":
-            abort(403)
-        status = request.args.get("status") or None
-        category_id = request.args.get("category_id") or None
+    def categories_for_filters():
+        conn = sqlite3.connect(db_path)
         try:
-            rows = service.list_manager_requests(
-                g.current_user[0], status=status, category_id=category_id
-            )
+            return conn.execute("SELECT id, name FROM categories ORDER BY name").fetchall()
+        finally:
+            conn.close()
+
+    def list_page(template, extra=None):
+        """Shared by every request list: validate the filters, run one query, render."""
+        try:
+            filters = parse_filters(request.args)
+            rows = service.search_requests(g.current_user[0], filters)
         except ValueError as exc:
             return str(exc), 400
-
-        display_rows = [
-            {
-                "reference": f"#{row['reference']}",
-                "title": row["title"],
-                "category": row["category"],
-                "submitted_at": row["submitted_at"],
-                "status": row["status"],
-                "assignee": row["assignee"],
-                "request_id": row["reference"],
-            }
-            for row in rows
-        ]
-        if request.args.get("format") == "csv":
-            output = io.StringIO(newline="")
-            writer = csv.DictWriter(
-                output,
-                fieldnames=["Reference", "Title", "Category", "Submitted", "Status", "Assignee"],
-            )
-            writer.writeheader()
-            for row in display_rows:
-                writer.writerow({
-                    "Reference": row["reference"], "Title": row["title"],
-                    "Category": row["category"], "Submitted": row["submitted_at"],
-                    "Status": row["status"], "Assignee": row["assignee"],
-                })
-            return Response(
-                output.getvalue(), mimetype="text/csv",
-                headers={"Content-Disposition": "attachment; filename=civicconnect-requests.csv"},
-            )
-        if request.args.get("format") not in (None, ""):
-            return "format must be csv when supplied", 400
         return render_template(
-            "manager_requests.html", requests=display_rows, statuses=service.STATUSES,
-            categories=all_categories(), selected_status=status,
-            selected_category_id=category_id,
+            template, requests=rows, statuses=service.STATUSES, filters=filters,
+            selected_status=filters["status"], categories=categories_for_filters(),
+            query_string=request.query_string.decode("ascii", "ignore"), **(extra or {}),
         )
+
+    def csv_response(filename, columns=None):
+        try:
+            rows = service.search_requests(g.current_user[0], parse_filters(request.args))
+        except ValueError as exc:
+            return str(exc), 400
+        return Response(
+            requests_to_csv(rows, columns), mimetype="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"})
 
     @app.route("/requests", methods=["GET"])
     def request_list():
         if g.current_user[1] != "Requester":
             abort(403)
-        status = request.args.get("status") or None
-        try:
-            requests = service.list_requester_requests(g.current_user[0], status=status)
-        except ValueError as exc:
-            return str(exc), 400
-        return render_template(
-            "requester_requests.html", requests=requests, statuses=service.STATUSES,
-            selected_status=status,
-        )
+        return list_page("requester_requests.html")
 
     @app.route("/staff/queue", methods=["GET"])
     def staff_queue():
         if g.current_user[1] != "Staff":
             abort(403)
-        status = request.args.get("status") or None
+        return list_page("staff_queue.html")
+
+    @app.route("/staff/queue.csv", methods=["GET"])
+    def staff_queue_csv():
+        if g.current_user[1] != "Staff":
+            abort(403)
+        return csv_response("staff-queue.csv")
+
+    @app.route("/manager/requests", methods=["GET"])
+    def manager_requests():
+        if g.current_user[1] != "Manager":
+            abort(403)
+        if request.args.get("format") == "csv":
+            return csv_response("civicconnect-requests.csv", columns=DISPLAYED_CSV_COLUMNS)
+        if request.args.get("format"):
+            return "format must be csv when supplied", 400
+        return list_page("manager_requests.html", {"staff": service.list_active_staff()})
+
+    @app.route("/manager/requests.csv", methods=["GET"])
+    def manager_requests_csv():
+        if g.current_user[1] != "Manager":
+            abort(403)
+        return csv_response("requests.csv")
+
+    @app.route("/manager/dashboard", methods=["GET"])
+    def manager_dashboard():
+        if g.current_user[1] != "Manager":
+            abort(403)
         try:
-            requests = service.list_staff_queue(g.current_user[0], status=status)
+            report = service.dashboard(g.current_user[0], request.args.get("from") or None,
+                                       request.args.get("to") or None)
         except ValueError as exc:
             return str(exc), 400
-        return render_template(
-            "staff_queue.html", requests=requests, statuses=service.STATUSES,
-            selected_status=status,
-        )
+        return render_template("dashboard.html", report=report, statuses=service.STATUSES)
 
-    @app.route("/requests/<int:request_id>", methods=["GET"])
-    def request_detail(request_id: int):
+    def available_transitions(detail):
+        """Statuses the signed-in user may move this request to (drives the action form)."""
+        role = g.current_user[1]
+        found = []
+        for target in lifecycle.STATUSES:
+            try:
+                lifecycle.check_transition(
+                    role, detail["assignee_id"] == g.current_user[0], detail["status"], target)
+            except (PermissionError, ValueError):
+                continue
+            found.append(target)
+        return found
+
+    def detail_page(request_id: int, error=None, status_code=200, form=None):
         try:
             detail = service.get_request_detail(g.current_user[0], request_id)
         except LookupError:
             abort(404)
         except PermissionError:
             abort(403)
+        role = g.current_user[1]
+        staff = service.list_active_staff() if role == "Manager" else []
+        can_comment = detail["assignee_id"] is not None and (
+            role == "Manager"
+            or (role == "Requester")
+            or (role == "Staff" and detail["assignee_id"] == g.current_user[0]))
         return render_template(
             "request_detail.html", request=detail, csrf_token=csrf_token(),
-            can_accept=(g.current_user[1] == "Staff" and detail["status"] == "New"
+            can_accept=(role == "Staff" and detail["status"] == "New"
                         and detail["assignee_id"] is None),
-        )
+            transitions=available_transitions(detail), staff_options=staff,
+            can_comment=can_comment, notes_required=NOTE_LABELS, error=error,
+            form=form or {},
+        ), status_code
+
+    def workflow_error(request_id: int, exc: Exception, form):
+        """Map a workflow failure to an HTTP status and re-show the request with the reason."""
+        if isinstance(exc, LookupError):
+            abort(404)
+        if isinstance(exc, PermissionError):
+            abort(403)
+        if isinstance(exc, VersionConflict):
+            return detail_page(request_id, error=str(exc), status_code=409, form=form)
+        return detail_page(request_id, error=str(exc), status_code=400, form=form)
+
+    def expected_version_or_400():
+        try:
+            value = int(request.form.get("expected_version", ""))
+        except ValueError:
+            abort(400)
+        if value < 0:
+            abort(400)
+        return value
+
+    @app.route("/requests/<int:request_id>", methods=["GET"])
+    def request_detail(request_id: int):
+        return detail_page(request_id)
+
+    @app.route("/requests/<int:request_id>/status", methods=["POST"])
+    def change_request_status(request_id: int):
+        if not valid_csrf():
+            abort(400)
+        if g.current_user[1] not in ("Staff", "Manager"):
+            abort(403)
+        version = expected_version_or_400()
+        try:
+            service.change_status(
+                request_id, g.current_user[0], request.form.get("target_status", ""),
+                version, request.form.get("note", ""))
+        except (LookupError, PermissionError, ValueError, VersionConflict) as exc:
+            return workflow_error(request_id, exc, request.form)
+        flash("Status updated.", "success")
+        return redirect(url_for("request_detail", request_id=request_id))
+
+    @app.route("/requests/<int:request_id>/assign", methods=["POST"])
+    def assign_request(request_id: int):
+        if not valid_csrf():
+            abort(400)
+        if g.current_user[1] != "Manager":
+            abort(403)
+        version = expected_version_or_400()
+        try:
+            service.assign_request(
+                request_id, g.current_user[0], int(request.form.get("assignee_id", "0") or 0),
+                version)
+        except (LookupError, PermissionError, ValueError, VersionConflict) as exc:
+            return workflow_error(request_id, exc, request.form)
+        flash("Assignment saved.", "success")
+        return redirect(url_for("request_detail", request_id=request_id))
+
+    @app.route("/requests/<int:request_id>/comments", methods=["POST"])
+    def add_request_comment(request_id: int):
+        if not valid_csrf():
+            abort(400)
+        try:
+            service.add_comment(request_id, g.current_user[0], request.form.get("body", ""))
+        except (LookupError, PermissionError, ValueError) as exc:
+            return workflow_error(request_id, exc, request.form)
+        flash("Comment added.", "success")
+        return redirect(url_for("request_detail", request_id=request_id))
 
     @app.route("/staff/requests/<int:request_id>/accept", methods=["POST"])
     def accept_request(request_id: int):
@@ -370,6 +461,137 @@ def create_app(db_path: str, secret_key: str | None = None) -> Flask:
         if not service.accept_request(request_id, g.current_user[0], expected_version):
             return "Request cannot be accepted in its current state", 409
         return redirect(url_for("request_detail", request_id=request_id))
+
+    # ---- FR-004: password reset (public, as FR-002 allows) -----------------------------------
+
+    @app.route("/forgot-password", methods=["GET", "POST"])
+    def forgot_password():
+        sent = False
+        if request.method == "POST":
+            if not valid_csrf():
+                abort(400)
+            resets.request_reset(request.form.get("email", ""))
+            sent = True  # the same answer whether or not the address has an account
+        return render_template("forgot_password.html", sent=sent, csrf_token=csrf_token())
+
+    @app.route("/reset-password/<token>", methods=["GET", "POST"])
+    def reset_password(token: str):
+        error, status = None, 200
+        if request.method == "POST":
+            if not valid_csrf():
+                abort(400)
+            password = request.form.get("password", "")
+            if password != request.form.get("confirm_password", ""):
+                error, status = "Passwords do not match.", 400
+            else:
+                try:
+                    resets.set_password(token, password)
+                except ValueError as exc:
+                    error, status = str(exc), 400
+                else:
+                    session.clear()
+                    flash("Your password has been set. Sign in with it.", "success")
+                    return redirect(url_for("login"))
+        elif not resets.is_valid(token):
+            error, status = INVALID_RESET_LINK, 400
+        return render_template("reset_password.html", error=error, token=token,
+                               link_invalid=(error == INVALID_RESET_LINK),
+                               csrf_token=csrf_token()), status
+
+    # ---- FR-001, FR-023, FR-024: administration (Administrator only) --------------------------
+
+    def require_admin():
+        if g.current_user[1] != "Administrator":
+            abort(403)
+
+    def admin_users_page(error=None, status_code=200, setup_link=None, created_email=None):
+        require_admin()
+        return render_template(
+            "admin_users.html", users=admin.list_users(g.current_user[0]), roles=ROLES,
+            audit=admin.list_admin_audit(g.current_user[0], 15), error=error,
+            setup_link=setup_link, created_email=created_email, csrf_token=csrf_token(),
+        ), status_code
+
+    def admin_categories_page(error=None, status_code=200):
+        require_admin()
+        return render_template(
+            "admin_categories.html", categories=admin.list_categories(g.current_user[0]),
+            error=error, csrf_token=csrf_token(),
+        ), status_code
+
+    def admin_action(page, action):
+        """Run an admin change; show the page again with the reason if it is refused."""
+        require_admin()
+        if not valid_csrf():
+            abort(400)
+        try:
+            action()
+        except LookupError:
+            abort(404)
+        except PermissionError:
+            abort(403)
+        except ValueError as exc:
+            return page(error=str(exc), status_code=400)
+        flash("Saved.", "success")
+        return None
+
+    @app.route("/admin/users", methods=["GET"])
+    def admin_users():
+        return admin_users_page()
+
+    @app.route("/admin/users", methods=["POST"])
+    def admin_create_user():
+        require_admin()
+        if not valid_csrf():
+            abort(400)
+        email = request.form.get("email", "")
+        try:
+            _user_id, token = admin.provision_user(g.current_user[0], email, request.form.get("role", ""))
+        except ValueError as exc:
+            return admin_users_page(error=str(exc), status_code=400)
+        link = url_for("reset_password", token=token, _external=True)
+        return admin_users_page(setup_link=link, created_email=email.strip().lower())
+
+    @app.route("/admin/users/<int:user_id>/role", methods=["POST"])
+    def admin_change_role(user_id: int):
+        refused = admin_action(admin_users_page, lambda: admin.change_role(
+            g.current_user[0], user_id, request.form.get("role", "")))
+        return refused or redirect(url_for("admin_users"))
+
+    @app.route("/admin/users/<int:user_id>/active", methods=["POST"])
+    def admin_set_user_active(user_id: int):
+        refused = admin_action(admin_users_page, lambda: admin.set_active(
+            g.current_user[0], user_id, request.form.get("active") == "1"))
+        return refused or redirect(url_for("admin_users"))
+
+    @app.route("/admin/categories", methods=["GET"])
+    def admin_categories():
+        return admin_categories_page()
+
+    @app.route("/admin/categories", methods=["POST"])
+    def admin_create_category():
+        refused = admin_action(admin_categories_page, lambda: admin.create_category(
+            g.current_user[0], request.form.get("name", ""), request.form.get("target_hours", "")))
+        return refused or redirect(url_for("admin_categories"))
+
+    @app.route("/admin/categories/<int:category_id>/update", methods=["POST"])
+    def admin_update_category(category_id: int):
+        refused = admin_action(admin_categories_page, lambda: admin.update_category(
+            g.current_user[0], category_id, request.form.get("name"),
+            request.form.get("target_hours")))
+        return refused or redirect(url_for("admin_categories"))
+
+    @app.route("/admin/categories/<int:category_id>/active", methods=["POST"])
+    def admin_set_category_active(category_id: int):
+        refused = admin_action(admin_categories_page, lambda: admin.set_category_active(
+            g.current_user[0], category_id, request.form.get("active") == "1"))
+        return refused or redirect(url_for("admin_categories"))
+
+    @app.route("/admin/categories/<int:category_id>/delete", methods=["POST"])
+    def admin_delete_category(category_id: int):
+        refused = admin_action(admin_categories_page, lambda: admin.delete_category(
+            g.current_user[0], category_id))
+        return refused or redirect(url_for("admin_categories"))
 
     @app.route("/notifications", methods=["GET"])
     def notifications():

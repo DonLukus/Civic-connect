@@ -119,16 +119,19 @@ def single_request(base_url: str, status_filter: str, jar: http.cookiejar.Cookie
         elapsed = time.monotonic() - start
         # Guard against counting a login redirect or error page as a success -
         # a real queue page must contain this template's own caption text.
-        looks_like_queue = "Service requests in your queue" in body or "No requests match this filter" in body
-        # staff_queue.html renders each result row as `<td>#{{ r.id }}</td>` -
-        # count those cells as a proxy for how many rows actually came back,
-        # so an unexpectedly empty/thin result can't quietly pass as a success.
-        rows = re.findall(r"<tr>\s*<td>#(\d+)</td>(.*?)</tr>", body, re.DOTALL)
+        looks_like_queue = ("Service requests in your queue" in body
+                            or "No requests match these filters" in body)
+        # staff_queue.html renders each result row with labelled cells:
+        #   <td data-label="Reference">#{{ r.reference }}</td> ... <td data-label="Status"><span ...>New</span></td>
+        # Reading the labels (not column positions) survives layout changes such as an added
+        # column. Counting the rows is a proxy for how many came back, so an unexpectedly empty
+        # or thin result cannot quietly pass as a success.
+        rows = re.findall(r'<tr>\s*<td data-label="Reference">#(\d+)</td>(.*?)</tr>', body, re.DOTALL)
         rows_seen = len(rows)
         returned_ids = {int(row_id) for row_id, _ in rows}
         filter_valid = all(
-            len(cells := re.findall(r"<td>(.*?)</td>", rest, re.DOTALL)) >= 4
-            and cells[3].strip() == status_filter for _, rest in rows
+            (m := re.search(r'<td data-label="Status">(?:<span[^>]*>)?(.*?)(?:</span>)?</td>', rest, re.DOTALL))
+            is not None and m.group(1).strip() == status_filter for _, rest in rows
         )
         looks_like_queue = bool(looks_like_queue and filter_valid and
                                (expected_ids is None or returned_ids == set(expected_ids)))

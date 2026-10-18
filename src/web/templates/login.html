@@ -14,6 +14,7 @@
     <p><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required></p>
     <p><button type="submit">Sign in</button></p>
   </form>
+  <p class="auth-alt"><a href="{{ url_for('forgot_password') }}">Forgot your password?</a></p>
   <p class="auth-alt">New to CivicConnect? <a href="{{ url_for('register') }}">Create an account</a></p>
 </div>
 {% endblock %}

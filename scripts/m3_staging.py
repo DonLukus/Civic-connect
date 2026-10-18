@@ -42,6 +42,7 @@ def prepare():
         "PASSWORD_HASH_COST": "12",
         "OUTBOX_WORKER_ENABLED": "false",
         "OUTBOX_WORKER_POLL_SECONDS": "1",
+        "APP_BASE_URL": "http://127.0.0.1:5083",
         "EMAIL_SMTP_HOST": "127.0.0.1",
         "EMAIL_SMTP_PORT": "8025",
         "EMAIL_FROM_ADDRESS": "civicconnect@example.test",

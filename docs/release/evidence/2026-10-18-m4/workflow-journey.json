@@ -1,0 +1,24 @@
+{
+  "pass": true,
+  "request_id": 502,
+  "steps": [
+    "Requester submitted (duplicate prompt confirmed)",
+    "Manager assigned it to Staff (Accepted)",
+    "Staff: In Progress, comment, Resolved refused without a note, Resolved with a note",
+    "Staff refused (403) closing; Manager closed",
+    "Requester saw note, status and comment; in-app and email notifications observed",
+    "Dashboard total 502 equals stored requests; CSV has header plus 1 row",
+    "Administrator created a Staff account; setup link single use; reset by emailed link; deactivation blocks sign-in",
+    "Administrator added a category; administration audit rows present"
+  ],
+  "request_audit_statuses": [
+    "New",
+    "Accepted",
+    "In Progress",
+    "Resolved",
+    "Closed"
+  ],
+  "limits": "Live HTTP system test, not browser automation. Email goes to the local STARTTLS sink, not an external inbox. Synthetic accounts only.",
+  "observed_at_utc": "2026-10-18T05:58:23.482868+00:00",
+  "environment": "Windows local simulated staging; Waitress, loopback HTTP, SQLite; local SMTP STARTTLS sink"
+}

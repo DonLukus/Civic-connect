@@ -4,7 +4,12 @@ import uuid
 from typing import ClassVar
 
 from src.persistence.lifecycle import LifecycleValidator
+from src.persistence.migrations import ensure_schema
+from src.persistence.reporting import ReportingMixin
 from src.persistence.request_repository import RequestRepository
+from src.persistence.workflow import VersionConflict, WorkflowMixin
+
+__all__ = ["RequestService", "VersionConflict"]
 
 
 class SubmissionValidationError(ValueError):
@@ -15,7 +20,7 @@ class SubmissionValidationError(ValueError):
         self.field = field
 
 
-class RequestService:
+class RequestService(WorkflowMixin, ReportingMixin):
     STATUSES = ("New", "Accepted", "In Progress", "On Hold", "Resolved", "Closed", "Rejected")
     OPEN_STATUSES = ("New", "Accepted", "In Progress", "On Hold")
     TEXT_LIMITS: ClassVar[dict[str, int]] = {
@@ -23,6 +28,7 @@ class RequestService:
     }
 
     def __init__(self, db_path: str):
+        ensure_schema(db_path)
         self.repo = RequestRepository(db_path)
         self.db_path = db_path
 
@@ -94,51 +100,6 @@ class RequestService:
         finally:
             conn.close()
 
-    def list_manager_requests(self, manager_id: int, status=None, category_id=None):
-        """Return the Manager's displayed/exported request list using the same filters."""
-        status = self.validate_status_filter(status)
-        if category_id in (None, ""):
-            category_id = None
-        elif isinstance(category_id, bool):
-            raise ValueError("category must be a valid controlled-list identifier")
-        else:
-            try:
-                category_id = int(category_id)
-            except (TypeError, ValueError) as exc:
-                raise ValueError("category must be a valid controlled-list identifier") from exc
-            if category_id <= 0:
-                raise ValueError("category must be a valid controlled-list identifier")
-
-        conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row
-        try:
-            actor = conn.execute(
-                "SELECT role FROM users WHERE id = ? AND is_active = 1", (manager_id,)
-            ).fetchone()
-            if actor is None or actor["role"] != "Manager":
-                raise PermissionError("Only an active Manager may view or export this list")
-
-            sql = """
-                SELECT r.id AS reference, r.title, c.name AS category,
-                       r.created_at AS submitted_at, r.status,
-                       COALESCE(assignee.email, 'Unassigned') AS assignee
-                FROM requests AS r
-                JOIN categories AS c ON c.id = r.category_id
-                LEFT JOIN users AS assignee ON assignee.id = r.assignee_id
-                WHERE 1 = 1
-            """
-            parameters = []
-            if status is not None:
-                sql += " AND r.status = ?"
-                parameters.append(status)
-            if category_id is not None:
-                sql += " AND r.category_id = ?"
-                parameters.append(category_id)
-            sql += " ORDER BY r.created_at DESC, r.id DESC"
-            return [dict(row) for row in conn.execute(sql, parameters).fetchall()]
-        finally:
-            conn.close()
-
     def get_request_detail(self, actor_id: int, request_id: int):
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
@@ -154,6 +115,7 @@ class RequestService:
                 SELECT r.id AS reference, r.requester_id, r.assignee_id, r.category_id,
                        r.title, r.description, r.location, r.status, r.version,
                        r.created_at AS submitted_at, r.updated_at, r.accepted_at,
+                       r.resolution_note, r.resolution_at, r.rejection_reason,
                        COALESCE((
                            SELECT MAX(a.changed_at) FROM request_audit AS a
                            WHERE a.request_id = r.id AND a.new_status = r.status
@@ -184,6 +146,9 @@ class RequestService:
             if not (role in ("Manager", "Administrator") or
                     (role == "Staff" and row["assignee_id"] == actor_id)):
                 detail.pop("requester_email")
+            if role == "Requester":
+                # FR-010: the other party's contact details are not shown to the Requester.
+                detail.pop("assignee_email", None)
 
             detail["history"] = [
                 dict(item) for item in conn.execute(
@@ -198,7 +163,30 @@ class RequestService:
                     (request_id,),
                 ).fetchall()
             ]
+            # FR-010 / FR-013: the comment thread shows author role and time, never contact details.
+            detail["comments"] = [
+                dict(item) for item in conn.execute(
+                    """
+                    SELECT c.id, c.author_id, u.role AS author_role, c.body, c.created_at
+                    FROM request_comments AS c
+                    JOIN users AS u ON u.id = c.author_id
+                    WHERE c.request_id = ?
+                    ORDER BY c.id ASC
+                    """,
+                    (request_id,),
+                ).fetchall()
+            ]
             return detail
+        finally:
+            conn.close()
+
+    def list_active_staff(self):
+        """Active Staff users, for a Manager choosing an assignee (FR-014)."""
+        conn = sqlite3.connect(self.db_path)
+        try:
+            return conn.execute(
+                "SELECT id, email FROM users WHERE role = 'Staff' AND is_active = 1 ORDER BY email"
+            ).fetchall()
         finally:
             conn.close()
 
@@ -339,44 +327,6 @@ class RequestService:
                 "category_id", "Select a category from the active controlled list."
             )
         return category_id, values["title"], values["description"], values["location"]
-
-    def find_open_duplicates(
-        self, requester_id: int, category_id, title, description, location
-    ):
-        """List safe duplicate references before creation without exposing requester data."""
-        category_id, _, _, location = self._validate_submission_values(
-            category_id, title, description, location
-        )
-        conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row
-        try:
-            actor = conn.execute(
-                "SELECT role FROM users WHERE id = ? AND is_active = 1", (requester_id,)
-            ).fetchone()
-            if actor is None or actor["role"] != "Requester":
-                raise PermissionError("Only an active Requester may submit a request")
-            category = conn.execute(
-                "SELECT id FROM categories WHERE id = ? AND is_active = 1", (category_id,)
-            ).fetchone()
-            if category is None:
-                raise SubmissionValidationError(
-                    "category_id", "Select a category from the active controlled list."
-                )
-            rows = conn.execute(
-                """
-                SELECT r.id AS reference, c.name AS category, r.location, r.status
-                FROM requests AS r
-                JOIN categories AS c ON c.id = r.category_id
-                WHERE r.category_id = ?
-                  AND lower(trim(r.location)) = lower(?)
-                  AND r.status IN (?, ?, ?, ?)
-                ORDER BY r.created_at DESC, r.id DESC
-                """,
-                (category_id, location, *self.OPEN_STATUSES),
-            ).fetchall()
-            return [dict(row) for row in rows]
-        finally:
-            conn.close()
 
     def accept_request(self, request_id: int, staff_id: int, expected_version: int) -> bool:
         correlation_id = str(uuid.uuid4())

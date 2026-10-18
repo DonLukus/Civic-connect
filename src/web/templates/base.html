@@ -30,11 +30,14 @@
           <a href="/notifications">Notifications</a>
         {% elif current_user.role == 'Staff' %}
           <a href="/staff/queue">Staff queue</a>
-        {% elif current_user.role == 'Manager' %}
-          <a href="/landing">Home</a>
-          <a href="{{ url_for('manager_requests') }}">Request export</a>
         {% elif current_user.role == 'Administrator' %}
           <a href="/landing">Home</a>
+          <a href="/admin/users">Users</a>
+          <a href="/admin/categories">Categories</a>
+        {% elif current_user.role == 'Manager' %}
+          <a href="/landing">Home</a>
+          <a href="/manager/requests">Requests</a>
+          <a href="/manager/dashboard">Dashboard</a>
         {% endif %}
         <form method="post" action="{{ url_for('logout') }}" class="nav__logout">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
