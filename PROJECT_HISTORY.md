@@ -8,6 +8,13 @@ AI assistant reads to get up to speed without asking anyone.
 
 **Rule.** Every pull request adds an entry here. Newest at the top.
 
+### 2026-10-18 - Correct active repository provenance and README status
+**Who:** Emile, with Codex assistance (AI-048) - **Type:** documentation, correction
+**What:** Reconciled the README against DonLukus/Civic-connect main af2f545 and its actual M3/PED/release evidence. Replaced stale M2, 15-test, single-account and unimplemented-queue statements, direct-main deployment commands and unsupported licence/production assertions. Added the canonical repository, actual scoped journeys, 60-case test boundary, local setup, continuing PED, pending decisions and the precise governance gaps. Earlier work prepared against Don-Sanvura/Civic-connect was a repository mismatch; its PRs #7/#8 were closed and labelled withdrawn, preserving their history. Its Node.js diagnostics and conclusions were not imported into this Flask implementation.
+**Affects:** README; AI-048. No requirement/AC wording, RTM acceptance status, scope, source, tests, historical signature or branch setting changed. RTM changes are not needed for this documentation correction.
+**Evidence:** PED section 22; release-summary 17 October update; PRs #85/#86/#88-#91; GitHub main/ruleset/CI reads; README reference checks; Flask CLI startup/schema check against a fresh synthetic database; automated suite 60 passed in 178.13s on Python 3.12.14. These are automated checks, not a claim of personal student execution.
+**Review:** Two non-author reviews required. Public production remains NOT READY; this correction does not reopen completed M3 reviews or infer new acceptance.
+
 ### 2026-10-17 - GitHub governance verification record
 **Who:** Don, with Claude Code assistance - **Type:** docs, evidence
 **What:** Added `docs/governance/github-governance-verification-2026-10-17.md` recording what the `main` rulesets actually enforce versus section 10 / DEC-001: stale-approval dismissal off, no required status checks, and merged PRs without two approvals (#22, #26, #28, #54-#56, #75).
