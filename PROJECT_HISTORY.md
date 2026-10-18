@@ -8,8 +8,15 @@ AI assistant reads to get up to speed without asking anyone.
 
 **Rule.** Every pull request adds an entry here. Newest at the top.
 
+### 2026-10-18 - Correct active repository provenance and README status
+**Who:** Emile, with Codex assistance (AI-048) - **Type:** documentation, correction
+**What:** Reconciled the README against DonLukus/Civic-connect main af2f545 and its actual M3/PED/release evidence. Replaced stale M2, 15-test, single-account and unimplemented-queue statements, direct-main deployment commands and unsupported licence/production assertions. Added the canonical repository, actual scoped journeys, 60-case test boundary, local setup, continuing PED, pending decisions and the precise governance gaps. Earlier work prepared against Don-Sanvura/Civic-connect was a repository mismatch; its PRs #7/#8 were closed and labelled withdrawn, preserving their history. Its Node.js diagnostics and conclusions were not imported into this Flask implementation. After Emile requested preserving useful README guidance, restored the project tree, stack table, environment reference, Bash/PowerShell setup, security/CSRF notes, targeted/coverage commands, deployment boundaries, contribution/support steps and team table while retaining corrected facts.
+**Affects:** README; AI-048. No requirement/AC wording, RTM acceptance status, scope, source, tests, historical signature or branch setting changed. RTM changes are not needed for this documentation correction.
+**Evidence:** PED section 22; release-summary 17 October update; PRs #85/#86/#88-#91; GitHub main/ruleset/CI reads; README reference checks; Flask CLI startup/schema check against a fresh synthetic database; automated suite 60 passed in 178.13s on Python 3.12.14. The 60-pass result belongs to the earlier documentation revision on unchanged application code. For the expansion, local links/anchors, tree paths, dependency pins and target test name were checked; Bash and PowerShell snippets passed syntax parsing. No new Linux/macOS walkthrough or coverage measurement is claimed. These are automated checks, not a claim of personal student execution.
+**Review:** Two non-author reviews required. Public production remains NOT READY; this correction does not reopen completed M3 reviews or infer new acceptance.
+
 ### 2026-10-17 - DEC-008 recommendation and consolidated ASR table (proposal only)
-**Who:** Don, with Claude Code assistance - **Type:** docs, decision proposal
+**Who:** Don, with Claude Code assistance (AI-046) - **Type:** docs, decision proposal
 **What:** Added `docs/decisions/DEC-008-recommendation.md`: ASR table, weighted matrices for stack and platform, recommendation and the evidence still required. Corrected the record that the stack is Python/Flask (Node.js was only a scored alternative).
 **Evidence:** Matrix totals recomputed by script; test and coverage figures from a local run on `main` 6e99ae6 (60 passed, 83%). No provider free-tier terms were verified, and the doc says so.
 **Review:** DEC-008 stays Deferred and ADR-001/007 stay Proposed. Needs two non-author approvals; this is a recommendation, not approval.
