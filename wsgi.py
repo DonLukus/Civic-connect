@@ -83,6 +83,13 @@ def _migrate_m3_schema(conn: sqlite3.Connection) -> None:
         BEGIN
             SELECT RAISE(ABORT, 'request_audit is append-only (FR-025, NFR-006)');
         END;
+
+        CREATE TRIGGER IF NOT EXISTS request_audit_no_replace
+        BEFORE INSERT ON request_audit
+        WHEN NEW.id IS NOT NULL AND EXISTS (SELECT 1 FROM request_audit WHERE id = NEW.id)
+        BEGIN
+            SELECT RAISE(ABORT, 'request_audit is append-only (FR-025, NFR-006)');
+        END;
         """
     )
 

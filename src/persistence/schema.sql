@@ -66,6 +66,16 @@ BEGIN
     SELECT RAISE(ABORT, 'request_audit is append-only (FR-025, NFR-006)');
 END;
 
+-- INSERT OR REPLACE / REPLACE delete the old row without firing the delete trigger (SQLite only
+-- fires it with PRAGMA recursive_triggers, which is off by default), so reusing an existing id
+-- is refused up front.
+CREATE TRIGGER IF NOT EXISTS request_audit_no_replace
+BEFORE INSERT ON request_audit
+WHEN NEW.id IS NOT NULL AND EXISTS (SELECT 1 FROM request_audit WHERE id = NEW.id)
+BEGIN
+    SELECT RAISE(ABORT, 'request_audit is append-only (FR-025, NFR-006)');
+END;
+
 CREATE TABLE outbox_events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     aggregate_type TEXT NOT NULL,
