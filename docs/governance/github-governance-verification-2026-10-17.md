@@ -54,3 +54,15 @@ All four check runs concluded `success`: `tests-and-static-analysis`, `secret-sc
    `docs/governance/evidence/`.
 4. Explain PR #75 and record the answer here.
 5. Attempt a direct push to `main` and a self-approval from a non-admin account; keep the refusals as evidence.
+
+## Correction from execution-log review - 18 October 2026
+
+The earlier full-history label was not supported merely by fetch-depth: 0. Main quality run 39029611356, job 117387258105, invoked Gitleaks with `--no-merges --first-parent` and a restricted range; the log reports **0 commits scanned**. Its green result does not prove a full-history scan. This is a correction of the claim, not proof of a credential leak. Explicit history verification is pending and will be recorded separately if actually run. Required-status-check lists and stale-approval dismissal remain the settings gaps already recorded; no administrator setting was changed by this closure work.
+
+Method reference: https://github.com/gitleaks/gitleaks - the raw git scanner's history selection depends on its log options, not only checkout depth.
+
+### Explicit history verification obtained
+
+Manual quality run [39090851534](https://github.com/DonLukus/Civic-connect/actions/runs/39090851534), job [117567103523](https://github.com/DonLukus/Civic-connect/actions/runs/39090851534/job/117567103523), scanned **174 commits** on application candidate `98b1c55700d940f915d856119f581adee8044986` with no leaks found, applying only the existing exact historical false-positive fingerprint. The logged command has no restricted PR/push log-opts. This is actual full-history evidence for that candidate; it does not change bypass actors, push protection or required-check settings. The earlier zero-commit result remains recorded as a corrected evidence gap.
+
+Follow-up manual [run 39091537311](https://github.com/DonLukus/Civic-connect/actions/runs/39091537311) on `52e175ba33d09b742f9bd8a2f445ef86b4a862cb` scanned **179 commits**, no leaks found. Its quality job also passed 62 tests and the 70% persistence coverage threshold (78.50%), retaining XML/JSON reports. These are actual candidate CI results; they do not enable the still-empty branch-protection required-check lists or change stale-approval/bypass controls.

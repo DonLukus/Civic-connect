@@ -89,3 +89,7 @@ The earlier four-page PDF rendered section 22 alone. The corrected builder inclu
 PED version: **v3.0**. Team: **Emile, Don and Masego**. Repository: <https://github.com/DonLukus/Civic-connect>. Application implementation reference: the PR #85 merge above. RTM: `docs/requirements/RTM.csv`. Test/CI locations and simulated staging demonstration instructions: section 22 and `docs/deployment/m3-staging.md`. Record the actual submission date and final documentation commit/tag when submitting; this document does not claim a submission has occurred.
 
 This full export and its wording corrections require their own normal PR review. Prior implementation approvals are not reused as approvals of new content. Public production release remains NOT READY; the reviewed M3 evaluation slice and public production are separate scopes.
+
+## M4 closure review update - 18 October 2026
+
+Group U; official deadline 18 October 2026 (provided by Emile). Section 23 continues the same PED into a **v4.0 review candidate**, preserving historical M1/M2/M3 records. Verified application candidate: `98b1c55700d940f915d856119f581adee8044986`. Original-AC QA calculation: 40.00% (16/40), subject to independent review; this is below the brief's 80% target. No original criterion was removed to improve the percentage. Final team deployment decision, assessed documentation reference and actual submission remain pending. No new signatures or M2 baseline promotion are inferred.

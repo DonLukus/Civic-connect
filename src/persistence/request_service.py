@@ -132,9 +132,8 @@ class RequestService:
                     """
                     SELECT a.action_type, a.previous_status, a.new_status,
                            a.previous_assignee_id, a.new_assignee_id, a.changed_at,
-                           a.actor_user_id, u.email AS actor_email
+                           a.actor_user_id
                     FROM request_audit AS a
-                    JOIN users AS u ON u.id = a.actor_user_id
                     WHERE a.request_id = ?
                     ORDER BY a.changed_at ASC, a.id ASC
                     """,

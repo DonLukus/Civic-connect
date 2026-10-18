@@ -32,3 +32,8 @@ This section and `docs/PED/00-document-control.md` update together, in one pull 
 every condition in that document's "When v2.0 moves from Draft to BASELINED" checklist is true.
 Nothing here pre-empts that review — this section currently records PROPOSED because that is what
 the controlled sign-off file actually says, not because a different outcome is expected.
+
+
+## Dated finalisation clarification - 18 October 2026
+
+The preceding Proposed outcome and signatures retain their historical scope. The decision-register reconciliation gap was addressed in PR #88 (DEC-013..018); that reason is no longer outstanding. ADR-001/007 remain Proposed and DEC-008 Deferred, so no new M2 acceptance or signature is inferred. Current product/scope consequences and the evidence-backed no-go recommendation are in PED section 23.
