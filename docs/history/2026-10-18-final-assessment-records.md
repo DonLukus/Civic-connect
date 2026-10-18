@@ -1,0 +1,6 @@
+
+### 2026-10-18 - Final assessment recorded: RTM re-scored to 81.25%, stale risk and debt rows corrected
+**Who:** Emile, with Claude assistance (AI-068) - **Type:** verification, documentation
+**What:** The RTM M4 columns still held the v4.0.0 assessment (47.50%), made before the lifecycle, administration and management work was integrated. All 40 criteria were re-assessed against the tagged code: 28 Met, 9 Partially Met, 3 Not Met = 32.5/40 = 81.25%. FR-015 stays Partially Met (DEC-019 is still a proposal) and NFR-004 drops to Partially Met (the role matrix was not extended to the new operations). RSK-05, RSK-12 and TD-004 no longer described the product accurately and were corrected. PED section 23 now points at the new figures.
+**Evidence:** `docs/release/evidence/2026-10-18-m4/final-integration-verification.md`: 293 tests, 91% persistence coverage, Ruff clean, Bandit exit 0, pip-audit clean, gitleaks clean, and one live HTTP journey through the full lifecycle. Every test cited in the RTM was confirmed to exist.
+**Review:** Needs two non-author approvals. AI checks are not human approval. Not verified: hosted behaviour, cold start, external email, a human retest, any independent security review.

@@ -1,5 +1,7 @@
 # 23. Final scope, acceptance and project conclusion - PED v4.0 review candidate
 
+> **Update for release v4.0.1 (18 October 2026).** This section was written against v4.0.0 (47.50%). The final integration merged the lifecycle, administration and management work. The controlled RTM (`docs/requirements/RTM.csv`) now records **28 Met, 9 Partially Met, 3 Not Met = 32.5 / 40 = 81.25%**, against the 80% target. The tables below are kept unchanged as the v4.0.0 record. See `docs/release/evidence/2026-10-18-m4/final-integration-verification.md` for the verification and the criteria that moved.
+
 **Group U. Deadline: 18 October 2026 (reported by Emile). Status: substantive closure prepared for independent review; not a signed submission or new team release decision.** This section continues sections 00-22. Historical approvals retain their original scope.
 
 ## 23.1 Product and evidence identity
