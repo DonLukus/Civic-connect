@@ -6,7 +6,9 @@ Running record of every significant change, decision and milestone event on Civi
 date order, with who and why. Together with `PROJECT_RULES.md` they are the files any team member or
 AI assistant reads to get up to speed without asking anyone.
 
-**Rule.** Every pull request adds an entry here. Newest at the top.
+**Rule.** This file is a frozen archive of the entries merged before `docs/history/` was introduced. Every
+new pull request adds its own entry as a separate file in [docs/history/](docs/history/README.md), so pull
+requests no longer conflict on this file. Read everything newest first with `python tools/history.py`.
 
 ### 2026-10-18 - Correct active repository provenance and README status
 **Who:** Emile, with Codex assistance (AI-048) - **Type:** documentation, correction
