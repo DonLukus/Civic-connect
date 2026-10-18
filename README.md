@@ -110,8 +110,8 @@ required, so a red build could still be merged. See
 
 One Flask application, server-rendered pages, SQLite, no JavaScript framework. This is the simplest design
 that meets the zero-cost constraint; the reasoning and the options considered are in
-[ADR-001](docs/decisions/adr/ADR-001-architecture-and-stack-options.md) and the
-[DEC-008 recommendation](docs/decisions/DEC-008-recommendation.md) (proposed, not yet approved).
+[ADR-001](docs/decisions/adr/ADR-001-architecture-and-stack-options.md) (proposed, not yet
+approved; the hosting decision DEC-008 is still open).
 
 ```
 src/web/            Flask routes, templates, stylesheet
