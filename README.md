@@ -4,6 +4,8 @@ Community service request management platform for SEN381, Belgium Campus ITversi
 
 **Team repository: [DonLukus/Civic-connect](https://github.com/DonLukus/Civic-connect).** Check `git remote -v` before using a checkout or reporting its status; similarly named repositories are not interchangeable.
 
+Quick links: [Status](#current-status) | [Features](#purpose-and-implemented-scope) | [Stack](#technology-stack) | [Setup](#local-setup) | [Configuration](#environment-configuration) | [Security](#security-controls-and-limits) | [Tests](#tests-and-evidence) | [Deployment](#staging-and-deployment) | [Structure](#project-structure) | [Contributing](#contributing-and-support) | [Team](#team-responsibilities)
+
 ## Current status
 
 | Area | Position |
@@ -39,11 +41,28 @@ The implementation uses Python, server-rendered Flask, SQLite, bcrypt and a tran
 
 SQLite records persist in the configured local file across process restarts; that is not proof of hosted durability. No PostgreSQL implementation or final production-platform acceptance is claimed. Fresh accounts use bcrypt; successful login upgrades supported legacy hashes, but dormant legacy accounts still need an explicit migration/reset disposition.
 
-## Run locally on Windows
+## Technology stack
+
+| Component | Current implementation | Version/source |
+|---|---|---|
+| Language | Python | 3.11 used by CI; earlier project checks also recorded 3.12/3.14 environments |
+| Web framework and UI | Flask, Jinja templates, CSS | Flask 3.1.3 in `requirements.txt` |
+| Database | SQLite through Python's `sqlite3` | SQLite library supplied with the installed Python; PostgreSQL remains a candidate |
+| Password hashing | bcrypt; Werkzeug for checking supported legacy hashes before upgrade | bcrypt 5.0.0 in `requirements.txt` |
+| Automated tests | pytest | 9.1.1 in `requirements.txt` |
+| Local simulated staging | Waitress and aiosmtpd | 3.0.2 and 1.4.6 in `requirements-staging.txt` |
+| Unix WSGI server candidate | Gunicorn | 26.2.0 in `requirements.txt`; not usable on Windows |
+| CI and analysis | GitHub Actions, pytest, Ruff, Bandit, pip-audit and Gitleaks | Configuration in `.github/workflows/`; tool results apply to their recorded run |
+
+Dependency pins describe the checkout, not final platform acceptance. See [ADRs](docs/decisions/adr/) and the [decision log](docs/decisions/decision-log.csv) for decision status.
+
+## Local setup
 
 Use only synthetic data. Do not expose this demonstration to real users or put credentials in Git.
 
-Prerequisites: Git and Python 3.11 or later with pip. Open PowerShell:
+Prerequisites: Git and Python 3.11 or later with pip. Use an unused checkout folder and a separate local database.
+
+### Windows (PowerShell)
 
 ```powershell
 git clone https://github.com/DonLukus/Civic-connect.git
@@ -61,15 +80,86 @@ $env:OUTBOX_WORKER_ENABLED = "false"
 python -m flask --app wsgi:app run --host 127.0.0.1 --port 5000
 ```
 
+### Linux and macOS (Bash)
+
+Use a `python3` installation satisfying the same prerequisite:
+
+```bash
+git clone https://github.com/DonLukus/Civic-connect.git
+cd Civic-connect
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+
+export SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export DATABASE_URL="$PWD/civicconnect-local.sqlite"
+export SESSION_COOKIE_SECURE=false
+export PASSWORD_HASH_COST=12
+export OUTBOX_WORKER_ENABLED=false
+
+python -m flask --app wsgi:app run --host 127.0.0.1 --port 5000
+```
+
+These Bash instructions express the same environment and application startup as the Windows path. They are not evidence of a fresh Linux/macOS walkthrough; use the project's recorded platform checks and verify your actual environment.
+
 Open `http://127.0.0.1:5000/register` to create a synthetic Requester, then sign in at `/login`. `wsgi.py` initialises the schema and default Utilities category. These commands set the environment directly: copying [.env.example](.env.example) alone does not populate the required values or guarantee a dotenv loader is installed. Keep the generated signing key stable for the local session; a new key invalidates old sessions.
 
 Privileged demo users can be provisioned through the optional bootstrap environment variables named in `.env.example`. For the complete Staff/notification demonstration, follow the isolated [M3 staging runbook](docs/deployment/m3-staging.md), which generates synthetic fixtures and a local STARTTLS mail sink. Do not run its fixture generator against an existing database. Public HTTPS and external mail delivery require separate verification.
+
+## Environment configuration
+
+`.env.example` is the controlled list of variable names; actual values belong in the process environment or an explicitly configured local loader. Keep secrets, databases and `.m3-local/` out of Git. The examples above disable mail delivery and use loopback HTTP.
+
+| Variable | Meaning and current behaviour |
+|---|---|
+| `SECRET_KEY` | Required Flask session-signing secret; use a random private value per environment. Do not print or commit it. |
+| `DATABASE_URL` | SQLite **file path** consumed by the current code; defaults to `civicconnect.sqlite` in `wsgi.py`. Setting a PostgreSQL URL does not implement a PostgreSQL adapter. |
+| `SESSION_COOKIE_SECURE` | `false` for loopback HTTP; `true` requires HTTPS. HttpOnly and SameSite=Lax are configured in the app. |
+| `PASSWORD_HASH_COST` | bcrypt cost, default 12; code accepts 10 through 16. |
+| `BOOTSTRAP_REQUESTER_EMAIL`, `BOOTSTRAP_REQUESTER_PASSWORD` | Optional pair to create a synthetic Requester if absent. Omit both when using public registration. |
+| `BOOTSTRAP_STAFF_EMAIL`, `BOOTSTRAP_STAFF_PASSWORD` | Optional pair to provision a Staff demo account. |
+| `BOOTSTRAP_MANAGER_EMAIL`, `BOOTSTRAP_MANAGER_PASSWORD` | Optional pair to provision a Manager demo account. |
+| `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD` | Optional pair to provision an Administrator demo account. |
+| `OUTBOX_WORKER_ENABLED` | Default `false`; `true` starts the in-process notification loop and requires SMTP host/sender settings. |
+| `OUTBOX_WORKER_POLL_SECONDS` | Default 60; positive integer interval between processing passes. |
+| `EMAIL_SMTP_HOST`, `EMAIL_SMTP_PORT` | SMTP host and port; port defaults to 587. The implementation calls STARTTLS. |
+| `EMAIL_SMTP_USERNAME`, `EMAIL_SMTP_PASSWORD` | Optional SMTP login; a username requires a password. Local staging uses its separate synthetic sink configuration. |
+| `EMAIL_FROM_ADDRESS` | Sender address required for delivery. |
+| `FLASK_ENV` | Present in the template; the setup instructions configure the launch explicitly with Flask CLI. It is not a substitute for reviewing deployment/security settings. |
+
+Each bootstrap email/password must be supplied together. Startup does not reset an existing account's password, and it refuses a matching email with a different role. This is demo provisioning, not the missing Administrator user-management screen. Check [wsgi.py](wsgi.py) and the [interface agreement](docs/deployment/m3-interface-agreement.md) for the actual contract.
+
+## Security controls and limits
+
+- Authenticated sessions are checked against an active stored user; route and service checks enforce role/record boundaries for the implemented operations.
+- State-changing forms require a session-bound CSRF token. Missing/invalid tokens are rejected; logout is a POST operation. See the CSRF and logout regressions in `tests/`.
+- Fresh registered/bootstrap passwords are bcrypt hashes, never plaintext database values. Registration enforces an eight-character minimum and bcrypt's 72-byte UTF-8 limit. Dormant legacy hashes still need a migration/reset decision.
+- Request acceptance uses a version check and transactional state/audit/outbox writes. The current audit records do not establish every later lifecycle or production tamper-resistance requirement.
+- Keep signing keys and bootstrap/SMTP credentials private. Inspect the exact CI secret/static/dependency scan result rather than interpreting a green run as a complete security assessment.
+
+Login/signup rate limiting, email verification, production SMTP/TLS assurance and outbox crash recovery remain outstanding. The local SMTP sink is controlled test transport, not proof of delivery to an external inbox. See the [release risks](docs/release/m3-release-evidence-summary.md) and [technical debt](docs/quality/technical-debt-register.md).
 
 ## Tests and evidence
 
 ```powershell
 python -m pytest tests/ -q
 ```
+
+Run one area or case while investigating:
+
+```sh
+python -m pytest tests/test_request_acceptance.py -v
+python -m pytest tests/test_request_submission.py::test_create_request_succeeds_with_valid_data -v
+```
+
+For an optional local coverage report, install the coverage plugin in the development environment:
+
+```sh
+python -m pip install pytest-cov
+python -m pytest tests/ --cov=src --cov-report=html
+```
+
+Inspect `htmlcov/index.html` and the measured service-layer coverage before claiming NFR-009. The report is ignored by Git; these commands do not assert that coverage has already met its threshold.
 
 The current suite contains 60 cases. The earlier 15-, 18-, 39- and 50-case reports are historical snapshots. Flask test-client cases are in-process functional/integration tests. Separate live HTTP journeys and supplementary browser walkthrough evidence are recorded; no persistent browser automation suite is claimed.
 
@@ -81,6 +171,54 @@ The recorded NFR-001 local warm-instance measurement used 10 Staff users, 500 fi
 - [Quality, secret-scan and traceability workflows](.github/workflows/)
 
 Evaluate the exact commit and run, not only a test count or green badge. Passing CI does not establish all 40 requirements or production readiness.
+
+## Staging and deployment
+
+For the reproducible supervised demonstration, use [M3 isolated staging](docs/deployment/m3-staging.md). It documents fixture preparation, separate server/mail processes, live journeys, the five-minute load run and restart checks. Preserve later results in a new evidence directory instead of overwriting historical reports.
+
+Render remains historical proof-of-concept/platform evidence under DEC-008, not an approved production deployment recipe. Follow [deployment direction](docs/deployment/deployment-direction.md) as a dated proposal and the [release summary](docs/release/m3-release-evidence-summary.md) for current limits. Verify durable storage across restart/redeploy, external SMTP/TLS, host compatibility, cost and recovery before selecting a hosted release configuration. An absolute SQLite path alone does not provide persistence.
+
+Deploy only an explicitly reviewed commit through the agreed process. Do not bypass the PR workflow with a direct push to main. Gunicorn is a Unix server option; the local Windows staging guide uses Waitress. The Flask development server in quick start is for loopback development.
+
+## Project structure
+
+```text
+Civic-connect/
+|-- src/
+|   |-- persistence/
+|   |   |-- schema.sql              # SQLite schema
+|   |   |-- request_service.py      # Request rules, queries and acceptance
+|   |   |-- request_repository.py   # Earlier repository implementation
+|   |   |-- user_service.py         # Requester registration
+|   |   |-- lifecycle.py            # Implemented transition validation
+|   |   `-- outbox.py               # Notification claiming and delivery
+|   `-- web/
+|       |-- app.py                  # Flask routes, sessions and CSRF
+|       |-- templates/              # Login, registration and scoped role pages
+|       `-- static/                 # Styles
+|-- tests/                          # pytest service/web/regression cases
+|-- scripts/                        # Local staging, live and recovery harnesses
+|-- performance/                    # Staff queue load scenario
+|-- tools/                          # Continuing PED PDF builder
+|-- docs/
+|   |-- PED/                        # Numbered sources and compiled review exports
+|   |-- requirements/               # Baseline requirements, scope and RTM
+|   |-- decisions/                  # Decision log and ADRs
+|   |-- deployment/                 # Interface and staging runbooks
+|   |-- quality/                    # Inventory, role matrix, defects and debt
+|   |-- release/                    # Release summary and dated evidence
+|   |-- governance/                 # AI register and governance records
+|   `-- risk/                       # Risk and assumption registers
+|-- .github/                        # Workflows and contribution templates
+|-- wsgi.py                         # Schema/bootstrap and WSGI entrypoint
+|-- requirements.txt                # Pinned application/test dependencies
+|-- requirements-staging.txt        # Optional Waitress/local SMTP dependencies
+|-- requirements-docs.txt           # Optional PED build dependencies
+|-- .env.example                    # Configuration names, no secret values
+|-- PROJECT_RULES.md
+|-- PROJECT_HISTORY.md
+`-- README.md
+```
 
 ## Remaining work
 
@@ -99,6 +237,16 @@ Work on a branch and open a PR. Substantive changes require two approvals from d
 
 Main has active protection rulesets requiring a PR and two approvals. The [17 October governance verification](docs/governance/github-governance-verification-2026-10-17.md) records narrower gaps: stale-approval dismissal is off and required-status-check lists are empty. Last-push approval and conversation resolution are on. Bypass actors and platform secret-scanning settings remain unverified without administrator evidence. The verification PR records discrepancies; it does not fix settings or prove every historical approval was independent.
 
+## Contributing and support
+
+1. Read the rules, history, PED and affected requirement/acceptance records. For a defect, include reproduction, expected/actual behaviour, impact and related IDs in the project issue or PR; use the existing templates.
+2. Work on a small branch following project conventions: `docs/<area>`, `feat/FR-nnn-<description>`, `fix/<issue>-<description>` or `chore/<description>`. Preserve existing identifiers.
+3. Make focused commits such as `docs(readme): clarify local setup` or `fix(<area>): describe the correction`, referencing the real issue/artefact where applicable. Inspect `git status` and stage named project files rather than temporary review downloads or credentials.
+4. Run checks appropriate to the change. Update affected RTM/register entries, declare material AI assistance and add the history entry. Do not change acceptance status merely because code or text changed.
+5. Open a PR using the template. Don and Masego independently review Emile-authored changes; the other two non-author people review changes authored by a different member. Record actual findings, resolve discussions and inspect CI on the final revision before merging.
+
+For help, start with the [interface contract](docs/deployment/m3-interface-agreement.md), [staging guide](docs/deployment/m3-staging.md) and the relevant defect/debt record. Raise remaining questions through the repository's [issues](https://github.com/DonLukus/Civic-connect/issues) or the associated PR, with synthetic reproduction data and no credentials.
+
 ## Project records and responsibilities
 
 | Topic | Source |
@@ -109,6 +257,14 @@ Main has active protection rulesets requiring a PR and two approvals. The [17 Oc
 | Architecture and decisions | [ADRs](docs/decisions/adr/), [decision log](docs/decisions/decision-log.csv) |
 | Risk and AI accountability | [Risk register](docs/risk/risk-register.csv), [AI register](docs/governance/ai-usage-register.csv) |
 
-Current M3 responsibilities recorded in document control: Don - architecture/core/configuration; Masego - verification/traceability; Emile - staging/performance/release/PED. These describe the M3 allocation; the historical M1 ownership in PROJECT_RULES is retained. All three remain accountable for the whole project.
+## Team responsibilities
+
+| Member | Current M3 responsibility recorded in document control |
+|---|---|
+| Don (Workstream B) | Architecture, core implementation and configuration |
+| Masego (Workstream A) | Verification and traceability |
+| Emile (Workstream C) | Staging, performance, release evidence and PED assembly |
+
+These describe the M3 allocation; the historical M1 ownership in PROJECT_RULES is retained. Authorship and actual review evidence remain in PRs, history and the AI register. All three remain accountable for the whole project.
 
 The full PED export includes all existing numbered sources and preserves historical signatures and dates. Section 18 has no source and remains an explicit gap. Record the actual submission date and final documentation identifier when submitting; this README supplies neither a signature nor a submission claim.
