@@ -70,7 +70,7 @@ jobs:
       # finding still fails the job and is listed, with file, rule and commit, in the job summary
       # and the uploaded report artifact.
       - name: Scan repository for secrets
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_ENABLE_COMMENTS: "false"
